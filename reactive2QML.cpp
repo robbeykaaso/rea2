@@ -4,20 +4,6 @@
 
 namespace rea {
 
-void qmlPipe::setFunc(const QJSValue aFunc){
-    auto ret = createPipe(aFunc, m_param);
-    m_pipe = ret->m_pipe;
-    delete ret;
-}
-
-void qmlPipe::setParam(const QJsonObject aParam){
-    m_param = aParam;
-}
-
-qmlPipe::~qmlPipe(){
-    //int test = 0;
-}
-
 QVariant qmlPipe::nextEx(QVariant aNext, const QJsonObject& aParam){
     auto nxt = qobject_cast<qmlPipe*>(qvariant_cast<QObject*>(aNext));
     pipeline::find(m_pipe)->next(nxt->m_pipe, aParam);

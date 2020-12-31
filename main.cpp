@@ -40,8 +40,6 @@ int main(int argc, char *argv[])
     app.setOrganizationDomain("somename");
 
     qmlRegisterSingletonType<rea::pipelineQML>("Pipeline2", 1, 0, "Pipeline2", &rea::pipelineQML::qmlInstance);
-    qmlRegisterType<rea::qmlPipe>("Pipe2", 1, 0, "Pipe2");
-    qmlRegisterType<rea::qmlStream>("Stream2", 1, 0, "Stream2");
 
     rea::pipeline::add<QJsonObject>([](rea::stream<QJsonObject>* aInput){
         aInput->setData(rea::Json("hello", "world"))->out();

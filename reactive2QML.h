@@ -14,12 +14,7 @@ class qmlPipe : public QObject
     Q_OBJECT
 public:
     qmlPipe(){}
-    qmlPipe(const qmlPipe& aPipe) {m_pipe = aPipe.m_pipe;}
-    qmlPipe& operator=(const qmlPipe& aPipe) { m_pipe = aPipe.m_pipe; return *this;}
-    ~qmlPipe();
 public:
-    Q_PROPERTY(QJSValue func WRITE setFunc)
-    Q_PROPERTY(QJsonObject param WRITE setParam)
     Q_INVOKABLE QString actName() {return m_pipe;}
     Q_INVOKABLE QVariant nextEx(QVariant aNext, const QJsonObject& aParam = QJsonObject());
     Q_INVOKABLE QVariant next(QJSValue aNext, const QJsonObject& aParam = QJsonObject(), const QJsonObject& aPipeParam = QJsonObject());
@@ -31,8 +26,6 @@ public:
     void setPipe(const QString& aPipe) {m_pipe = aPipe;}
     static qmlPipe* createPipe(QJSValue aFunc, const QJsonObject& aParam);
 private:
-    void setFunc(const QJSValue aFunc);
-    void setParam(const QJsonObject aParam);
     QString m_pipe;
     QJsonObject m_param;
 };

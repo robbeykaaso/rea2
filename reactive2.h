@@ -367,38 +367,21 @@ public:
     void doEvent(QJSValue aFunc, std::shared_ptr<stream<T>> aStream){
         if (pipeline::instance()->engine != nullptr && !aFunc.equals(QJsonValue::Null)){
             QJSValueList paramList;
-            auto dt = aStream->data();
-            auto js = pipeline::instance()->engine->toScriptValue(dt);
-            auto stm = new qmlStream(js);
-            paramList.append(pipeline::instance()->engine->toScriptValue(stm));
-            auto ret = aFunc.call(paramList);
-            auto dt2 = qobject_cast<qmlStream*>(qvariant_cast<QObject*>(paramList.first().toVariant()));
-            if (!ret.isNull()){
-                auto json = QJsonObject::fromVariantMap(ret.toVariant().toMap());
-                if (json.contains("data"))
-                    valType<T>().setData(aStream, json.value("data"));
-                if (json.contains("out")){
-                    if (json.value("out").isObject())
-                        aStream->out(json.value("out").toObject());
-                    else if (json.value("out").isArray()){
-                        auto outs = json.value("out").toArray();
-                        for (auto i : outs){
-                            auto out = i.toObject();
-                            auto nxt = out.value("next").toString();
-                            auto prm = out.value("param").toObject();
-                            if (out.value("out").isObject())
-                                aStream->template out<QJsonObject>(out.value("out").toObject(), nxt, prm);
-                            else if (out.value("out").isString())
-                                aStream->template out<QString>(out.value("out").toString(), nxt, prm);
-                            else if (out.value("out").isBool())
-                                aStream->template out<bool>(out.value("out").toBool(), nxt, prm);
-                            else if (out.value("out").isDouble())
-                                aStream->template out<double>(out.value("out").toDouble(), nxt, prm);
-                            else if (out.value("out").isArray())
-                                aStream->template out<QJsonArray>(out.value("out").toArray(), nxt, prm);
-                        }
-                    }
-                }
+            qmlStream stm(pipeline::instance()->engine->toScriptValue(aStream->data()));
+            paramList.append(pipeline::instance()->engine->toScriptValue(QVariant::fromValue<QObject*>(&stm)));
+            aFunc.call(paramList);
+            auto dt = stm.data();
+            if (!dt.isNull()){
+                if (dt.isObject())
+                    valType<T>().setData(aStream, QJsonObject::fromVariantMap(dt.toVariant().toMap()));
+                else if (dt.isArray())
+                    valType<T>().setData(aStream, QJsonArray::fromVariantList(dt.toVariant().toList()));
+                else if (dt.isNumber())
+                    valType<T>().setData(aStream, dt.toNumber());
+                else if (dt.isBool())
+                    valType<T>().setData(aStream, dt.toBool());
+                else if (dt.isString())
+                    valType<T>().setData(aStream, dt.toString());
             }
         }
     }
