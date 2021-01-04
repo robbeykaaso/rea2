@@ -60,10 +60,6 @@ QString GetMachineFingerPrint(){
     return localHostName + "_" + addr;*/
 }
 
-void tic(){
-    std::cout << "hello" << std::endl;
-}
-
 int getRandom(int min,int max)
 {
     qsrand(QTime(0, 0, 0).secsTo(QTime::currentTime()));

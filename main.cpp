@@ -41,14 +41,11 @@ int main(int argc, char *argv[])
 
     qmlRegisterSingletonType<rea::pipelineQML>("Pipeline2", 1, 0, "Pipeline2", &rea::pipelineQML::qmlInstance);
 
-    rea::pipeline::add<QJsonObject>([](rea::stream<QJsonObject>* aInput){
-        aInput->setData(rea::Json("hello", "world"))->out();
-    }, rea::Json("name", "test"));
     QQmlApplicationEngine engine;
     rea::pipeline::instance()->engine = &engine;
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 
-    rea::pipeline::run<QJsonObject>("test", QJsonObject());
+    rea::pipeline::run<int>("unitTest", 0);
     if (engine.rootObjects().isEmpty())
         return -1;
 

@@ -280,6 +280,47 @@ pipeline::~pipeline(){
         delete i;
 }
 
+QVariant qmlStream::var(const QString& aName, QJSValue aData){
+    if (aData.isObject())
+        m_cache->insert(aName, std::make_shared<stream<QJsonObject>>(QJsonObject::fromVariantMap(aData.toVariant().toMap())));
+    else if (aData.isArray())
+        m_cache->insert(aName, std::make_shared<stream<QJsonArray>>(QJsonArray::fromVariantList(aData.toVariant().toList())));
+    else if (aData.isNumber())
+        m_cache->insert(aName, std::make_shared<stream<double>>(aData.toNumber()));
+    else if (aData.isBool())
+        m_cache->insert(aName, std::make_shared<stream<bool>>(aData.toBool()));
+    else if (aData.isString())
+        m_cache->insert(aName, std::make_shared<stream<QString>>(aData.toString()));
+    else
+        qFatal("Invalid data type in qmlStream!");
+    return QVariant::fromValue<QObject*>(this);
+}
+
+QJSValue qmlStream::varData(const QString& aName, const QString& aType){
+#define getVarData(TP) \
+{ \
+    auto ret = std::dynamic_pointer_cast<stream<TP>>(m_cache->value(aName)); \
+    if (ret) \
+        return pipeline::instance()->engine->toScriptValue(ret->data()); \
+    else  \
+        return pipeline::instance()->engine->toScriptValue(TP()); \
+}
+
+    if (aType == "object")
+        getVarData(QJsonObject)
+    else if (aType == "array")
+        getVarData(QJsonArray)
+    else if (aType == "string")
+        getVarData(QString)
+    else if (aType == "bool")
+        getVarData(bool)
+    else if (aType == "number")
+        getVarData(double)
+    else
+        qFatal("Invalid data type in qmlStream!");
+    return QJSValue();
+}
+
 pipe0* local(const QString& aName, const QJsonObject& aParam){
     return pipeline::find(aName)->createLocal(aName, aParam);
 }
@@ -417,7 +458,7 @@ void test5(){
     pipeline::add<int, pipeDelegate>([](stream<int>* aInput){
         assert(aInput->data() == 66);
         aInput->out();
-    }, Json("name", "test5_0", "param", Json("delegate", "test5")))
+    }, Json("name", "test5_0", "delegate", "test5"))
         ->next("testSuccess");
 
     pipeline::add<int>([](stream<int>* aInput){
@@ -453,7 +494,7 @@ void test6(){
 }
 
 void test7(){
-    pipeline::add<int, pipeBuffer>(nullptr, Json("name", "test7", "param", Json("count", 2)))
+    pipeline::add<int, pipeBuffer>(nullptr, Json("name", "test7", "count", 2))
         ->next(pipeline::add<std::vector<int>>([](stream<std::vector<int>>* aInput){
             auto dt = aInput->data();
             assert(dt.size() == 2);
@@ -471,18 +512,18 @@ void test7(){
 
 void test8(){
     pipeline::add<QJsonObject>([](stream<QJsonObject>* aInput){
+        aInput->var<QString>("test8_var", "test8_var");
+        aInput->out();
+    }, Json("name", "test8"))->next("test8_");
+
+    pipeline::add<QJsonObject>([](stream<QJsonObject>* aInput){
         assert(aInput->data().value("test8") == "test8");
+        assert(aInput->varData<QString>("test8_var") == "test8_var_");
         aInput->out<QString>("Pass: test8", "testSuccess");
     }, Json("name", "test8_0"))
         ->next("testSuccess");
 
     pipeline::run("test8", Json("test8", "test8"));
-
-    /*import pipeline2 1.0
-    Pipeline2.add(function(aInput){
-                      console.assert(aInput["test8"] === "test8")
-                          return {data: aInput, out: {}}
-                  }, {name: "test8"}).next("test8_0")*/
 }
 
 void test9(){

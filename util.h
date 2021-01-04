@@ -21,7 +21,6 @@ namespace rea {
 DSTDLL QString getCWD(const char* aSuffix);
 DSTDLL QString generateUUID();
 DSTDLL QString GetMachineFingerPrint();
-DSTDLL void tic();
 //https://blog.csdn.net/Wangguang_/article/details/93880452
 DSTDLL int getRandom(int min,int max);
 DSTDLL QHostAddress GetLocalIP();
