@@ -22,14 +22,14 @@ class pipe0;
 
 class stream0{
 public:
-    stream0(const QJsonObject& aParam = QJsonObject()) {m_param = aParam;}
+    stream0(const QString& aTag = "") {m_tag = aTag;}
     stream0(const stream0&) = default;
     stream0(stream0&&) = default;
     stream0& operator=(const stream0&) = default;
     stream0& operator=(stream0&&) = default;
     virtual ~stream0(){}
 protected:
-    QJsonObject m_param;
+    QString m_tag;
     std::shared_ptr<std::vector<std::pair<QString, std::shared_ptr<stream0>>>> m_outs = nullptr;
     friend pipe0;
 };
@@ -42,7 +42,7 @@ template <typename T>
 class stream : public stream0{
 public:
     stream() : stream0(){}
-    stream(T aInput, const QJsonObject& aParam = QJsonObject(), std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> aCache = nullptr) : stream0(aParam){
+    stream(T aInput, const QString& aTag = "", std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> aCache = nullptr) : stream0(aTag){
         m_data = aInput;
         if (aCache)
             m_cache = aCache;
@@ -55,25 +55,25 @@ public:
     }
     T data() {return m_data;}
 
-    stream<T>* out(const QJsonObject& aParam = QJsonObject()){
+    stream<T>* out(const QString& aTag = ""){
         if (!m_outs)
             m_outs = std::make_shared<std::vector<std::pair<QString, std::shared_ptr<stream0>>>>();
-        m_param = aParam;
+        m_tag = aTag;
         return this;
     }
 
     template<typename S>
-    stream<S>* out(S aOut, const QString& aNext = "", const QJsonObject& aParam = QJsonObject(), bool aShareCache = true){
+    stream<S>* outs(S aOut, const QString& aNext = "", const QString& aTag = "", bool aShareCache = true){
         if (!m_outs)
             m_outs = std::make_shared<std::vector<std::pair<QString, std::shared_ptr<stream0>>>>();
-        auto ot = std::make_shared<stream<S>>(aOut, aParam, aShareCache ? m_cache : nullptr);
+        auto ot = std::make_shared<stream<S>>(aOut, aTag, aShareCache ? m_cache : nullptr);
         m_outs->push_back(std::pair<QString, std::shared_ptr<stream0>>(aNext, ot));
         return ot.get();
     }
 
     template<typename S>
-    stream<T>* outB(S aOut, const QString& aNext = "", const QJsonObject& aParam = QJsonObject(), bool aShareCache = true){
-        out<S>(aOut, aNext, aParam, aShareCache);
+    stream<T>* outsB(S aOut, const QString& aNext = "", const QString& aTag = "", bool aShareCache = true){
+        outs<S>(aOut, aNext, aTag, aShareCache);
         return this;
     }
 
@@ -105,9 +105,9 @@ class qmlStream : public QObject
     Q_OBJECT
 public:
     qmlStream(){}
-    qmlStream(QJSValue aInput, const QJsonObject& aParam = QJsonObject(), std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> aCache = nullptr){
+    qmlStream(QJSValue aInput, const QString& aTag = "", std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> aCache = nullptr){
         m_data = aInput;
-        m_param = aParam;
+        m_tag = aTag;
         if (aCache)
             m_cache = aCache;
         else
@@ -120,25 +120,29 @@ public:
     Q_INVOKABLE QJSValue data(){
         return m_data;
     }
-    Q_INVOKABLE QVariant out(const QJsonObject& aParam = QJsonObject()){
+    Q_INVOKABLE QVariant out(const QString& aTag = ""){
         if (!m_outs)
             m_outs = std::make_shared<std::vector<std::pair<QString, std::shared_ptr<qmlStream>>>>();
-        m_param = aParam;
+        m_tag = aTag;
         return QVariant::fromValue<QObject*>(this);
     }
-    Q_INVOKABLE QVariant out(QJSValue aOut, const QString& aNext = "", const QJsonObject& aParam = QJsonObject(), bool aShareCache = true){
+    Q_INVOKABLE QVariant outs(QJSValue aOut, const QString& aNext = "", const QString& aTag = "", bool aShareCache = true){
         if (!m_outs)
             m_outs = std::make_shared<std::vector<std::pair<QString, std::shared_ptr<qmlStream>>>>();
-        auto ot = std::make_shared<qmlStream>(aOut, aParam, aShareCache ? m_cache : nullptr);
+        auto ot = std::make_shared<qmlStream>(aOut, aTag, aShareCache ? m_cache : nullptr);
         m_outs->push_back(std::pair<QString, std::shared_ptr<qmlStream>>(aNext, ot));
         return QVariant::fromValue<QObject*>(ot.get());
+    }
+    Q_INVOKABLE QVariant outsB(QJSValue aOut, const QString& aNext = "", const QString& aTag = "", bool aShareCache = true){
+        outs(aOut, aNext, aTag, aShareCache);
+        return QVariant::fromValue<QObject*>(this);
     }
     Q_INVOKABLE QVariant var(const QString& aName, QJSValue aData);
     Q_INVOKABLE QJSValue varData(const QString& aName, const QString& aType = "object");
 private:
     QJSValue m_data;
     std::shared_ptr<std::vector<std::pair<QString, std::shared_ptr<qmlStream>>>> m_outs = nullptr;
-    QJsonObject m_param;
+    QString m_tag;
     std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> m_cache;
     template<typename T, typename F>
     friend class funcType;
@@ -161,16 +165,16 @@ public:
     virtual QString actName() {return m_name;}
 
     template <typename T>
-    pipe0* nextF(pipeFunc<T> aNextFunc, const QJsonObject& aParam = QJsonObject(), const QJsonObject& aPipeParam = QJsonObject()){
-        return nextF0(this, aNextFunc, aParam, aPipeParam);
+    pipe0* nextF(pipeFunc<T> aNextFunc, const QString& aTag = "", const QJsonObject& aParam = QJsonObject()){
+        return nextF0(this, aNextFunc, aTag, aParam);
     }
-    virtual pipe0* next(pipe0* aNext, const QJsonObject& aParam = QJsonObject());
-    virtual pipe0* next(const QString& aName, const QJsonObject& aParam = QJsonObject());
+    virtual pipe0* next(pipe0* aNext, const QString& aTag = "");
+    virtual pipe0* next(const QString& aName, const QString& aTag = "");
     virtual void removeNext(const QString& aName);
-    virtual pipe0* nextB(pipe0* aNext, const QJsonObject& aParam = QJsonObject());
-    virtual pipe0* nextB(const QString& aName, const QJsonObject& aParam = QJsonObject());
+    virtual pipe0* nextB(pipe0* aNext, const QString& aTag = "");
+    virtual pipe0* nextB(const QString& aName, const QString& aTag = "");
 
-    void execute(std::shared_ptr<stream0> aStream, const QJsonObject& aParam = QJsonObject());
+    void execute(std::shared_ptr<stream0> aStream, const QString& aTag = "");
 
     virtual pipe0* createLocal(const QString& aName, const QJsonObject& aParam);
     bool isBusy() {return m_busy;}
@@ -181,36 +185,37 @@ protected:
     public:
         static const Type type = static_cast<Type>(QEvent::User + 1);
     public:
-        streamEvent(const QString& aName, std::shared_ptr<stream0> aStream, const QJsonObject& aParam = QJsonObject()) : QEvent(type) {
+        streamEvent(const QString& aName, std::shared_ptr<stream0> aStream, const QString& aTag = "") : QEvent(type) {
             m_name = aName;
-            m_param = aParam;
+            m_tag = aTag;
             m_stream = aStream;
         }
         QString getName() {return m_name;}
-        QJsonObject getParam(){
-            if (m_stream->m_param.empty())
-                return m_param;
+        QString getTag(){
+            if (m_stream->m_tag == "")
+                return m_tag;
             else
-                return m_stream->m_param;
+                return m_stream->m_tag;
         }
         std::shared_ptr<stream0> getStream() {return m_stream;}
     private:
         QString m_name;
         std::shared_ptr<stream0> m_stream;
-        QJsonObject m_param;
+        QString m_tag;
     };
     pipe0(const QString& aName = "", int aThreadNo = 0, bool aReplace = false);
     virtual QString localName() {return "";}
-    virtual void insertNext(const QString& aName, const QJsonObject& aParam) {
-        m_next.insert(aName, aParam);
+    virtual void insertNext(const QString& aName, const QString& aTag) {
+        m_next.insert(aName, aTag);
     }
 protected:
-    void doNextEvent(const QMap<QString, QJsonObject>& aNexts, std::shared_ptr<stream0> aStream);
+    void doNextEvent(const QMap<QString, QString>& aNexts, std::shared_ptr<stream0> aStream);
 protected:
     QString m_name;
     bool m_anonymous;
+    QMap<QString, QString> m_next;
     bool m_busy = false;
-    QMap<QString, QJsonObject> m_next;
+    //std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> m_stream_cache = nullptr;
     QThread* m_thread = QThread::currentThread();
 private:
     friend pipeFuture;
@@ -225,11 +230,11 @@ public:
     pipe0* createLocal(const QString& aName, const QJsonObject& aParam) override;
 protected:
     pipeFuture(const QString& aName);
-    void insertNext(const QString& aName, const QJsonObject& aParam) override;
+    void insertNext(const QString& aName, const QString& aTag) override;
 private:
     QString m_act_name;
     QHash<QString, QJsonObject> m_locals;
-    QVector<QPair<QString, QJsonObject>> m_next2;
+    QVector<QPair<QString, QString>> m_next2;
     friend pipeline;
 };
 
@@ -277,10 +282,10 @@ public:
     }
 
     template<typename T>
-    static void run(const QString& aName, T aInput, const QJsonObject& aParam = QJsonObject()){
+    static void run(const QString& aName, T aInput, const QString& aTag = ""){
         auto pip = instance()->m_pipes.value(aName);
         if (pip)
-            pip->execute(std::make_shared<stream<T>>(aInput), aParam);
+            pip->execute(std::make_shared<stream<T>>(aInput), aTag);
     }
 
     template<typename T, typename F = pipeFunc<T>>
@@ -305,8 +310,8 @@ private:
 };
 
 template <typename T>
-pipe0* nextF0(pipe0* aPipe, pipeFunc<T> aNextFunc, const QJsonObject& aParam, const QJsonObject& aPipeParam){
-    return aPipe->next(pipeline::add<T>(aNextFunc, aPipeParam), aParam);
+pipe0* nextF0(pipe0* aPipe, pipeFunc<T> aNextFunc, const QString& aTag, const QJsonObject& aParam){
+    return aPipe->next(pipeline::add<T>(aNextFunc, aParam), aTag);
 }
 
 template<typename T, typename F>
@@ -384,7 +389,7 @@ public:
     void doEvent(QJSValue aFunc, std::shared_ptr<stream<T>> aStream){
         if (pipeline::instance()->engine != nullptr && !aFunc.equals(QJsonValue::Null)){
             QJSValueList paramList;
-            qmlStream stm(pipeline::instance()->engine->toScriptValue(aStream->data()), QJsonObject(), aStream->m_cache);
+            qmlStream stm(pipeline::instance()->engine->toScriptValue(aStream->data()), "", aStream->m_cache);
             paramList.append(pipeline::instance()->engine->toScriptValue(QVariant::fromValue<QObject*>(&stm)));
             aFunc.call(paramList);
             auto dt = stm.data();
@@ -403,26 +408,26 @@ public:
                     qFatal("Invalid data type in qmlStream!");
             }
             if (stm.m_outs){
-                aStream->out(stm.m_param);
+                aStream->out(stm.m_tag);
                 for (auto i : *stm.m_outs){
                     if (i.second->data().isObject()){
-                        auto ot = aStream->template out<QJsonObject>(QJsonObject::fromVariantMap(i.second->data().toVariant().toMap()), i.first, i.second->m_param);
+                        auto ot = aStream->template outs<QJsonObject>(QJsonObject::fromVariantMap(i.second->data().toVariant().toMap()), i.first, i.second->m_tag);
                         if (i.second->m_cache != aStream->m_cache)
                             ot->m_cache = i.second->m_cache;
                     }else if (i.second->data().isArray()){
-                        auto ot = aStream->template out<QJsonArray>(QJsonArray::fromVariantList(i.second->data().toVariant().toList()), i.first, i.second->m_param);
+                        auto ot = aStream->template outs<QJsonArray>(QJsonArray::fromVariantList(i.second->data().toVariant().toList()), i.first, i.second->m_tag);
                         if (i.second->m_cache != aStream->m_cache)
                             ot->m_cache = i.second->m_cache;
                     }else if (i.second->data().isNumber()){
-                        auto ot = aStream->template out<double>(i.second->data().toNumber(), i.first, i.second->m_param);
+                        auto ot = aStream->template outs<double>(i.second->data().toNumber(), i.first, i.second->m_tag);
                         if (i.second->m_cache != aStream->m_cache)
                             ot->m_cache = i.second->m_cache;
                     }else if (i.second->data().isBool()){
-                        auto ot = aStream->template out<bool>(i.second->data().toBool(), i.first, i.second->m_param);
+                        auto ot = aStream->template outs<bool>(i.second->data().toBool(), i.first, i.second->m_tag);
                         if (i.second->m_cache != aStream->m_cache)
                             ot->m_cache = i.second->m_cache;
                     }else if (i.second->data().isString()){
-                        auto ot = aStream->template out<QString>(i.second->data().toString(), i.first, i.second->m_param);
+                        auto ot = aStream->template outs<QString>(i.second->data().toString(), i.first, i.second->m_tag);
                         if (i.second->m_cache != aStream->m_cache)
                             ot->m_cache = i.second->m_cache;
                     }else
@@ -512,11 +517,11 @@ private:
 template <typename T, typename F>
 class pipeDelegate : public pipe<T, F>{
 public:
-    pipe0* next(pipe0* aNext, const QJsonObject& aParam = QJsonObject()) override{
-        return pipeline::find(m_delegate)->next(aNext, aParam);
+    pipe0* next(pipe0* aNext, const QString& aTag = "") override{
+        return pipeline::find(m_delegate)->next(aNext, aTag);
     }
-    pipe0* next(const QString& aName, const QJsonObject& aParam = QJsonObject()) override{
-        return pipeline::find(m_delegate)->next(aName, aParam);
+    pipe0* next(const QString& aName, const QString& aTag = "") override{
+        return pipeline::find(m_delegate)->next(aName, aTag);
     }
     void removeNext(const QString& aName) override{
         pipeline::find(m_delegate)->removeNext(aName);
@@ -530,24 +535,24 @@ protected:
             del->insertNext(i.first, i.second);
         return pipe<T, F>::initialize(aFunc, aParam);
     }
-    void insertNext(const QString& aName, const QJsonObject& aParam) override{
-        m_next2.push_back(QPair<QString, QJsonObject>(aName, aParam));
+    void insertNext(const QString& aName, const QString& aTag) override{
+        m_next2.push_back(QPair<QString, QString>(aName, aTag));
     }
 private:
     QString m_delegate;
-    QVector<QPair<QString, QJsonObject>> m_next2;
+    QVector<QPair<QString, QString>> m_next2;
     friend pipeline;
 };
 
 template <typename T, typename F = pipeFunc<T>>
 class pipePartial : public pipe<T, F> {
 public:
-    pipe0* next(pipe0* aNext, const QJsonObject& aParam = QJsonObject()) override{
-        insertNext(aNext->actName(), aParam);
+    pipe0* next(pipe0* aNext, const QString& aTag = "") override{
+        insertNext(aNext->actName(), aTag);
         return aNext;
     }
-    pipe0* next(const QString& aName, const QJsonObject& aParam = QJsonObject()) override{
-        insertNext(aName, aParam);
+    pipe0* next(const QString& aName, const QString& aTag = "") override{
+        insertNext(aName, aTag);
         auto nxt = pipeline::find(aName);
         return nxt;
     }
@@ -559,9 +564,8 @@ protected:
     pipePartial(const QString& aName, int aThreadNo = 0, bool aReplace = false) : pipe<T, F>(aName, aThreadNo, aReplace) {
 
     }
-    void insertNext(const QString& aName, const QJsonObject& aParam) override {
-        auto pre = aParam.value("tag").toString();
-        tryFind(&m_next2, pre)->insert(aName, aParam);
+    void insertNext(const QString& aName, const QString& aTag) override {
+        tryFind(&m_next2, aTag)->insert(aName, aTag);
     }
     /*
      * @nextParam
@@ -575,7 +579,7 @@ protected:
             if (eve->getName() == pipe0::m_name){
                 auto stm = std::dynamic_pointer_cast<stream<T>>(eve->getStream());
                 doEvent(stm);
-                auto tg = eve->getParam().value("tag").toString();
+                auto tg = eve->getTag();
                 if (tg != "")
                     doNextEvent(m_next2.value(tg), stm);
             }
@@ -583,7 +587,7 @@ protected:
         return true;
     }
 private:
-    QHash<QString, QMap<QString, QJsonObject>> m_next2;
+    QHash<QString, QMap<QString, QString>> m_next2;
     friend pipeline;
 };
 
@@ -642,7 +646,7 @@ protected:
                                 m_timer.insert(startTimer(5), i);
                             }
                             else{
-                                QMap<QString, QJsonObject> nxts;
+                                QMap<QString, QString> nxts;
                                 nxts.insert(i, pipe0::m_next.value(i));
                                 doEvent(stm);
                                 pipe0::doNextEvent(nxts, stm);
@@ -663,7 +667,7 @@ protected:
                     auto stm = m_cache.value(key);
                     m_cache.remove(key);
                     m_timer.remove(id);
-                    QMap<QString, QJsonObject> nxts;
+                    QMap<QString, QString> nxts;
                     nxts.insert(key, pipe0::m_next.value(key));
                     doEvent(stm);
                     pipe0::doNextEvent(nxts, stm);

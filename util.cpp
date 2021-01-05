@@ -153,7 +153,7 @@ void progress_display::display_tic(){
         if (_tic < 51) m_os << '*';
         m_os << std::endl;
     }
-    pipeline::run<QJsonObject>("updateCommandlineProgress", rea::Json("ratio", _tic / 51.0), rea::Json("tag", QString::fromStdString(m_nm)));
+    pipeline::run<QJsonObject>("updateCommandlineProgress", rea::Json("ratio", _tic / 51.0), QString::fromStdString(m_nm));
 } // display_tic
 
 }

@@ -25,13 +25,13 @@ pipe0::pipe0(const QString& aName, int aThreadNo, bool aReplace){
     pipeline::instance()->m_pipes.insert(m_name, this);
 }
 
-pipe0* pipe0::next(pipe0* aNext, const QJsonObject& aParam){
-    insertNext(aNext->actName(), aParam);
+pipe0* pipe0::next(pipe0* aNext, const QString& aTag){
+    insertNext(aNext->actName(), aTag);
     return aNext;
 }
 
-pipe0* pipe0::next(const QString& aName, const QJsonObject& aParam){
-    insertNext(aName, aParam);
+pipe0* pipe0::next(const QString& aName, const QString& aTag){
+    insertNext(aName, aTag);
     auto nxt = pipeline::find(aName);
     return nxt;
 }
@@ -40,17 +40,17 @@ void pipe0::removeNext(const QString &aName){
     m_next.remove(aName);
 }
 
-pipe0* pipe0::nextB(pipe0* aNext, const QJsonObject& aParam){
-    next(aNext, aParam);
+pipe0* pipe0::nextB(pipe0* aNext, const QString& aTag){
+    next(aNext, aTag);
     return this;
 }
 
-pipe0* pipe0::nextB(const QString& aName, const QJsonObject& aParam){
-    next(aName, aParam);
+pipe0* pipe0::nextB(const QString& aName, const QString& aTag){
+    next(aName, aTag);
     return this;
 }
 
-void pipe0::doNextEvent(const QMap<QString, QJsonObject>& aNexts, std::shared_ptr<stream0> aStream){
+void pipe0::doNextEvent(const QMap<QString, QString>& aNexts, std::shared_ptr<stream0> aStream){
     auto outs = aStream->m_outs;
     aStream->m_outs = nullptr;
     if (outs){
@@ -60,28 +60,28 @@ void pipe0::doNextEvent(const QMap<QString, QJsonObject>& aNexts, std::shared_pt
                     for (auto j : aNexts.keys()){
                         auto pip = pipeline::find(j, false);
                         if (pip && pip->m_anonymous){
-                            pip->execute(i.second, i.second->m_param.empty() ? aNexts.value(j) : i.second->m_param);
+                            pip->execute(i.second, i.second->m_tag == "" ? aNexts.value(j) : i.second->m_tag);
                         }
                     }
                 }else{
                     if (aNexts.contains(i.first)){
                         auto pip = pipeline::find(i.first, false);
                         if (pip){
-                            pip->execute(i.second, i.second->m_param.empty() ? aNexts.value(i.first) : i.second->m_param);
+                            pip->execute(i.second, i.second->m_tag == "" ? aNexts.value(i.first) : i.second->m_tag);
                         }
                     }else{
                         bool exed = false;
                         for (auto j : aNexts.keys()){
                             auto pip = pipeline::find(j, false);
                             if (pip && pip->localName() == i.first){
-                                pip->execute(i.second, i.second->m_param.empty() ? aNexts.value(i.first) : i.second->m_param);
+                                pip->execute(i.second, i.second->m_tag == "" ? aNexts.value(i.first) : i.second->m_tag);
                                 exed = true;
                             }
                         }
                         if (!exed){
                             auto pip = pipeline::find(i.first, false);
                             if (pip)
-                                pip->execute(i.second, i.second->m_param);
+                                pip->execute(i.second, i.second->m_tag);
                         }
                     }
                 }
@@ -94,13 +94,13 @@ void pipe0::doNextEvent(const QMap<QString, QJsonObject>& aNexts, std::shared_pt
     }
 }
 
-void pipe0::execute(std::shared_ptr<stream0> aStream, const QJsonObject& aParam){
-    pipeline::instance()->addOneLog(m_name);
+void pipe0::execute(std::shared_ptr<stream0> aStream, const QString& aTag){
+    pipeline::instance()->addOneLog(m_name + ";" + aTag);
     if (QThread::currentThread() == m_thread){
-        streamEvent nxt_eve(m_name, aStream, aParam);
+        streamEvent nxt_eve(m_name, aStream, aTag);
         QCoreApplication::sendEvent(this, &nxt_eve);
     }else{
-        auto nxt_eve = std::make_unique<streamEvent>(m_name, aStream, aParam);
+        auto nxt_eve = std::make_unique<streamEvent>(m_name, aStream, aTag);
         QCoreApplication::postEvent(this, nxt_eve.release());  //https://stackoverflow.com/questions/32583078/does-postevent-free-the-event-after-posting-double-free-or-corruption // still memory leak, reason is unknown
     }
 }
@@ -114,17 +114,17 @@ public:
     pipeFuture0(const QString& aName) : pipe0(aName){
     }
 protected:
-    void insertNext(const QString& aName, const QJsonObject& aParam) override{
-        m_next2.push_back(QPair<QString, QJsonObject>(aName, aParam));
+    void insertNext(const QString& aName, const QString& aTag) override{
+        m_next2.push_back(QPair<QString, QString>(aName, aTag));
     }
 private:
-    QVector<QPair<QString, QJsonObject>> m_next2;
+    QVector<QPair<QString, QString>> m_next2;
     QHash<QString, QJsonObject> m_locals;
     friend pipeFuture;
 };
 
-void pipeFuture::insertNext(const QString& aName, const QJsonObject& aParam){
-    m_next2.push_back(QPair<QString, QJsonObject>(aName, aParam));
+void pipeFuture::insertNext(const QString& aName, const QString& aTag){
+    m_next2.push_back(QPair<QString, QString>(aName, aTag));
 }
 
 pipe0* pipeFuture::createLocal(const QString& aName, const QJsonObject& aParam){
@@ -326,7 +326,7 @@ void test1(){
     }, Json("name", "test1"))
         ->next(pipeline::add<int>([](stream<int>* aInput){
             assert(aInput->data() == 3);
-            aInput->out<QString>("Pass: test1", "testSuccess");
+            aInput->outs<QString>("Pass: test1", "testSuccess");
         }))
         ->next("testSuccess");
 
@@ -338,13 +338,13 @@ void test2(){
         assert(aInput->data() == 4);
         std::stringstream ss;
         ss << std::this_thread::get_id();
-        aInput->out<std::string>(ss.str(), "test2_0");
+        aInput->outs<std::string>(ss.str(), "test2_0");
     }, Json("name", "test2"))
         ->next(pipeline::add<std::string>([](stream<std::string>* aInput){
             std::stringstream ss;
             ss << std::this_thread::get_id();
             assert(ss.str() != aInput->data());
-            aInput->out<QString>("Pass: test2", "testSuccess");
+            aInput->outs<QString>("Pass: test2", "testSuccess");
         }, Json("name", "test2_0", "thread", 2)))
         ->next("testSuccess");
 
@@ -352,13 +352,13 @@ void test2(){
 }
 
 static rea::regPip<int> reg_test3([](rea::stream<int>* aInput){
-    aInput->out<QString>("Pass: test3___", "testSuccess");
+    aInput->outs<QString>("Pass: test3___", "testSuccess");
 }, QJsonObject(), "unitTest");
 
 void test3(){
     pipeline::add<int>([](stream<int>* aInput){
         assert(aInput->data() == 66);
-        aInput->out<QString>("test3", "test3_0");
+        aInput->outs<QString>("test3", "test3_0");
     }, Json("name", "test3"))
         ->next("test3_0")
         ->next("testSuccess");
@@ -372,13 +372,13 @@ void test3(){
     rea::pipeline::find("test3_0")
         ->nextF<QString>([](rea::stream<QString>* aInput){
             aInput->out();
-        }, QJsonObject(), Json("name", "test3__"))
+        }, "", Json("name", "test3__"))
         ->next("testSuccess");
 
     pipeline::add<QString>([](stream<QString>* aInput){
         assert(aInput->data() == "test3");
-        aInput->out<QString>("Pass: test3", "testSuccess");
-        aInput->out<QString>("Pass: test3_", "test3__");
+        aInput->outs<QString>("Pass: test3", "testSuccess");
+        aInput->outs<QString>("Pass: test3_", "test3__");
     }, Json("name", "test3_0"));
 
     pipeline::run<int>("test3", 66);
@@ -388,12 +388,12 @@ void test3(){
 void test4(){
     pipeline::add<int>([](stream<int>* aInput){
         assert(aInput->data() == 56);
-        aInput->out<QString>("8", "");
+        aInput->outs<QString>("8", "");
     }, Json("name", "test4"))
         ->nextB(local("test4_0")
                     ->nextB(rea::pipeline::add<QString>([](rea::stream<QString>* aInput){
                                 assert(aInput->data() == "Pass: test4");
-                                aInput->out<QString>("Pass: test4__");
+                                aInput->outs<QString>("Pass: test4__");
                             })->nextB(local("testSuccess"))))
         //->next("test4_0")
         ->next(local("test4_0"))
@@ -402,7 +402,7 @@ void test4(){
     pipeline::add<QString>([](stream<QString>* aInput){
         assert(aInput->data() == "8");
         //aInput->setData("Pass: test4");
-        aInput->out<QString>("Pass: test4");
+        aInput->outs<QString>("Pass: test4");
     }, Json("name", "test4_0"))
         ->next("testFail");
 
@@ -427,7 +427,7 @@ void test5(){
 
     pipeline::add<int>([](stream<int>* aInput){
         assert(aInput->data() == 56);
-        aInput->out<QString>("Pass: test5", "testSuccess");
+        aInput->outs<QString>("Pass: test5", "testSuccess");
     }, Json("name", "test5"));
 
     pipeline::run("test5_0", 66);
@@ -445,16 +445,15 @@ void test6(){
     pipeline::find("test6")
         ->nextB(pipeline::add<int>([](stream<int>* aInput){
                     assert(aInput->data() == 77);
-                    aInput->out<QString>("Pass: test6", "testSuccess");
-                })->nextB("testSuccess"),
-                Json("tag", "service1"))
+                    aInput->outs<QString>("Pass: test6", "testSuccess");
+                })->nextB("testSuccess"), "service1")
         ->next(pipeline::add<int>([](stream<int>* aInput){
             assert(aInput->data() == 77);
-            aInput->out<QString>("Fail: test6", "testFail");
-        }), Json("tag", "service2"))
+            aInput->outs<QString>("Fail: test6", "testFail");
+        }), "service2")
         ->next("testFail");
 
-    pipeline::run("test6", 66, Json("tag", "service1"));
+    pipeline::run("test6", 66, "service1");
 }
 
 void test7(){
@@ -464,7 +463,7 @@ void test7(){
             assert(dt.size() == 2);
             assert(dt.at(0) == 66);
             assert(dt.at(1) == 68);
-            aInput->out<QString>("Pass: test7", "testSuccess");
+            aInput->outs<QString>("Pass: test7", "testSuccess");
         }))
         ->next("testSuccess");
     pipeline::run<int>("test7", 66);
@@ -483,7 +482,7 @@ void test8(){
     pipeline::add<QJsonObject>([](stream<QJsonObject>* aInput){
         assert(aInput->data().value("test8") == "test8");
         assert(aInput->varData<QString>("test8_var") == "test8_var_");
-        aInput->out<QString>("Pass: test8", "testSuccess");
+        aInput->outs<QString>("Pass: test8", "testSuccess");
     }, Json("name", "test8_0"))
         ->next("testSuccess");
 
@@ -496,7 +495,7 @@ void test9(){
         aInput->var<std::shared_ptr<QSet<QThread*>>>("threads", std::make_shared<QSet<QThread*>>())
             ->var<int>("count", 0);
         for (int i = 0; i < 200; ++i)
-            aInput->out<double>(i);
+            aInput->outs<double>(i);
     }, rea::Json("name", "test9"))
         ->next(rea::pipeline::add<double, rea::pipeParallel>([](rea::stream<double>* aInput){
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -513,7 +512,7 @@ void test9(){
             if (cnt == 200){
                 aInput->var<int>("count", cnt + 1);
                 assert(aInput->varData<std::shared_ptr<QSet<QThread*>>>("threads")->size() == 8);
-                aInput->out<QString>("Pass: test9", "testSuccess");
+                aInput->outs<QString>("Pass: test9", "testSuccess");
             }
         });
     rea::pipeline::run<double>("test9", 0);
@@ -523,7 +522,7 @@ void test10(){
     static int cnt = 0;
     rea::pipeline::add<double>([](rea::stream<double>* aInput){
         for (int i = 0; i < 100; ++i)
-            aInput->setData(i)->out<double>(0, "", QJsonObject(), false)->var<int>("count", i);
+            aInput->setData(i)->outs<double>(0, "", "", false)->var<int>("count", i);
     }, rea::Json("name", "test10"))
         ->next(rea::pipeline::add<double, rea::pipeThrottle>([](rea::stream<double>* aInput) {
             aInput->out();
@@ -533,9 +532,9 @@ void test10(){
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
             if (aInput->varData<int>("count") == 99){
                 assert(cnt < 100);
-                aInput->out<QString>("Pass: test10", "testSuccess");
+                aInput->outs<QString>("Pass: test10", "testSuccess");
             }
-        }, QJsonObject(), rea::Json("thread", 6));
+        }, "", rea::Json("thread", 6));
     rea::pipeline::run<double>("test10", 0);
 }
 

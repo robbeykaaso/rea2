@@ -4,38 +4,38 @@
 
 namespace rea {
 
-QVariant qmlPipe::nextEx(QVariant aNext, const QJsonObject& aParam){
+QVariant qmlPipe::nextEx(QVariant aNext, const QString& aTag){
     auto nxt = qobject_cast<qmlPipe*>(qvariant_cast<QObject*>(aNext));
-    pipeline::find(m_pipe)->next(nxt->m_pipe, aParam);
+    pipeline::find(m_pipe)->next(nxt->m_pipe, aTag);
     return aNext;
 }
 
-QVariant qmlPipe::next(QJSValue aNext, const QJsonObject& aParam, const QJsonObject& aPipeParam){
+QVariant qmlPipe::next(QJSValue aNext, const QString& aTag, const QJsonObject& aPipeParam){
     auto ret = createPipe(aNext, aPipeParam);
-    pipeline::find(m_pipe)->next(ret->m_pipe, aParam);
+    pipeline::find(m_pipe)->next(ret->m_pipe, aTag);
     return QVariant::fromValue<QObject*>(ret);
 }
 
-QVariant qmlPipe::nextB(QJSValue aNext, const QJsonObject& aParam, const QJsonObject& aPipeParam){
-    next(aNext, aParam, aPipeParam);
+QVariant qmlPipe::nextB(QJSValue aNext, const QString& aTag, const QJsonObject& aPipeParam){
+    next(aNext, aTag, aPipeParam);
     return QVariant::fromValue<QObject*>(this);
 }
 
-QVariant qmlPipe::next(const QString& aName, const QJsonObject& aParam){
+QVariant qmlPipe::next(const QString& aName, const QString& aTag){
     qmlPipe* ret = new qmlPipe();
-    ret->m_pipe = pipeline::find(m_pipe)->next(aName, aParam)->actName();
+    ret->m_pipe = pipeline::find(m_pipe)->next(aName, aTag)->actName();
     return QVariant::fromValue<QObject*>(ret);
 }
 
-QVariant qmlPipe::nextB(const QString& aName, const QJsonObject& aParam){
-    next(aName, aParam);
+QVariant qmlPipe::nextB(const QString& aName, const QString& aTag){
+    next(aName, aTag);
     return QVariant::fromValue<QObject*>(this);
 }
 
-QVariant qmlPipe::nextL(const QString& aName, const QJsonObject& aParam, const QJsonObject& aPipeParam){
+QVariant qmlPipe::nextL(const QString& aName, const QString& aTag, const QJsonObject& aPipeParam){
     qmlPipe* ret = new qmlPipe();
     ret->m_pipe = pipeline::find(aName)->createLocal(aName, aPipeParam)->actName();
-    pipeline::find(m_pipe)->next(ret->m_pipe, aParam);
+    pipeline::find(m_pipe)->next(ret->m_pipe, aTag);
     return QVariant::fromValue<QObject*>(ret);
 }
 
@@ -79,17 +79,17 @@ pipelineQML::~pipelineQML(){
     }
 }
 
-void pipelineQML::run(const QString& aName, const QJSValue& aInput, const QJsonObject& aParam){
+void pipelineQML::run(const QString& aName, const QJSValue& aInput, const QString& aTag){
     if (aInput.isString())
-        pipeline::run<QString>(aName, aInput.toString(), aParam);
+        pipeline::run<QString>(aName, aInput.toString(), aTag);
     else if (aInput.isBool())
-        pipeline::run<bool>(aName, aInput.toBool(), aParam);
+        pipeline::run<bool>(aName, aInput.toBool(), aTag);
     else if (aInput.isNumber())
-        pipeline::run<double>(aName, aInput.toNumber(), aParam);
+        pipeline::run<double>(aName, aInput.toNumber(), aTag);
     else if (aInput.isArray())
-        pipeline::run<QJsonArray>(aName, QJsonArray::fromVariantList(aInput.toVariant().toList()), aParam);
+        pipeline::run<QJsonArray>(aName, QJsonArray::fromVariantList(aInput.toVariant().toList()), aTag);
     else
-        pipeline::run<QJsonObject>(aName, QJsonObject::fromVariantMap(aInput.toVariant().toMap()), aParam);
+        pipeline::run<QJsonObject>(aName, QJsonObject::fromVariantMap(aInput.toVariant().toMap()), aTag);
 }
 
 void pipelineQML::remove(const QString& aName){
