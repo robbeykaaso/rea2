@@ -16,7 +16,29 @@
 
 namespace rea {
 
-//class stream;
+class stream0;
+class qmlStream;
+class pipeline;
+
+class routine{
+private:
+    routine(const QString& aName);
+    void log(const QString& aLog){
+        m_logs.push_back(aLog);
+    }
+    void fail(){
+        m_fail = true;
+    }
+    void executed(const QString& aCandidate);
+    void addCandidate(const QString& aStart, const QString& aCandidate);
+    std::vector<QString> m_logs;
+    QHash<QString, int> m_candidates;
+    QString m_name;
+    bool m_fail = false;
+    friend stream0;
+    friend qmlStream;
+    friend pipeline;
+};
 
 class pipe0;
 
@@ -28,9 +50,21 @@ public:
     stream0& operator=(const stream0&) = default;
     stream0& operator=(stream0&&) = default;
     virtual ~stream0(){}
+    void fail(){
+        getRoutine()->fail();
+    }
+    void log(const QString& aLog){
+        getRoutine()->log(aLog);
+    }
 protected:
+    routine* getRoutine(){
+        if (!m_routine)
+            qFatal("no this routine!");
+        return m_routine;
+    }
     QString m_tag;
     std::shared_ptr<std::vector<std::pair<QString, std::shared_ptr<stream0>>>> m_outs = nullptr;
+    routine* m_routine = nullptr;
     friend pipe0;
 };
 
@@ -42,12 +76,13 @@ template <typename T>
 class stream : public stream0{
 public:
     stream() : stream0(){}
-    stream(T aInput, const QString& aTag = "", std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> aCache = nullptr) : stream0(aTag){
+    stream(T aInput, const QString& aTag = "", std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> aCache = nullptr, routine* aRoutine = nullptr) : stream0(aTag){
         m_data = aInput;
         if (aCache)
             m_cache = aCache;
         else
             m_cache = std::make_shared<QHash<QString, std::shared_ptr<stream0>>>();
+        m_routine = aRoutine;
     }
     stream<T>* setData(T aData) {
         m_data = aData;
@@ -66,7 +101,7 @@ public:
     stream<S>* outs(S aOut, const QString& aNext = "", const QString& aTag = "", bool aShareCache = true){
         if (!m_outs)
             m_outs = std::make_shared<std::vector<std::pair<QString, std::shared_ptr<stream0>>>>();
-        auto ot = std::make_shared<stream<S>>(aOut, aTag, aShareCache ? m_cache : nullptr);
+        auto ot = std::make_shared<stream<S>>(aOut, aTag, aShareCache ? m_cache : nullptr, m_routine);
         m_outs->push_back(std::pair<QString, std::shared_ptr<stream0>>(aNext, ot));
         return ot.get();
     }
@@ -105,13 +140,14 @@ class qmlStream : public QObject
     Q_OBJECT
 public:
     qmlStream(){}
-    qmlStream(QJSValue aInput, const QString& aTag = "", std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> aCache = nullptr){
+    qmlStream(QJSValue aInput, const QString& aTag = "", std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> aCache = nullptr, routine* aRoutine = nullptr){
         m_data = aInput;
         m_tag = aTag;
         if (aCache)
             m_cache = aCache;
         else
             m_cache = std::make_shared<QHash<QString, std::shared_ptr<stream0>>>();
+        m_routine = aRoutine;
     }
     Q_INVOKABLE QVariant setData(QJSValue aData){
         m_data = aData;
@@ -129,7 +165,7 @@ public:
     Q_INVOKABLE QVariant outs(QJSValue aOut, const QString& aNext = "", const QString& aTag = "", bool aShareCache = true){
         if (!m_outs)
             m_outs = std::make_shared<std::vector<std::pair<QString, std::shared_ptr<qmlStream>>>>();
-        auto ot = std::make_shared<qmlStream>(aOut, aTag, aShareCache ? m_cache : nullptr);
+        auto ot = std::make_shared<qmlStream>(aOut, aTag, aShareCache ? m_cache : nullptr, m_routine);
         m_outs->push_back(std::pair<QString, std::shared_ptr<qmlStream>>(aNext, ot));
         return QVariant::fromValue<QObject*>(ot.get());
     }
@@ -139,11 +175,23 @@ public:
     }
     Q_INVOKABLE QVariant var(const QString& aName, QJSValue aData);
     Q_INVOKABLE QJSValue varData(const QString& aName, const QString& aType = "object");
+    Q_INVOKABLE void fail(){
+        getRoutine()->fail();
+    }
+    Q_INVOKABLE void log(const QString& aLog){
+        getRoutine()->log(aLog);
+    }
 private:
+    routine* getRoutine(){
+        if (!m_routine)
+            qFatal("no this routine!");
+        return m_routine;
+    }
     QJSValue m_data;
     std::shared_ptr<std::vector<std::pair<QString, std::shared_ptr<qmlStream>>>> m_outs = nullptr;
     QString m_tag;
     std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> m_cache;
+    routine* m_routine;
     template<typename T, typename F>
     friend class funcType;
 };
@@ -156,8 +204,6 @@ class pipeDelegate;
 
 template <typename T, typename F = pipeFunc<T>>
 class pipe;
-
-class pipeline;
 
 class pipe0 : public QObject{
 public:
@@ -285,7 +331,7 @@ public:
     static void run(const QString& aName, T aInput, const QString& aTag = ""){
         auto pip = instance()->m_pipes.value(aName);
         if (pip)
-            pip->execute(std::make_shared<stream<T>>(aInput), aTag);
+            pip->execute(std::make_shared<stream<T>>(aInput, "", nullptr, new routine(aName + ";" + aTag)), aTag);
     }
 
     template<typename T, typename F = pipeFunc<T>>
@@ -298,15 +344,14 @@ public:
         }
     }
 private:
-    void addOneLog(const QString& aLog);
     QThread* findThread(int aNo);
     QHash<QString, pipe0*> m_pipes;
     QHash<int, std::shared_ptr<QThread>> m_threads;
-    std::vector<QString> m_logs;
-    size_t m_log_index, m_log_count;
+    QHash<QString, QSet<routine*>> m_routines;
     friend pipe0;
     friend pipeFuture;
     friend crashDump;
+    friend routine;
 };
 
 template <typename T>
@@ -389,7 +434,7 @@ public:
     void doEvent(QJSValue aFunc, std::shared_ptr<stream<T>> aStream){
         if (pipeline::instance()->engine != nullptr && !aFunc.equals(QJsonValue::Null)){
             QJSValueList paramList;
-            qmlStream stm(pipeline::instance()->engine->toScriptValue(aStream->data()), "", aStream->m_cache);
+            qmlStream stm(pipeline::instance()->engine->toScriptValue(aStream->data()), "", aStream->m_cache, aStream->m_routine);
             paramList.append(pipeline::instance()->engine->toScriptValue(QVariant::fromValue<QObject*>(&stm)));
             aFunc.call(paramList);
             auto dt = stm.data();

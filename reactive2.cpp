@@ -6,6 +6,29 @@
 
 namespace rea {
 
+void routine::executed(const QString& aCandidate){
+    auto cnt = m_candidates.value(aCandidate) - 1;
+    if (!cnt){
+        m_candidates.remove(aCandidate);
+        if (!m_candidates.size()){
+            tryFind(&rea::pipeline::instance()->m_routines, m_name)->remove(this);
+            rea::pipeline::call<routine*>("routineFinished", this);
+        }
+    }
+}
+
+void routine::addCandidate(const QString& aStart, const QString& aCandidate){
+    log(aStart + ">" + aCandidate);
+    if (!m_candidates.contains(aCandidate))
+        m_candidates.insert(aCandidate, 0);
+    m_candidates.insert(aCandidate, m_candidates.value(aCandidate) + 1);
+}
+
+routine::routine(const QString& aName){
+    m_name = aName;
+    tryFind(&rea::pipeline::instance()->m_routines, aName)->insert(this);
+}
+
 pipe0::pipe0(const QString& aName, int aThreadNo, bool aReplace){
     m_anonymous = aName == "";
     if (m_anonymous)
@@ -95,7 +118,6 @@ void pipe0::doNextEvent(const QMap<QString, QString>& aNexts, std::shared_ptr<st
 }
 
 void pipe0::execute(std::shared_ptr<stream0> aStream, const QString& aTag){
-    pipeline::instance()->addOneLog(m_name + ";" + aTag);
     if (QThread::currentThread() == m_thread){
         streamEvent nxt_eve(m_name, aStream, aTag);
         QCoreApplication::sendEvent(this, &nxt_eve);
@@ -202,17 +224,6 @@ pipeline* pipeline::instance(){
 
 pipeline::pipeline(){
     QThreadPool::globalInstance()->setMaxThreadCount(8);
-    m_logs = std::vector<QString>(50);
-    m_log_count = 0;
-    m_log_index = 0;
-}
-
-void pipeline::addOneLog(const QString& aLog){
-    m_log_count++;
-    m_logs[m_log_index] = aLog;
-    m_log_index++;
-    if (m_log_index == 50)
-        m_log_index = 0;
 }
 
 pipeline::~pipeline(){
@@ -275,7 +286,7 @@ crashDump::crashDump(){
         auto pip = pipeline::instance();
         QFile fl(".crash");
         if (fl.open(QFile::WriteOnly)){
-            QString cnt = "";
+            /*QString cnt = "";
             auto up = size_t(std::min(50, int(pip->m_log_count)));
             for (size_t i = pip->m_log_index; i < up; ++i)
                 cnt += pip->m_logs[i] + "\n";
@@ -283,7 +294,7 @@ crashDump::crashDump(){
                 for (size_t i = 0; i < pip->m_log_index; ++i)
                     cnt += pip->m_logs[i] + "\n";
             }
-            fl.write(cnt.toUtf8());
+            fl.write(cnt.toUtf8());*/
             fl.close();
         }
     }, rea::Json("name", "crashDump"));
