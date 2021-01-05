@@ -6,62 +6,6 @@
 
 namespace rea {
 
-/*QVariant qmlStream::setData(QJSValue aData) {
-    m_data = aData;
-    return QVariant::fromValue<QObject*>(this);
-}
-
-QJSValue qmlStream::data(){
-    return m_data;
-}
-
-QVariant qmlStream::out(const QJsonObject& aParam){
-    m_out0.push_back(aParam);
-    return QVariant::fromValue<QObject*>(this);
-}
-
-QVariant qmlStream::out(QJSValue aOut, const QString& aNext, const QJsonObject& aParam){
-    m_out1.push_back({aOut, aNext, aParam});
-    return QVariant::fromValue<QObject*>(this);
-}
-
-static rea::regPip<QQmlApplicationEngine*> reg_qmlstream([](rea::stream<QQmlApplicationEngine*>* aInput){
-    qmlRegisterType<qmlStream>("Stream", 1, 0, "Stream");
-    aInput->out();
-}, QJsonObject(), "regQML");
-
-template<typename T>
-void qmlStream::toStreamC(std::shared_ptr<stream<T>> aStream){
-    if (m_data.isString())
-        aStream->setData(m_data.toString());
-    else if (m_data.isNumber())
-        aStream->setData(m_data.toNumber());
-    else if (m_data.isBool())
-        aStream->setData(m_data.toBool());
-    else if (m_data.isArray())
-        aStream->setData(m_data.toVariant().toJsonArray());
-    else if (m_data.isObject())
-        aStream->setData(m_data.toVariant().toJsonObject());
-    else
-        assert(0);
-    for (auto i : m_out0)
-        aStream->out(i);
-    for (auto i : m_out1){
-        if (i.out.isString())
-            aStream->template out<QString>(i.out.toString(), i.next, i.param);
-        else if (i.out.isNumber())
-            aStream->template out<double>(i.out.toNumber(), i.next, i.param);
-        else if (i.out.isBool())
-            aStream->template out<bool>(i.out.toBool(), i.next, i.param);
-        else if (i.out.isArray())
-            aStream->template out<QJsonArray>(i.out.toVariant().toJsonArray(), i.next, i.param);
-        else if (i.out.isObject())
-            aStream->template out<QJsonObject>(i.out.toVariant().toJsonObject(), i.next, i.param);
-        else
-            assert(0);
-    }
-}*/
-
 pipe0::pipe0(const QString& aName, int aThreadNo, bool aReplace){
     m_anonymous = aName == "";
     if (m_anonymous)
@@ -194,7 +138,7 @@ pipeFuture::pipeFuture(const QString& aName) : pipe0 (){
 
     if (pipeline::find(aName + "_pipe_add", false)){  //there will be another pipeFuture before, this future should inherit its records before it is removed
         auto pip = new pipeFuture0(aName);
-        pipeline::run(aName + "_pipe_add", 0);
+        pipeline::call<int>(aName + "_pipe_add", 0);
         for (auto i : pip->m_next2)
             insertNext(i.first, i.second);
         for (auto i : pip->m_locals.keys())
@@ -202,6 +146,7 @@ pipeFuture::pipeFuture(const QString& aName) : pipe0 (){
         pipeline::remove(aName);
     }
     pipeline::add<int>([this, aName](const stream<int>* aInput){
+        auto tmp = aName;
         auto this_event = pipeline::find(aName, false);
         for (auto i : m_next2)
             this_event->insertNext(i.first, i.second);
@@ -210,7 +155,7 @@ pipeFuture::pipeFuture(const QString& aName) : pipe0 (){
             auto loc = this_event->createLocal(aName, m_locals.value(i));
             if (loc){
                 auto pip = new pipeFuture0(i);
-                pipeline::run(i + "_pipe_add", 0);
+                pipeline::call<int>(i + "_pipe_add", 0);
                 for (auto i : pip->m_next2)
                     loc->insertNext(i.first, i.second);
                 pipeline::remove(i);
@@ -371,6 +316,7 @@ regCreateJSPipe(Partial)
 regCreateJSPipe(Delegate)
 regCreateJSPipe(Buffer)
 regCreateJSPipe(Local)
+regCreateJSPipe(Throttle)
 regCreateJSPipe()
 
 void test1(){
@@ -405,6 +351,10 @@ void test2(){
     pipeline::run("test2", 4);
 }
 
+static rea::regPip<int> reg_test3([](rea::stream<int>* aInput){
+    aInput->out<QString>("Pass: test3___", "testSuccess");
+}, QJsonObject(), "unitTest");
+
 void test3(){
     pipeline::add<int>([](stream<int>* aInput){
         assert(aInput->data() == 66);
@@ -413,12 +363,26 @@ void test3(){
         ->next("test3_0")
         ->next("testSuccess");
 
+    pipeline::add<QString>([](rea::stream<QString>* aInput){
+        aInput->out();
+    }, rea::Json("name", "test3_1"))
+        ->next(rea::local("test3__"))
+        ->next("testSuccess");
+
+    rea::pipeline::find("test3_0")
+        ->nextF<QString>([](rea::stream<QString>* aInput){
+            aInput->out();
+        }, QJsonObject(), Json("name", "test3__"))
+        ->next("testSuccess");
+
     pipeline::add<QString>([](stream<QString>* aInput){
         assert(aInput->data() == "test3");
         aInput->out<QString>("Pass: test3", "testSuccess");
+        aInput->out<QString>("Pass: test3_", "test3__");
     }, Json("name", "test3_0"));
 
-    pipeline::run("test3", 66);
+    pipeline::run<int>("test3", 66);
+    pipeline::run<QString>("test3_1", "Pass: test3__");
 }
 
 void test4(){
@@ -598,6 +562,7 @@ void testReactive2(){
 }
 
 static regPip<int> unit_test([](stream<int>* aInput){
+    pipeline::instance()->engine->load(QUrl(QStringLiteral("qrc:/qml/test.qml")));
     testReactive2();
     aInput->out();
 }, rea::Json("name", "unitTest"));

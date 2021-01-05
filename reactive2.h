@@ -260,7 +260,7 @@ public:
         auto tmp = new P<T, S>(nm, aParam.value("thread").toInt(), aParam.value("replace").toBool());  //https://stackoverflow.com/questions/213761/what-are-some-uses-of-template-template-parameters
         if (nm != ""){
             auto ad = tmp->actName() + "_pipe_add";
-            pipeline::run<int>(ad, 0);
+            pipeline::call<int>(ad, 0);
             pipeline::remove(ad);
         }
         tmp->initialize(aFunc, aParam);
@@ -281,6 +281,16 @@ public:
         auto pip = instance()->m_pipes.value(aName);
         if (pip)
             pip->execute(std::make_shared<stream<T>>(aInput), aParam);
+    }
+
+    template<typename T, typename F = pipeFunc<T>>
+    static void call(const QString& aName, T aInput){
+        auto pip = instance()->m_pipes.value(aName);
+        if (pip){
+            auto pip2 = dynamic_cast<pipe<T, F>*>(pip);
+            auto stm = std::make_shared<stream<T>>(aInput);
+            pip2->m_func(stm.get());
+        }
     }
 private:
     void addOneLog(const QString& aLog);

@@ -39,11 +39,8 @@ int main(int argc, char *argv[])
     app.setOrganizationName("somename");
     app.setOrganizationDomain("somename");
 
-    qmlRegisterSingletonType<rea::pipelineQML>("Pipeline2", 1, 0, "Pipeline2", &rea::pipelineQML::qmlInstance);
-
     QQmlApplicationEngine engine;
-    rea::pipeline::instance()->engine = &engine;
-    engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+    rea::pipeline::run<QQmlApplicationEngine*>("regQML", &engine);
 
     rea::pipeline::run<int>("unitTest", 0);
     if (engine.rootObjects().isEmpty())

@@ -161,12 +161,10 @@ static regPip<QQmlApplicationEngine*> reg_recative2_qml([](stream<QQmlApplicatio
 
     //ref from: https://stackoverflow.com/questions/25403363/how-to-implement-a-singleton-provider-for-qmlregistersingletontype
     pipeline::instance()->engine = aInput->data();
-    qmlRegisterSingletonType<pipelineQML>("Pipeline2", 1, 0, "Pipeline2", &pipelineQML::qmlInstance);
-    qmlRegisterType<qmlPipe>("Pipe2", 1, 0, "Pipe2");
+    qmlRegisterSingletonType<pipelineQML>("Pipeline", 1, 0, "Pipeline", &pipelineQML::qmlInstance);
     qmlRegisterType<TextFieldDoubleValidator>("TextFieldDoubleValidator", 1, 0, "TextFieldDoubleValidator");
-    pipeline::instance()->engine->load(QUrl(QStringLiteral("qrc:/qml/test.qml")));
     aInput->out();
-}, rea::Json("name", "install0_pipeline"), "regQML");
+}, rea::Json("name", "regQML"));
 
 static rea::regPip<QQmlApplicationEngine*> init_gui_main([](rea::stream<QQmlApplicationEngine*>* aInput) {
     aInput->data()->load(QUrl(QStringLiteral("qrc:/gui/main.qml")));
