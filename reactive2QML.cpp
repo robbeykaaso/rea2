@@ -4,7 +4,7 @@
 
 namespace rea {
 
-QVariant qmlPipe::nextEx(QVariant aNext, const QString& aTag){
+QVariant qmlPipe::nextP(QVariant aNext, const QString& aTag){
     auto nxt = qobject_cast<qmlPipe*>(qvariant_cast<QObject*>(aNext));
     pipeline::find(m_pipe)->next(nxt->m_pipe, aTag);
     return aNext;
@@ -79,17 +79,17 @@ pipelineQML::~pipelineQML(){
     }
 }
 
-void pipelineQML::run(const QString& aName, const QJSValue& aInput, const QString& aTag){
+void pipelineQML::run(const QString& aName, const QJSValue& aInput, const QString& aTag, bool aRoutine){
     if (aInput.isString())
-        pipeline::run<QString>(aName, aInput.toString(), aTag);
+        pipeline::run<QString>(aName, aInput.toString(), aTag, aRoutine);
     else if (aInput.isBool())
-        pipeline::run<bool>(aName, aInput.toBool(), aTag);
+        pipeline::run<bool>(aName, aInput.toBool(), aTag, aRoutine);
     else if (aInput.isNumber())
-        pipeline::run<double>(aName, aInput.toNumber(), aTag);
+        pipeline::run<double>(aName, aInput.toNumber(), aTag, aRoutine);
     else if (aInput.isArray())
-        pipeline::run<QJsonArray>(aName, QJsonArray::fromVariantList(aInput.toVariant().toList()), aTag);
+        pipeline::run<QJsonArray>(aName, QJsonArray::fromVariantList(aInput.toVariant().toList()), aTag, aRoutine);
     else
-        pipeline::run<QJsonObject>(aName, QJsonObject::fromVariantMap(aInput.toVariant().toMap()), aTag);
+        pipeline::run<QJsonObject>(aName, QJsonObject::fromVariantMap(aInput.toVariant().toMap()), aTag, aRoutine);
 }
 
 void pipelineQML::remove(const QString& aName){

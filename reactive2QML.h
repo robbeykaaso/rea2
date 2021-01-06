@@ -16,7 +16,7 @@ public:
     qmlPipe(){}
 public:
     Q_INVOKABLE QString actName() {return m_pipe;}
-    Q_INVOKABLE QVariant nextEx(QVariant aNext, const QString& aTag = "");
+    Q_INVOKABLE QVariant nextP(QVariant aNext, const QString& aTag = "");
     Q_INVOKABLE QVariant next(QJSValue aNext, const QString& aTag = "", const QJsonObject& aPipeParam = QJsonObject());
     Q_INVOKABLE QVariant nextB(QJSValue aNext, const QString& aTag = "", const QJsonObject& aPipeParam = QJsonObject());
     Q_INVOKABLE QVariant next(const QString& aName, const QString& aTag = "");
@@ -45,7 +45,7 @@ public:
 
         return new pipelineQML();
     }
-    static Q_INVOKABLE void run(const QString& aName, const QJSValue& aInput, const QString& aTag = "");
+    static Q_INVOKABLE void run(const QString& aName, const QJSValue& aInput, const QString& aTag = "", bool aRoutine = true);
     static Q_INVOKABLE void remove(const QString& aName);
     /*
      * @aParam

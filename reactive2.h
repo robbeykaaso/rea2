@@ -21,16 +21,22 @@ class qmlStream;
 class pipeline;
 
 class routine{
-private:
+public:
     routine(const QString& aName);
+    ~routine();
+private:
+    const QString getName(){
+        return m_name;
+    }
+    const QString print();
     void log(const QString& aLog){
         m_logs.push_back(aLog);
     }
     void fail(){
         m_fail = true;
     }
-    void executed(const QString& aCandidate);
-    void addCandidate(const QString& aStart, const QString& aCandidate);
+    void executed(const QString& aPipe);
+    void addTrig(const QString& aStart, const QString& aNext);
     std::vector<QString> m_logs;
     QHash<QString, int> m_candidates;
     QString m_name;
@@ -41,6 +47,13 @@ private:
 };
 
 class pipe0;
+template <typename T>
+class stream;
+template <typename T>
+using pipeFunc = std::function<void(stream<T>*)>;
+
+template <typename T, typename F = pipeFunc<T>>
+class pipe;
 
 class stream0{
 public:
@@ -57,26 +70,36 @@ public:
         getRoutine()->log(aLog);
     }
 protected:
-    routine* getRoutine(){
+    void addTrig(const QString& aStart, const QString& aNext){
+        if (m_routine)
+            m_routine->addTrig(aStart, aNext);
+    }
+    void executed(const QString& aPipe);
+    std::shared_ptr<routine> getRoutine(){
         if (!m_routine)
             qFatal("no this routine!");
         return m_routine;
     }
     QString m_tag;
+    std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> m_cache;
     std::shared_ptr<std::vector<std::pair<QString, std::shared_ptr<stream0>>>> m_outs = nullptr;
-    routine* m_routine = nullptr;
-    friend pipe0;
+    std::shared_ptr<routine> m_routine = nullptr;
+    friend class pipe0;
+    template<typename T, typename F>
+    friend class pipe;
 };
 
 class pipeFuture;
 template<typename T, typename F = QJSValue>
 class funcType;
+template <typename T, typename F = pipeFunc<T>>
+class pipeDelegate;
 
 template <typename T>
 class stream : public stream0{
 public:
     stream() : stream0(){}
-    stream(T aInput, const QString& aTag = "", std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> aCache = nullptr, routine* aRoutine = nullptr) : stream0(aTag){
+    stream(T aInput, const QString& aTag = "", std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> aCache = nullptr, std::shared_ptr<routine> aRoutine = nullptr) : stream0(aTag){
         m_data = aInput;
         if (aCache)
             m_cache = aCache;
@@ -130,9 +153,10 @@ public:
     }
 private:
     T m_data;
-    std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> m_cache;
     template<typename T, typename F>
     friend class funcType;
+    template <typename T, typename F>
+    friend class pipeDelegate;
 };
 
 class qmlStream : public QObject
@@ -140,7 +164,7 @@ class qmlStream : public QObject
     Q_OBJECT
 public:
     qmlStream(){}
-    qmlStream(QJSValue aInput, const QString& aTag = "", std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> aCache = nullptr, routine* aRoutine = nullptr){
+    qmlStream(QJSValue aInput, const QString& aTag = "", std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> aCache = nullptr, std::shared_ptr<routine> aRoutine = nullptr){
         m_data = aInput;
         m_tag = aTag;
         if (aCache)
@@ -182,7 +206,7 @@ public:
         getRoutine()->log(aLog);
     }
 private:
-    routine* getRoutine(){
+    std::shared_ptr<routine> getRoutine(){
         if (!m_routine)
             qFatal("no this routine!");
         return m_routine;
@@ -191,19 +215,10 @@ private:
     std::shared_ptr<std::vector<std::pair<QString, std::shared_ptr<qmlStream>>>> m_outs = nullptr;
     QString m_tag;
     std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> m_cache;
-    routine* m_routine;
+    std::shared_ptr<routine> m_routine;
     template<typename T, typename F>
     friend class funcType;
 };
-
-template <typename T>
-using pipeFunc = std::function<void(stream<T>*)>;
-
-template <typename T, typename F = pipeFunc<T>>
-class pipeDelegate;
-
-template <typename T, typename F = pipeFunc<T>>
-class pipe;
 
 class pipe0 : public QObject{
 public:
@@ -250,6 +265,7 @@ protected:
         QString m_tag;
     };
     pipe0(const QString& aName = "", int aThreadNo = 0, bool aReplace = false);
+    virtual QString workName() {return actName();}
     virtual QString localName() {return "";}
     virtual void insertNext(const QString& aName, const QString& aTag) {
         m_next.insert(aName, aTag);
@@ -261,7 +277,7 @@ protected:
     bool m_anonymous;
     QMap<QString, QString> m_next;
     bool m_busy = false;
-    //std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> m_stream_cache = nullptr;
+    std::shared_ptr<stream0> m_stream_cache = nullptr;
     QThread* m_thread = QThread::currentThread();
 private:
     friend pipeFuture;
@@ -328,10 +344,17 @@ public:
     }
 
     template<typename T>
-    static void run(const QString& aName, T aInput, const QString& aTag = ""){
+    static void run(const QString& aName, T aInput, const QString& aTag = "", bool aRoutine = true){
         auto pip = instance()->m_pipes.value(aName);
-        if (pip)
-            pip->execute(std::make_shared<stream<T>>(aInput, "", nullptr, new routine(aName + ";" + aTag)), aTag);
+        if (pip){
+            auto rt = aRoutine ? std::make_shared<routine>(aName + ";" + aTag) : nullptr;
+            if (rt){
+                auto st = instance()->m_pipes.value("routineStart");
+                if (st)
+                    st->execute(std::make_shared<stream<QString>>(rt->getName()));
+            }
+            pip->execute(std::make_shared<stream<T>>(aInput, "", nullptr, rt), aTag);
+        }
     }
 
     template<typename T, typename F = pipeFunc<T>>
@@ -347,7 +370,6 @@ private:
     QThread* findThread(int aNo);
     QHash<QString, pipe0*> m_pipes;
     QHash<int, std::shared_ptr<QThread>> m_threads;
-    QHash<QString, QSet<routine*>> m_routines;
     friend pipe0;
     friend pipeFuture;
     friend crashDump;
@@ -369,8 +391,8 @@ public:
     void doEvent(F aFunc, std::shared_ptr<stream<T>> aStream){
         aFunc(aStream.get());
     }
-    std::shared_ptr<stream0> createStreamList(std::vector<T>& aDataList){
-        auto stms = std::make_shared<stream<std::vector<T>>>(aDataList);
+    std::shared_ptr<stream0> createStreamList(std::vector<T>& aDataList, std::shared_ptr<stream<T>> aStream){
+        auto stms = std::make_shared<stream<std::vector<T>>>(aDataList, "", aStream->m_cache, aStream->m_routine);
         stms->out();
         return stms;
     }
@@ -481,14 +503,14 @@ public:
             }
         }
     }
-    std::shared_ptr<stream0> createStreamList(std::vector<T>& aDataList){
+    std::shared_ptr<stream0> createStreamList(std::vector<T>& aDataList, std::shared_ptr<stream<T>> aStream){
         QJsonObject lst;
         QString ky = "0";
         for (int i = 0; i < aDataList.size(); ++i){
             lst.insert(ky, QJsonValue(aDataList[i]));
             ky += "0";
         }
-        auto stms = std::make_shared<stream<QJsonObject>>(lst);
+        auto stms = std::make_shared<stream<QJsonObject>>(lst, "", aStream->m_cache, aStream->m_routine);
         stms->out();
         return std::move(stms);
     }
@@ -517,9 +539,18 @@ protected:
         }
         return true;
     }
+    void executed(const std::shared_ptr<stream<T>> aStream){
+        aStream->executed(workName());
+    }
     void doEvent(const std::shared_ptr<stream<T>> aStream){
         m_busy = true;
+        if (m_stream_cache && !aStream->m_routine){
+            aStream->m_routine = m_stream_cache->m_routine;
+            aStream->m_cache = m_stream_cache->m_cache;
+            m_stream_cache = nullptr;
+        }
         funcType<T, F>().doEvent(m_func, aStream);
+        executed(aStream);
         m_busy = false;
     }
 protected:
@@ -552,6 +583,7 @@ protected:
         }
         return true;
     }
+    QString workName() override {return localName();}
     QString localName() override {return m_act_name;}
 private:
     bool m_init = false;
@@ -573,6 +605,19 @@ public:
     }
 protected:
     pipeDelegate(const QString& aName = "", int aThreadNo = 0, bool aReplace = false) : pipe<T, F>(aName, aThreadNo, aReplace) {}
+    bool event( QEvent* e) override{
+        if(e->type()== pipe0::streamEvent::type){
+            auto eve = reinterpret_cast<pipe0::streamEvent*>(e);
+            if (eve->getName() == pipe0::m_name){
+                auto stm0 = eve->getStream();
+                auto stm = std::dynamic_pointer_cast<stream<T>>(stm0);
+                doEvent(stm);
+                stm->addTrig(workName(), m_delegate);
+                pipeline::find(m_delegate)->m_stream_cache = stm0;
+            }
+        }
+        return true;
+    }
     pipe0* initialize(F aFunc, const QJsonObject& aParam = QJsonObject()) override{
         m_delegate = aParam.value("delegate").toString();
         auto del = pipeline::find(m_delegate);
@@ -650,10 +695,12 @@ protected:
         if(e->type()== pipe0::streamEvent::type){
             auto eve = reinterpret_cast<pipe0::streamEvent*>(e);
             if (eve->getName() == pipe0::m_name){
-                auto stm = std::dynamic_pointer_cast<stream<T>>(eve->getStream());
-                m_buffers.push_back(stm->data());
+                auto stm0 = std::dynamic_pointer_cast<stream<T>>(eve->getStream());
+                m_buffers.push_back(stm0->data());
                 if (m_buffers.size() >= m_count){
-                    auto stm = funcType<T, F>().createStreamList(m_buffers);
+                    auto stm = funcType<T, F>().createStreamList(m_buffers, stm0);
+                    for (auto i = 0; i <= m_count; ++i)
+                        executed(stm0);
                     pipe0::doNextEvent(pipe0::m_next, stm);
                     m_buffers.clear();
                 }
@@ -697,8 +744,10 @@ protected:
                                 pipe0::doNextEvent(nxts, stm);
                             }
                         }
-                    }else
+                    }else{
+                        executed(stm);
                         m_cache.insert(i, stm);
+                    }
                 }
             }
         }else if (e->type() == QEvent::Timer){
@@ -811,7 +860,7 @@ pipe0* parallel(const QString& aName){
 
 template <typename T>
 pipe0* buffer(const int aCount = 1, const QString& aName = "", const int aThread = 0){
-    return pipeline::add<T, pipeBuffer>(nullptr, Json("name", aName, "thread", aThread, "param", Json("count", aCount)));
+    return pipeline::add<T, pipeBuffer>(nullptr, Json("name", aName, "thread", aThread, "count", aCount));
 }
 
 #define FUNC(aType, aFunc) \

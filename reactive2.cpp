@@ -6,27 +6,42 @@
 
 namespace rea {
 
-void routine::executed(const QString& aCandidate){
-    auto cnt = m_candidates.value(aCandidate) - 1;
-    if (!cnt){
-        m_candidates.remove(aCandidate);
-        if (!m_candidates.size()){
-            tryFind(&rea::pipeline::instance()->m_routines, m_name)->remove(this);
-            rea::pipeline::call<routine*>("routineFinished", this);
-        }
-    }
+void routine::executed(const QString& aPipe){
+    auto cnt = m_candidates.value(aPipe) - 1;
+    if (!cnt)
+        m_candidates.remove(aPipe);
+    else if (cnt > 0)
+        m_candidates.insert(aPipe, cnt);
 }
 
-void routine::addCandidate(const QString& aStart, const QString& aCandidate){
-    log(aStart + ">" + aCandidate);
-    if (!m_candidates.contains(aCandidate))
-        m_candidates.insert(aCandidate, 0);
-    m_candidates.insert(aCandidate, m_candidates.value(aCandidate) + 1);
+void routine::addTrig(const QString& aStart, const QString& aNext){
+    log(aStart + " > " + aNext);
+    if (!m_candidates.contains(aNext))
+        m_candidates.insert(aNext, 0);
+    m_candidates.insert(aNext, m_candidates.value(aNext) + 1);
 }
 
 routine::routine(const QString& aName){
     m_name = aName;
-    tryFind(&rea::pipeline::instance()->m_routines, aName)->insert(this);
+}
+
+routine::~routine(){
+    rea::pipeline::run<QJsonObject>("routineEnd", rea::Json("name", getName(), "detail", print()), "", false);
+}
+
+void stream0::executed(const QString& aPipe){
+    if (m_routine)
+        m_routine->executed(aPipe);
+}
+
+const QString routine::print(){
+    QString ret = "**********************\n";
+    ret += getName() + "\n";
+    for (auto i : m_logs)
+        ret += i + "\n";
+    for (auto i : m_candidates.keys())
+        ret += "alive: " + i + "*" + QString::number(m_candidates.size()) + "\n";
+    return ret;
 }
 
 pipe0::pipe0(const QString& aName, int aThreadNo, bool aReplace){
@@ -83,6 +98,7 @@ void pipe0::doNextEvent(const QMap<QString, QString>& aNexts, std::shared_ptr<st
                     for (auto j : aNexts.keys()){
                         auto pip = pipeline::find(j, false);
                         if (pip && pip->m_anonymous){
+                            aStream->addTrig(workName(), pip->workName());
                             pip->execute(i.second, i.second->m_tag == "" ? aNexts.value(j) : i.second->m_tag);
                         }
                     }
@@ -90,6 +106,7 @@ void pipe0::doNextEvent(const QMap<QString, QString>& aNexts, std::shared_ptr<st
                     if (aNexts.contains(i.first)){
                         auto pip = pipeline::find(i.first, false);
                         if (pip){
+                            aStream->addTrig(workName(), pip->workName());
                             pip->execute(i.second, i.second->m_tag == "" ? aNexts.value(i.first) : i.second->m_tag);
                         }
                     }else{
@@ -97,22 +114,27 @@ void pipe0::doNextEvent(const QMap<QString, QString>& aNexts, std::shared_ptr<st
                         for (auto j : aNexts.keys()){
                             auto pip = pipeline::find(j, false);
                             if (pip && pip->localName() == i.first){
+                                aStream->addTrig(workName(), pip->workName());
                                 pip->execute(i.second, i.second->m_tag == "" ? aNexts.value(i.first) : i.second->m_tag);
                                 exed = true;
                             }
                         }
                         if (!exed){
                             auto pip = pipeline::find(i.first, false);
-                            if (pip)
+                            if (pip){
+                                aStream->addTrig(workName(), pip->workName());
                                 pip->execute(i.second, i.second->m_tag);
+                            }
                         }
                     }
                 }
         }else
             for (auto i : aNexts.keys()){
                 auto pip = pipeline::find(i, false);
-                if (pip)
+                if (pip){
+                    aStream->addTrig(workName(), pip->workName());
                     pip->execute(aStream, aNexts.value(i));
+                }
             }
     }
 }
@@ -442,7 +464,7 @@ void test5(){
     }, Json("name", "test5"));
 
     pipeline::run("test5_0", 66);
-    pipeline::run("test5", 56);
+    pipeline::run("test5", 56, "", false);
 }
 
 void test6(){
@@ -468,20 +490,21 @@ void test6(){
 }
 
 void test7(){
-    pipeline::add<int, pipeBuffer>(nullptr, Json("name", "test7", "count", 2))
-        ->next(pipeline::add<std::vector<int>>([](stream<std::vector<int>>* aInput){
-            auto dt = aInput->data();
-            assert(dt.size() == 2);
-            assert(dt.at(0) == 66);
-            assert(dt.at(1) == 68);
-            aInput->outs<QString>("Pass: test7", "testSuccess");
-        }))
-        ->next("testSuccess");
-    pipeline::run<int>("test7", 66);
-    pipeline::run<int>("test7", 68);
-
-    pipeline::run<QJsonObject>("test7_", Json("hello", "world"));
-    pipeline::run<QJsonObject>("test7_", Json("hello", "world2"));
+    pipeline::add<int>([](rea::stream<int>* aInput){
+        aInput->outs<int>(66);
+        aInput->outs<int>(68);
+    }, rea::Json("name", "test7"))
+    ->next(buffer<int>(2))
+    ->next(pipeline::add<std::vector<int>>([](stream<std::vector<int>>* aInput){
+        auto dt = aInput->data();
+        assert(dt.size() == 2);
+        assert(dt.at(0) == 66);
+        assert(dt.at(1) == 68);
+        aInput->outs<QString>("Pass: test7", "testSuccess");
+    }))
+    ->next("testSuccess");
+    pipeline::run<int>("test7", 0);
+    pipeline::run<QJsonObject>("test7_", QJsonObject());
 }
 
 void test8(){
@@ -567,13 +590,33 @@ void testReactive2(){
     test6(); // test pipe partial and next/stream param and nextB
     test7(); // test pipe Buffer
     test8(); // test pipe QML
-    test9(); // test pipe parallel
+    //test9(); // test pipe parallel
     test10(); // test pipe throttle
 }
 
 static regPip<int> unit_test([](stream<int>* aInput){
     pipeline::instance()->engine->load(QUrl(QStringLiteral("qrc:/qml/test.qml")));
-    testReactive2();
+
+    static std::vector<QString> routines;
+    rea::pipeline::add<double>([](stream<double>* aInput){
+        testReactive2();
+    }, rea::Json("name", "doUnitTest"));
+
+    rea::pipeline::add<QString>([](stream<QString>* aInput){
+        std::cout << "***routine start***: " << aInput->data().toStdString() << std::endl;
+    }, rea::Json("name", "routineStart"));
+
+    rea::pipeline::add<QJsonObject>([](stream<QJsonObject>* aInput){
+        auto dt = aInput->data();
+        routines.push_back(dt.value("detail").toString());
+        std::cout << "***routine end***: " << dt.value("name").toString().toStdString() << std::endl;
+    }, rea::Json("name", "routineEnd"));
+
+    rea::pipeline::add<double>([](stream<double>* aInput){
+        for (auto i : routines)
+            std::cout << i.toStdString();
+    }, rea::Json("name", "logRoutine"));
+
     aInput->out();
 }, rea::Json("name", "unitTest"));
 
