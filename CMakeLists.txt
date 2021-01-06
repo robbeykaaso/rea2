@@ -13,10 +13,10 @@ find_package(Qt5 COMPONENTS Widgets Core Quick REQUIRED)
 set(my_Sources
     "main.cpp" #WIN32: to disable the console window
     "qml.qrc"
-    "reactive2.h"
-    "reactive2.cpp"
-    "reactive2QML.h"
-    "reactive2QML.cpp"
+    "rea.h"
+    "rea.cpp"
+    "reaQML.h"
+    "reaQML.cpp"
     "util.h"
     "util.cpp"
     )

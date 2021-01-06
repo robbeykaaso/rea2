@@ -1,4 +1,4 @@
-#include "reactive2.h"
+#include "rea.h"
 #include <mutex>
 #include <sstream>
 #include <QFile>
@@ -15,7 +15,8 @@ void routine::executed(const QString& aPipe){
 }
 
 void routine::addTrig(const QString& aStart, const QString& aNext){
-    log(aStart + " > " + aNext);
+    std::lock_guard<std::mutex> gd(m_mutex);
+    m_logs.push_back(aStart + " > " + aNext);
     if (!m_candidates.contains(aNext))
         m_candidates.insert(aNext, 0);
     m_candidates.insert(aNext, m_candidates.value(aNext) + 1);
@@ -26,22 +27,28 @@ routine::routine(const QString& aName){
 }
 
 routine::~routine(){
-    rea::pipeline::run<QJsonObject>("routineEnd", rea::Json("name", getName(), "detail", print()), "", false);
+    rea::pipeline::run<QJsonObject>("routineEnd", rea::Json("name", m_name, "detail", print()), "", false);
 }
 
-void stream0::executed(const QString& aPipe){
-    if (m_routine)
-        m_routine->executed(aPipe);
+void routine::log(const QString& aLog){
+    std::lock_guard<std::mutex> gd(m_mutex);
+    m_logs.push_back(aLog);
 }
 
 const QString routine::print(){
+    std::lock_guard<std::mutex> gd(m_mutex);
     QString ret = "**********************\n";
-    ret += getName() + "\n";
+    ret += m_name + "\n";
     for (auto i : m_logs)
         ret += i + "\n";
     for (auto i : m_candidates.keys())
         ret += "alive: " + i + "*" + QString::number(m_candidates.size()) + "\n";
     return ret;
+}
+
+void stream0::executed(const QString& aPipe){
+    if (m_routine)
+        m_routine->executed(aPipe);
 }
 
 pipe0::pipe0(const QString& aName, int aThreadNo, bool aReplace){
@@ -303,27 +310,6 @@ pipe0* local(const QString& aName, const QJsonObject& aParam){
     return pipeline::find(aName)->createLocal(aName, aParam);
 }
 
-crashDump::crashDump(){
-    pipeline::add<double>([this](rea::stream<double>* aInput){
-        auto pip = pipeline::instance();
-        QFile fl(".crash");
-        if (fl.open(QFile::WriteOnly)){
-            /*QString cnt = "";
-            auto up = size_t(std::min(50, int(pip->m_log_count)));
-            for (size_t i = pip->m_log_index; i < up; ++i)
-                cnt += pip->m_logs[i] + "\n";
-            if (pip->m_log_count > 50){
-                for (size_t i = 0; i < pip->m_log_index; ++i)
-                    cnt += pip->m_logs[i] + "\n";
-            }
-            fl.write(cnt.toUtf8());*/
-            fl.close();
-        }
-    }, rea::Json("name", "crashDump"));
-}
-
-static crashDump dump;
-
 #define regCreateJSPipe(Name) \
 static regPip<std::shared_ptr<ICreateJSPipe>> reg_createJSPipe_##Name([](stream<std::shared_ptr<ICreateJSPipe>>* aInput){ \
     auto dt = aInput->data(); \
@@ -533,10 +519,10 @@ void test9(){
     }, rea::Json("name", "test9"))
         ->next(rea::pipeline::add<double, rea::pipeParallel>([](rea::stream<double>* aInput){
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
-            auto trds = aInput->varData<std::shared_ptr<QSet<QThread*>>>("threads");
-            trds->insert(QThread::currentThread());
             {
                 std::lock_guard<std::mutex> gd(mtx);
+                auto trds = aInput->varData<std::shared_ptr<QSet<QThread*>>>("threads");
+                trds->insert(QThread::currentThread());
                 aInput->var<int>("count", aInput->varData<int>("count") + 1);
             }
             aInput->out();
@@ -590,7 +576,7 @@ void testReactive2(){
     test6(); // test pipe partial and next/stream param and nextB
     test7(); // test pipe Buffer
     test8(); // test pipe QML
-    //test9(); // test pipe parallel
+    test9(); // test pipe parallel
     test10(); // test pipe throttle
 }
 

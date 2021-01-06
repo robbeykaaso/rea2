@@ -1,7 +1,7 @@
-#ifndef REAL_FRAMEWORK_RECATIVE2QML_H_
-#define REAL_FRAMEWORK_RECATIVE2QML_H_
+#ifndef REAQML_H_
+#define REAQML_H_
 
-#include "reactive2.h"
+#include "rea.h"
 #include <QObject>
 #include <QJSValue>
 #include <QQmlEngine>

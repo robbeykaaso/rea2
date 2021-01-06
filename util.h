@@ -1,5 +1,5 @@
-#ifndef REAL_FRAMEWORK_UTIL_H_
-#define REAL_FRAMEWORK_UTIL_H_
+#ifndef REA_UTIL_H_
+#define REA_UTIL_H_
 #include <string>
 #include <QMap>
 #include <QSet>
@@ -15,6 +15,8 @@
 #else
 #define DSTDLL __declspec(dllimport)
 #endif
+
+#define STR(S) #S
 
 namespace rea {
 

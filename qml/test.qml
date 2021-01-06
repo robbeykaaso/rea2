@@ -46,10 +46,10 @@ Window {
         .nextP(Pipeline.add(null, {type: "Buffer", count: 2}))
         .next(function(aInput){
             var dt = aInput.data()
-            console.assert(dt["0"]["hello"] === "world")
-            console.assert(dt["00"]["hello"] === "world2")
+            console.assert(dt[0]["hello"] === "world")
+            console.assert(dt[1]["hello"] === "world2")
             aInput.outs("Pass: test7_")
-        })
+        }, {}, {vtype: []})
         .nextL("testSuccess")
     }
 }
