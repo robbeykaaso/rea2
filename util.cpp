@@ -1,5 +1,5 @@
 #include "util.h"
-#include "rea.h"
+#include "reaC++.h"
 #include <QDir>
 #include <QTime>
 #include <QNetworkInterface>

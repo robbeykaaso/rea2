@@ -4,6 +4,47 @@
 
 namespace rea {
 
+QVariant qmlStream::var(const QString& aName, QJSValue aData){
+    if (aData.isObject())
+        m_cache->insert(aName, std::make_shared<stream<QJsonObject>>(QJsonObject::fromVariantMap(aData.toVariant().toMap())));
+    else if (aData.isArray())
+        m_cache->insert(aName, std::make_shared<stream<QJsonArray>>(QJsonArray::fromVariantList(aData.toVariant().toList())));
+    else if (aData.isNumber())
+        m_cache->insert(aName, std::make_shared<stream<double>>(aData.toNumber()));
+    else if (aData.isBool())
+        m_cache->insert(aName, std::make_shared<stream<bool>>(aData.toBool()));
+    else if (aData.isString())
+        m_cache->insert(aName, std::make_shared<stream<QString>>(aData.toString()));
+    else
+        qFatal("Invalid data type in qmlStream!");
+    return QVariant::fromValue<QObject*>(this);
+}
+
+QJSValue qmlStream::varData(const QString& aName, const QString& aType){
+#define getVarData(TP) \
+{ \
+    auto ret = std::dynamic_pointer_cast<stream<TP>>(m_cache->value(aName)); \
+    if (ret) \
+        return pipeline::instance()->engine->toScriptValue(ret->data()); \
+    else  \
+        return pipeline::instance()->engine->toScriptValue(TP()); \
+}
+
+    if (aType == "object")
+        getVarData(QJsonObject)
+    else if (aType == "array")
+        getVarData(QJsonArray)
+    else if (aType == "string")
+        getVarData(QString)
+    else if (aType == "bool")
+        getVarData(bool)
+    else if (aType == "number")
+        getVarData(double)
+    else
+        qFatal("Invalid data type in qmlStream!");
+    return QJSValue();
+}
+
 QVariant qmlPipe::nextP(QVariant aNext, const QString& aTag){
     auto nxt = qobject_cast<qmlPipe*>(qvariant_cast<QObject*>(aNext));
     pipeline::find(m_pipe)->next(nxt->m_pipe, aTag);
@@ -43,10 +84,9 @@ void qmlPipe::removeNext(const QString& aName){
     pipeline::find(m_pipe)->removeNext(aName);
 }
 
-qmlPipe* qmlPipe::createPipe(QJSValue aFunc, const QJsonObject& aParam){
+qmlPipe* qmlPipe::createPipe(QJSValue aFunc, const QJsonObject& aParam){    
     qmlPipe* ret = new qmlPipe();
     auto tp = aParam.value("type").toString();
-
     auto prm = std::make_shared<ICreateJSPipe>(aParam, aFunc);
     pipeline::run<std::shared_ptr<ICreateJSPipe>>("createJSPipe_" + tp, prm);
     if (prm->param.contains("actname"))
@@ -119,6 +159,32 @@ QString tr0(const QString& aOrigin){
 QVariant pipelineQML::tr(const QString& aOrigin){
     return tr0(aOrigin);
 }
+
+#define regCreateJSPipe(Name) \
+static regPip<std::shared_ptr<ICreateJSPipe>> reg_createJSPipe_##Name([](stream<std::shared_ptr<ICreateJSPipe>>* aInput){ \
+    auto dt = aInput->data(); \
+    auto prm = dt->param; \
+    auto tp = prm.value("vtype").toString("object"); \
+    if (tp == "object"){ \
+        dt->param.insert("actname", pipeline::add<QJsonObject, pipe##Name, QJSValue, QJSValue>(dt->func, prm)->actName()); \
+    }else if (tp == "string") \
+        dt->param.insert("actname", pipeline::add<QString, pipe##Name, QJSValue, QJSValue>(dt->func, prm)->actName()); \
+    else if (tp == "number") \
+        dt->param.insert("actname", pipeline::add<double, pipe##Name, QJSValue, QJSValue>(dt->func, prm)->actName()); \
+    else if (tp == "bool") \
+        dt->param.insert("actname", pipeline::add<bool, pipe##Name, QJSValue, QJSValue>(dt->func, prm)->actName()); \
+    else if (tp == "array") \
+        dt->param.insert("actname", pipeline::add<QJsonArray, pipe##Name, QJSValue, QJSValue>(dt->func, prm)->actName()); \
+    else \
+        assert(0); \
+}, Json("name", STR(createJSPipe_##Name)));
+
+regCreateJSPipe(Partial)
+regCreateJSPipe(Delegate)
+regCreateJSPipe(Buffer)
+regCreateJSPipe(Local)
+regCreateJSPipe(Throttle)
+regCreateJSPipe()
 
 void myMessageOutput(QtMsgType type, const QMessageLogContext& context, const QString& msg)
 {

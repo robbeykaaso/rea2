@@ -9,7 +9,7 @@
 #include <Windows.h>
 #include <QWindow>
 #include <DbgHelp.h>
-#include "rea.h"
+#include "reaC++.h"
 
 LONG ApplicationCrashHandler(EXCEPTION_POINTERS *pException)
 {

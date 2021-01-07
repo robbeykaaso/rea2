@@ -17,19 +17,18 @@
 namespace rea {
 
 class stream0;
-class qmlStream;
 class pipeline;
 
 class routine{
 public:
     routine(const QString& aName);
     ~routine();
-private:
-    const QString print();
     void log(const QString& aLog);
     void fail(){
         m_fail = true;
     }
+private:
+    const QString print();
     void executed(const QString& aPipe);
     void addTrig(const QString& aStart, const QString& aNext);
     std::mutex m_mutex;
@@ -38,7 +37,6 @@ private:
     QString m_name;
     bool m_fail = false;
     friend stream0;
-    friend qmlStream;
     friend pipeline;
 };
 
@@ -86,7 +84,7 @@ protected:
 };
 
 class pipeFuture;
-template<typename T, typename F = QJSValue>
+template<typename T, typename F>
 class funcType;
 template <typename T, typename F = pipeFunc<T>>
 class pipeDelegate;
@@ -153,67 +151,6 @@ private:
     friend class funcType;
     template <typename T, typename F>
     friend class pipeDelegate;
-};
-
-class qmlStream : public QObject
-{
-    Q_OBJECT
-public:
-    qmlStream(){}
-    qmlStream(QJSValue aInput, const QString& aTag = "", std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> aCache = nullptr, std::shared_ptr<routine> aRoutine = nullptr){
-        m_data = aInput;
-        m_tag = aTag;
-        if (aCache)
-            m_cache = aCache;
-        else
-            m_cache = std::make_shared<QHash<QString, std::shared_ptr<stream0>>>();
-        m_routine = aRoutine;
-    }
-    Q_INVOKABLE QVariant setData(QJSValue aData){
-        m_data = aData;
-        return QVariant::fromValue<QObject*>(this);
-    }
-    Q_INVOKABLE QJSValue data(){
-        return m_data;
-    }
-    Q_INVOKABLE QVariant out(const QString& aTag = ""){
-        if (!m_outs)
-            m_outs = std::make_shared<std::vector<std::pair<QString, std::shared_ptr<qmlStream>>>>();
-        m_tag = aTag;
-        return QVariant::fromValue<QObject*>(this);
-    }
-    Q_INVOKABLE QVariant outs(QJSValue aOut, const QString& aNext = "", const QString& aTag = "", bool aShareCache = true){
-        if (!m_outs)
-            m_outs = std::make_shared<std::vector<std::pair<QString, std::shared_ptr<qmlStream>>>>();
-        auto ot = std::make_shared<qmlStream>(aOut, aTag, aShareCache ? m_cache : nullptr, m_routine);
-        m_outs->push_back(std::pair<QString, std::shared_ptr<qmlStream>>(aNext, ot));
-        return QVariant::fromValue<QObject*>(ot.get());
-    }
-    Q_INVOKABLE QVariant outsB(QJSValue aOut, const QString& aNext = "", const QString& aTag = "", bool aShareCache = true){
-        outs(aOut, aNext, aTag, aShareCache);
-        return QVariant::fromValue<QObject*>(this);
-    }
-    Q_INVOKABLE QVariant var(const QString& aName, QJSValue aData);
-    Q_INVOKABLE QJSValue varData(const QString& aName, const QString& aType = "object");
-    Q_INVOKABLE void fail(){
-        getRoutine()->fail();
-    }
-    Q_INVOKABLE void log(const QString& aLog){
-        getRoutine()->log(aLog);
-    }
-private:
-    std::shared_ptr<routine> getRoutine(){
-        if (!m_routine)
-            qFatal("no this routine!");
-        return m_routine;
-    }
-    QJSValue m_data;
-    std::shared_ptr<std::vector<std::pair<QString, std::shared_ptr<qmlStream>>>> m_outs = nullptr;
-    QString m_tag;
-    std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> m_cache;
-    std::shared_ptr<routine> m_routine;
-    template<typename T, typename F>
-    friend class funcType;
 };
 
 class pipe0 : public QObject{
@@ -379,113 +316,12 @@ public:
         return pipeline::add<T, pipeLocal>(nullptr, Json(prm, "name", aName));
     }
     void doEvent(F aFunc, std::shared_ptr<stream<T>> aStream){
-        aFunc(aStream.get());
+       aFunc(aStream.get());
     }
     std::shared_ptr<stream0> createStreamList(std::vector<T>& aDataList, std::shared_ptr<stream<T>> aStream){
         auto stms = std::make_shared<stream<std::vector<T>>>(aDataList, "", aStream->m_cache, aStream->m_routine);
         stms->out();
         return stms;
-    }
-};
-
-template <typename T>
-class valType{
-public:
-    static T data(const QJSValue&){
-        return T();
-    }
-};
-
-template <>
-class valType<QJsonObject>{
-public:
-    static QJsonObject data(const QJSValue& aValue){
-        return QJsonObject::fromVariantMap(aValue.toVariant().toMap());
-    }
-};
-
-template <>
-class valType<QString>{
-public:
-    static QString data(const QJSValue& aValue){
-        return aValue.toString();
-    }
-};
-
-template <>
-class valType<double>{
-public:
-    static double data(const QJSValue& aValue){
-        return aValue.toNumber();
-    }
-};
-
-template <>
-class valType<bool>{
-public:
-    static bool data(const QJSValue& aValue){
-        return aValue.toBool();
-    }
-};
-
-template <>
-class valType<QJsonArray>{
-public:
-    static QJsonArray data(const QJSValue& aValue){
-        return QJsonArray::fromVariantList(aValue.toVariant().toList());
-    }
-};
-
-template<typename T>
-class funcType<T, QJSValue>{
-public:
-    pipe0* createLocal(const QString& aName, const QJsonObject& aParam){
-        auto prm = aParam;
-        return pipeline::add<T, pipeLocal, QJSValue, QJSValue>(QJSValue(), Json(prm, "name", aName));
-    }
-    void doEvent(QJSValue aFunc, std::shared_ptr<stream<T>> aStream){
-        if (pipeline::instance()->engine != nullptr && !aFunc.equals(QJsonValue::Null)){
-            QJSValueList paramList;
-            qmlStream stm(pipeline::instance()->engine->toScriptValue(aStream->data()), "", aStream->m_cache, aStream->m_routine);
-            paramList.append(pipeline::instance()->engine->toScriptValue(QVariant::fromValue<QObject*>(&stm)));
-            aFunc.call(paramList);
-            aStream->setData(valType<T>::data(stm.data()));
-            if (stm.m_outs){
-                aStream->out(stm.m_tag);
-                for (auto i : *stm.m_outs){
-                    if (i.second->data().isObject()){
-                        auto ot = aStream->template outs<QJsonObject>(valType<QJsonObject>::data(i.second->data()), i.first, i.second->m_tag);
-                        if (i.second->m_cache != aStream->m_cache)
-                            ot->m_cache = i.second->m_cache;
-                    }else if (i.second->data().isArray()){
-                        auto ot = aStream->template outs<QJsonArray>(valType<QJsonArray>::data(i.second->data()), i.first, i.second->m_tag);
-                        if (i.second->m_cache != aStream->m_cache)
-                            ot->m_cache = i.second->m_cache;
-                    }else if (i.second->data().isNumber()){
-                        auto ot = aStream->template outs<double>(valType<double>::data(i.second->data()), i.first, i.second->m_tag);
-                        if (i.second->m_cache != aStream->m_cache)
-                            ot->m_cache = i.second->m_cache;
-                    }else if (i.second->data().isBool()){
-                        auto ot = aStream->template outs<bool>(valType<bool>::data(i.second->data()), i.first, i.second->m_tag);
-                        if (i.second->m_cache != aStream->m_cache)
-                            ot->m_cache = i.second->m_cache;
-                    }else if (i.second->data().isString()){
-                        auto ot = aStream->template outs<QString>(valType<QString>::data(i.second->data()), i.first, i.second->m_tag);
-                        if (i.second->m_cache != aStream->m_cache)
-                            ot->m_cache = i.second->m_cache;
-                    }else
-                        qFatal("Invalid data type in qmlStream!");
-                }
-            }
-        }
-    }
-    std::shared_ptr<stream0> createStreamList(std::vector<T>& aDataList, std::shared_ptr<stream<T>> aStream){
-        QJsonArray lst;
-        for (int i = 0; i < aDataList.size(); ++i)
-            lst.push_back(QJsonValue(aDataList[i]));
-        auto stms = std::make_shared<stream<QJsonArray>>(lst, "", aStream->m_cache, aStream->m_routine);
-        stms->out();
-        return std::move(stms);
     }
 };
 
@@ -807,16 +643,6 @@ public:
             rea::pipeline::find(aPrevious)->next(pip);
     }
     QString actName;
-};
-
-struct ICreateJSPipe{
-public:
-    ICreateJSPipe(const QJsonObject& aParam, QJSValue aFunc) {
-        param = aParam;
-        func = aFunc;
-    }
-    QJsonObject param;
-    QJSValue func;
 };
 
 pipe0* local(const QString& aName, const QJsonObject& aParam = QJsonObject());

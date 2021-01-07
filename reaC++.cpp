@@ -1,4 +1,4 @@
-#include "rea.h"
+#include "reaC++.h"
 #include <mutex>
 #include <sstream>
 #include <QFile>
@@ -265,78 +265,9 @@ pipeline::~pipeline(){
         delete i;
 }
 
-QVariant qmlStream::var(const QString& aName, QJSValue aData){
-    if (aData.isObject())
-        m_cache->insert(aName, std::make_shared<stream<QJsonObject>>(QJsonObject::fromVariantMap(aData.toVariant().toMap())));
-    else if (aData.isArray())
-        m_cache->insert(aName, std::make_shared<stream<QJsonArray>>(QJsonArray::fromVariantList(aData.toVariant().toList())));
-    else if (aData.isNumber())
-        m_cache->insert(aName, std::make_shared<stream<double>>(aData.toNumber()));
-    else if (aData.isBool())
-        m_cache->insert(aName, std::make_shared<stream<bool>>(aData.toBool()));
-    else if (aData.isString())
-        m_cache->insert(aName, std::make_shared<stream<QString>>(aData.toString()));
-    else
-        qFatal("Invalid data type in qmlStream!");
-    return QVariant::fromValue<QObject*>(this);
-}
-
-QJSValue qmlStream::varData(const QString& aName, const QString& aType){
-#define getVarData(TP) \
-{ \
-    auto ret = std::dynamic_pointer_cast<stream<TP>>(m_cache->value(aName)); \
-    if (ret) \
-        return pipeline::instance()->engine->toScriptValue(ret->data()); \
-    else  \
-        return pipeline::instance()->engine->toScriptValue(TP()); \
-}
-
-    if (aType == "object")
-        getVarData(QJsonObject)
-    else if (aType == "array")
-        getVarData(QJsonArray)
-    else if (aType == "string")
-        getVarData(QString)
-    else if (aType == "bool")
-        getVarData(bool)
-    else if (aType == "number")
-        getVarData(double)
-    else
-        qFatal("Invalid data type in qmlStream!");
-    return QJSValue();
-}
-
 pipe0* local(const QString& aName, const QJsonObject& aParam){
     return pipeline::find(aName)->createLocal(aName, aParam);
 }
-
-#define regCreateJSPipe(Name) \
-static regPip<std::shared_ptr<ICreateJSPipe>> reg_createJSPipe_##Name([](stream<std::shared_ptr<ICreateJSPipe>>* aInput){ \
-    auto dt = aInput->data(); \
-    auto prm = dt->param; \
-    if (!prm.contains("vtype")){ \
-        dt->param.insert("actname", pipeline::add<QJsonObject, pipe##Name, QJSValue, QJSValue>(dt->func, prm)->actName()); \
-    }else{ \
-        auto tp = prm.value("vtype"); \
-        if (tp.isString()) \
-            dt->param.insert("actname", pipeline::add<QString, pipe##Name, QJSValue, QJSValue>(dt->func, prm)->actName()); \
-        else if (tp.isDouble()) \
-            dt->param.insert("actname", pipeline::add<double, pipe##Name, QJSValue, QJSValue>(dt->func, prm)->actName()); \
-        else if (tp.isBool()) \
-            dt->param.insert("actname", pipeline::add<bool, pipe##Name, QJSValue, QJSValue>(dt->func, prm)->actName()); \
-        else if (tp.isArray()) \
-             dt->param.insert("actname", pipeline::add<QJsonArray, pipe##Name, QJSValue, QJSValue>(dt->func, prm)->actName()); \
-        else \
-            assert(0); \
-    } \
-}, Json("name", STR(createJSPipe_##Name)));
-
-regCreateJSPipe(Partial)
-regCreateJSPipe(Delegate)
-regCreateJSPipe(Buffer)
-regCreateJSPipe(Local)
-regCreateJSPipe(Throttle)
-regCreateJSPipe()
 
 void test1(){
     pipeline::add<int>([](stream<int>* aInput){
@@ -589,13 +520,13 @@ static regPip<int> unit_test([](stream<int>* aInput){
     }, rea::Json("name", "doUnitTest"));
 
     rea::pipeline::add<QString>([](stream<QString>* aInput){
-        std::cout << "***routine start***: " << aInput->data().toStdString() << std::endl;
+        //std::cout << "***routine start***: " << aInput->data().toStdString() << std::endl;
     }, rea::Json("name", "routineStart"));
 
     rea::pipeline::add<QJsonObject>([](stream<QJsonObject>* aInput){
         auto dt = aInput->data();
         routines.push_back(dt.value("detail").toString());
-        std::cout << "***routine end***: " << dt.value("name").toString().toStdString() << std::endl;
+        //std::cout << "***routine end***: " << dt.value("name").toString().toStdString() << std::endl;
     }, rea::Json("name", "routineEnd"));
 
     rea::pipeline::add<double>([](stream<double>* aInput){

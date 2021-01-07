@@ -49,7 +49,7 @@ Window {
             console.assert(dt[0]["hello"] === "world")
             console.assert(dt[1]["hello"] === "world2")
             aInput.outs("Pass: test7_")
-        }, {}, {vtype: []})
+        }, {}, {vtype: "array"})
         .nextL("testSuccess")
     }
 }
