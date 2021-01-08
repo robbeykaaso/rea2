@@ -232,10 +232,5 @@ static regPip<QQmlApplicationEngine*> reg_recative2_qml([](stream<QQmlApplicatio
     aInput->out();
 }, rea::Json("name", "regQML"));
 
-static rea::regPip<QQmlApplicationEngine*> init_gui_main([](rea::stream<QQmlApplicationEngine*>* aInput) {
-    aInput->data()->load(QUrl(QStringLiteral("qrc:/gui/main.qml")));
-    aInput->out();
-}, rea::Json("name", "loadGUIMain"));
-
 }
 

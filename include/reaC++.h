@@ -19,7 +19,7 @@ namespace rea {
 class stream0;
 class pipeline;
 
-class routine{
+class DSTDLL routine{
 public:
     routine(const QString& aName, const QString& aTag);
     ~routine();
@@ -50,7 +50,7 @@ using pipeFunc = std::function<void(stream<T>*)>;
 template <typename T, typename F = pipeFunc<T>>
 class pipe;
 
-class stream0{
+class DSTDLL stream0{
 public:
     stream0(const QString& aTag = "") {m_tag = aTag;}
     stream0(const stream0&) = default;
@@ -154,7 +154,7 @@ private:
     friend class pipeDelegate;
 };
 
-class pipe0 : public QObject{
+class DSTDLL pipe0 : public QObject{
 public:
     virtual ~pipe0(){}
     virtual QString actName() {return m_name;}
@@ -239,7 +239,7 @@ class pipeLocal;
 template <typename T, typename F>
 class pipeParallel;
 
-class pipeline{
+class DSTDLL pipeline{
 public:
     QQmlApplicationEngine *engine = nullptr;
     static pipeline* instance();
@@ -646,7 +646,7 @@ public:
     QString actName;
 };
 
-pipe0* local(const QString& aName, const QJsonObject& aParam = QJsonObject());
+DSTDLL pipe0* local(const QString& aName, const QJsonObject& aParam = QJsonObject());
 template <typename T>
 pipe0* parallel(const QString& aName){
     return pipeline::add<T, pipeParallel>(nullptr, rea::Json("delegate", aName));

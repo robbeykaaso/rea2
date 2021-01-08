@@ -24,7 +24,7 @@ void routine::addTrig(const QString& aStart, const QString& aNext){
 
 routine::routine(const QString& aName, const QString& aTag){
     m_name = aName + ";" + aTag;
-    addTrig(">>", aName);
+    addTrig(aTag, aName);
 }
 
 routine::~routine(){
@@ -38,7 +38,7 @@ void routine::log(const QString& aLog){
 
 const QString routine::print(){
     std::lock_guard<std::mutex> gd(m_mutex);
-    QString ret = "**********     " + m_name + "     **********\n";
+    QString ret = "********************\n";
     for (auto i : m_logs)
         ret += i + "\n";
     for (auto i : m_candidates.keys())
@@ -508,7 +508,7 @@ void testReactive2(){
 }
 
 static regPip<QJsonObject> unit_test([](stream<QJsonObject>* aInput){
-    pipeline::instance()->engine->load(QUrl(QStringLiteral("qrc:/qml/test.qml")));
+    pipeline::instance()->engine->load(QUrl(QStringLiteral("gui/test.qml")));
 
     pipeline::add<QString>([](stream<QString>* aInput){
         std::cout << "Success:" << aInput->data().toStdString() << std::endl;
