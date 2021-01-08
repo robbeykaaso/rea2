@@ -27,9 +27,12 @@ void testSocket(){
 
     pipeline::find("clientBoardcast")  //client end
         ->nextF<QJsonObject>([](rea::stream<QJsonObject>* aInput){
-            if (aInput->data().value("value") == "socket is connected"){
+            auto val = aInput->data().value("value");
+            if (val == "socket is connected")
                 aInput->outs<QJsonObject>(protocal.value(protocal_test).toObject().value("req").toObject(), "callServer");
-            }})
+            else
+                aInput->log("cast value: " + val.toString());
+        })
         ->next("callServer")
         ->nextF<QJsonObject>([](rea::stream<QJsonObject>* aInput){
             auto dt = aInput->data();
@@ -43,7 +46,12 @@ void testSocket(){
                                                           "id", "hello"));
 }
 
-static rea::regPip<int> unit_test([](rea::stream<int>* aInput){
+static rea::regPip<QJsonObject> unit_test([](rea::stream<QJsonObject>* aInput){
+    if (!aInput->data().value("tcp").toBool()){
+        aInput->out();
+        return;
+    }
+
     static rea::normalServer sev(rea::Json("protocal", protocal));
     static rea::normalClient clt;
     testSocket();

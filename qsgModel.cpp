@@ -1121,7 +1121,12 @@ qsgModel::~qsgModel(){
         rea::pipeline::remove(i->actName());
 }
 
-static rea::regPip<int> unit_test([](rea::stream<int>* aInput){
+static rea::regPip<QJsonObject> unit_test([](rea::stream<QJsonObject>* aInput){
+    if (!aInput->data().value("qsg").toBool()){
+        aInput->out();
+        return;
+    }
+
     auto pth = "D:/mywork/qsgboardtest/微信图片_20200916112142.png";
     rea::pipeline::add<QJsonObject>([pth](rea::stream<QJsonObject>* aInput){
         QImage img(pth);

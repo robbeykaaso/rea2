@@ -88,7 +88,7 @@ qmlPipe* qmlPipe::createPipe(QJSValue aFunc, const QJsonObject& aParam){
     qmlPipe* ret = new qmlPipe();
     auto tp = aParam.value("type").toString();
     auto prm = std::make_shared<ICreateJSPipe>(aParam, aFunc);
-    pipeline::run<std::shared_ptr<ICreateJSPipe>>("createJSPipe_" + tp, prm);
+    pipeline::run<std::shared_ptr<ICreateJSPipe>>("createJSPipe_" + tp, prm, "", false);
     if (prm->param.contains("actname"))
         ret->m_pipe = prm->param.value("actname").toString();
     else

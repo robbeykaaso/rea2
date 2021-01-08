@@ -2,6 +2,7 @@
 #define REAL_APPLICATION2_MODBUS_H_
 
 #include "util.h"
+#include "reaC++.h"
 #include <QtSerialBus>
 
 namespace rea {
@@ -15,7 +16,7 @@ public:
         close();
     }
 private:
-    void sendRequest(const QModbusRequest &aRequest, int aServer);
+    void sendRequest(const QModbusRequest &aRequest, int aServer, rea::stream<QJsonObject>* aInput);
     void close();
     QModbusRtuSerialMaster m_modbus;
 };

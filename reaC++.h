@@ -21,14 +21,15 @@ class pipeline;
 
 class routine{
 public:
-    routine(const QString& aName);
+    routine(const QString& aName, const QString& aTag);
     ~routine();
     void log(const QString& aLog);
     void fail(){
         m_fail = true;
     }
-private:
     const QString print();
+    QString getName(){return m_name;}
+private:
     void executed(const QString& aPipe);
     void addTrig(const QString& aStart, const QString& aNext);
     std::mutex m_mutex;
@@ -275,11 +276,11 @@ public:
     static void run(const QString& aName, T aInput, const QString& aTag = "", bool aRoutine = true){
         auto pip = instance()->m_pipes.value(aName);
         if (pip){
-            auto rt = aRoutine ? std::make_shared<routine>(aName + ";" + aTag) : nullptr;
+            auto rt = aRoutine ? std::make_shared<routine>(aName, aTag) : nullptr;
             if (rt){
                 auto st = instance()->m_pipes.value("routineStart");
                 if (st)
-                    st->execute(std::make_shared<stream<QString>>(rt->m_name));
+                    st->execute(std::make_shared<stream<routine*>>(rt.get()));
             }
             pip->execute(std::make_shared<stream<T>>(aInput, "", nullptr, rt), aTag);
         }

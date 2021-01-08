@@ -9,6 +9,8 @@ DiscoveryManager::DiscoveryManager(quint16 aReceivePort, QObject *parent)
 {
     auto adr = QNetworkInterface::allAddresses();
     for (auto i : adr){
+        if (i.protocol() != QAbstractSocket::NetworkLayerProtocol::IPv4Protocol)
+            continue;
         auto sock_ = std::make_shared<QUdpSocket>(this);
         auto ok = sock_->bind(i, aReceivePort, QUdpSocket::ShareAddress);
 

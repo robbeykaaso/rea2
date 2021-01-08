@@ -15,7 +15,7 @@ Window {
             width: 60
             height: 30
             anchors.verticalCenter: parent.verticalCenter
-            text: "UnitTest"
+            text: "TestRea"
             onClicked: Pipeline.run("doUnitTest", 0, "", false)
         }
         Button{

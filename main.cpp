@@ -39,9 +39,12 @@ int main(int argc, char *argv[])
     app.setOrganizationDomain("somename");
 
     QQmlApplicationEngine engine;
-    rea::pipeline::run<QQmlApplicationEngine*>("regQML", &engine);
+    rea::pipeline::run<QQmlApplicationEngine*>("regQML", &engine, "", false);
 
-    rea::pipeline::run<int>("unitTest", 0, "", false);
+    rea::pipeline::run<QJsonObject>("unitTest", rea::Json("rea", true,
+                                                          "qsg", false,
+                                                          "tcp", true,
+                                                          "modbus", true), "", false);
     if (engine.rootObjects().isEmpty())
         return -1;
 

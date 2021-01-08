@@ -25,7 +25,7 @@ normalClient::normalClient(const QJsonObject& aConfig) : QObject()
         m_socket.flush();  //waitForBytesWritten
         while (m_socket.bytesToWrite() > 0)
             std::this_thread::sleep_for(std::chrono::milliseconds(5));
-    }, rea::Json("name", "callServer", "param", rea::Json("delegate", "receiveFromServer")));
+    }, rea::Json("name", "callServer", "delegate", "receiveFromServer"));
 
     rea::pipeline::add<QJsonObject, rea::pipePartial>([](rea::stream<QJsonObject>* aInput){
         aInput->out();
@@ -98,7 +98,7 @@ void normalClient::ReceiveMessage()
         QJsonDocument doc = QJsonDocument::fromJson(msg.toUtf8());
         auto res = doc.object();
         rea::pipeline::run<QJsonObject>("clientBoardcast", rea::Json("value", "receive from server: " + res.value("type").toString()));
-        rea::pipeline::run<QJsonObject>("receiveFromServer", res, res.value("type").toString());
+        rea::pipeline::run<QJsonObject>("receiveFromServer", res, res.value("type").toString(), false);
     }
 }
 

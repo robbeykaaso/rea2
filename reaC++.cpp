@@ -22,8 +22,9 @@ void routine::addTrig(const QString& aStart, const QString& aNext){
     m_candidates.insert(aNext, m_candidates.value(aNext) + 1);
 }
 
-routine::routine(const QString& aName){
-    m_name = aName;
+routine::routine(const QString& aName, const QString& aTag){
+    m_name = aName + ";" + aTag;
+    addTrig(">>", aName);
 }
 
 routine::~routine(){
@@ -37,8 +38,7 @@ void routine::log(const QString& aLog){
 
 const QString routine::print(){
     std::lock_guard<std::mutex> gd(m_mutex);
-    QString ret = "**********************\n";
-    ret += m_name + "\n";
+    QString ret = "**********     " + m_name + "     **********\n";
     for (auto i : m_logs)
         ret += i + "\n";
     for (auto i : m_candidates.keys())
@@ -301,8 +301,13 @@ void test2(){
     pipeline::run("test2", 4);
 }
 
-static rea::regPip<int> reg_test3([](rea::stream<int>* aInput){
+static rea::regPip<QJsonObject> reg_test3([](rea::stream<QJsonObject>* aInput){
+    if (!aInput->data().value("rea").toBool()){
+        aInput->out();
+        return;
+    }
     aInput->outs<QString>("Pass: test3___", "testSuccess");
+    aInput->out();
 }, QJsonObject(), "unitTest");
 
 void test3(){
@@ -490,15 +495,6 @@ void test10(){
 }
 
 void testReactive2(){
-
-    pipeline::add<QString>([](stream<QString>* aInput){
-        std::cout << "Success:" << aInput->data().toStdString() << std::endl;
-    }, Json("name", "testSuccess"));
-
-    pipeline::add<QString>([](stream<QString>* aInput){
-        std::cout << "Fail:" << aInput->data().toStdString() << std::endl;
-    }, Json("name", "testFail"));
-
     test1(); // test anonymous next
     test2(); // test specific next and multithread
     test3(); // test pipe future
@@ -511,27 +507,46 @@ void testReactive2(){
     test10(); // test pipe throttle
 }
 
-static regPip<int> unit_test([](stream<int>* aInput){
+static regPip<QJsonObject> unit_test([](stream<QJsonObject>* aInput){
     pipeline::instance()->engine->load(QUrl(QStringLiteral("qrc:/qml/test.qml")));
 
+    pipeline::add<QString>([](stream<QString>* aInput){
+        std::cout << "Success:" << aInput->data().toStdString() << std::endl;
+    }, Json("name", "testSuccess"));
+
+    pipeline::add<QString>([](stream<QString>* aInput){
+        std::cout << "Fail:" << aInput->data().toStdString() << std::endl;
+    }, Json("name", "testFail"));
+
+    if (!aInput->data().value("rea").toBool()){
+        aInput->out();
+        return;
+    }
+
     static std::vector<QString> routines;
+    static QHash<QString, routine*> alive_routines;
     rea::pipeline::add<double>([](stream<double>* aInput){
         testReactive2();
     }, rea::Json("name", "doUnitTest"));
 
-    rea::pipeline::add<QString>([](stream<QString>* aInput){
+    rea::pipeline::add<routine*>([](stream<routine*>* aInput){
         //std::cout << "***routine start***: " << aInput->data().toStdString() << std::endl;
+        auto rt = aInput->data();
+        alive_routines.insert(rt->getName(), rt);
     }, rea::Json("name", "routineStart"));
 
     rea::pipeline::add<QJsonObject>([](stream<QJsonObject>* aInput){
         auto dt = aInput->data();
         routines.push_back(dt.value("detail").toString());
+        alive_routines.remove(dt.value("name").toString());
         //std::cout << "***routine end***: " << dt.value("name").toString().toStdString() << std::endl;
     }, rea::Json("name", "routineEnd"));
 
     rea::pipeline::add<double>([](stream<double>* aInput){
         for (auto i : routines)
             std::cout << i.toStdString();
+        for (auto i : alive_routines)
+            std::cout << (i->print().toStdString() + "running!\n");
     }, rea::Json("name", "logRoutine"));
 
     aInput->out();
