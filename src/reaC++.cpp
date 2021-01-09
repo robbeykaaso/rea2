@@ -6,7 +6,7 @@
 
 namespace rea {
 
-void routine::executed(const QString& aPipe){
+void transaction::executed(const QString& aPipe){
     auto cnt = m_candidates.value(aPipe) - 1;
     if (!cnt)
         m_candidates.remove(aPipe);
@@ -14,7 +14,7 @@ void routine::executed(const QString& aPipe){
         m_candidates.insert(aPipe, cnt);
 }
 
-void routine::addTrig(const QString& aStart, const QString& aNext){
+void transaction::addTrig(const QString& aStart, const QString& aNext){
     std::lock_guard<std::mutex> gd(m_mutex);
     m_logs.push_back(aStart + " > " + aNext);
     if (!m_candidates.contains(aNext))
@@ -22,21 +22,21 @@ void routine::addTrig(const QString& aStart, const QString& aNext){
     m_candidates.insert(aNext, m_candidates.value(aNext) + 1);
 }
 
-routine::routine(const QString& aName, const QString& aTag){
+transaction::transaction(const QString& aName, const QString& aTag){
     m_name = aName + ";" + aTag;
     addTrig(aTag, aName);
 }
 
-routine::~routine(){
-    rea::pipeline::run<QJsonObject>("routineEnd", rea::Json("name", m_name, "detail", print()), "", false);
+transaction::~transaction(){
+    rea::pipeline::run<QJsonObject>("transactionEnd", rea::Json("name", m_name, "detail", print()), "", false);
 }
 
-void routine::log(const QString& aLog){
+void transaction::log(const QString& aLog){
     std::lock_guard<std::mutex> gd(m_mutex);
     m_logs.push_back(aLog);
 }
 
-const QString routine::print(){
+const QString transaction::print(){
     std::lock_guard<std::mutex> gd(m_mutex);
     QString ret = "********************\n";
     for (auto i : m_logs)
@@ -47,8 +47,8 @@ const QString routine::print(){
 }
 
 void stream0::executed(const QString& aPipe){
-    if (m_routine)
-        m_routine->executed(aPipe);
+    if (m_transaction)
+        m_transaction->executed(aPipe);
 }
 
 pipe0::pipe0(const QString& aName, int aThreadNo, bool aReplace){
@@ -523,31 +523,31 @@ static regPip<QJsonObject> unit_test([](stream<QJsonObject>* aInput){
         return;
     }
 
-    static std::vector<QString> routines;
-    static QHash<QString, routine*> alive_routines;
+    static std::vector<QString> transactions;
+    static QHash<QString, transaction*> alive_transactions;
     rea::pipeline::add<double>([](stream<double>* aInput){
         testReactive2();
     }, rea::Json("name", "doUnitTest"));
 
-    rea::pipeline::add<routine*>([](stream<routine*>* aInput){
-        //std::cout << "***routine start***: " << aInput->data().toStdString() << std::endl;
+    rea::pipeline::add<transaction*>([](stream<transaction*>* aInput){
+        //std::cout << "***transaction start***: " << aInput->data().toStdString() << std::endl;
         auto rt = aInput->data();
-        alive_routines.insert(rt->getName(), rt);
-    }, rea::Json("name", "routineStart"));
+        alive_transactions.insert(rt->getName(), rt);
+    }, rea::Json("name", "transactionStart"));
 
     rea::pipeline::add<QJsonObject>([](stream<QJsonObject>* aInput){
         auto dt = aInput->data();
-        routines.push_back(dt.value("detail").toString());
-        alive_routines.remove(dt.value("name").toString());
-        //std::cout << "***routine end***: " << dt.value("name").toString().toStdString() << std::endl;
-    }, rea::Json("name", "routineEnd"));
+        transactions.push_back(dt.value("detail").toString());
+        alive_transactions.remove(dt.value("name").toString());
+        //std::cout << "***transaction end***: " << dt.value("name").toString().toStdString() << std::endl;
+    }, rea::Json("name", "transactionEnd"));
 
     rea::pipeline::add<double>([](stream<double>* aInput){
-        for (auto i : routines)
+        for (auto i : transactions)
             std::cout << i.toStdString();
-        for (auto i : alive_routines)
+        for (auto i : alive_transactions)
             std::cout << (i->print().toStdString() + "running!\n");
-    }, rea::Json("name", "logRoutine"));
+    }, rea::Json("name", "logTransaction"));
 
     aInput->out();
 }, rea::Json("name", "unitTest"));

@@ -19,10 +19,10 @@ namespace rea {
 class stream0;
 class pipeline;
 
-class DSTDLL routine{
+class DSTDLL transaction{
 public:
-    routine(const QString& aName, const QString& aTag);
-    ~routine();
+    transaction(const QString& aName, const QString& aTag);
+    ~transaction();
     void log(const QString& aLog);
     void fail(){
         m_fail = true;
@@ -59,26 +59,26 @@ public:
     stream0& operator=(stream0&&) = default;
     virtual ~stream0(){}
     void fail(){
-        getRoutine()->fail();
+        getTransaction()->fail();
     }
     void log(const QString& aLog){
-        getRoutine()->log(aLog);
+        getTransaction()->log(aLog);
     }
 protected:
     void addTrig(const QString& aStart, const QString& aNext){
-        if (m_routine)
-            m_routine->addTrig(aStart, aNext);
+        if (m_transaction)
+            m_transaction->addTrig(aStart, aNext);
     }
     void executed(const QString& aPipe);
-    std::shared_ptr<routine> getRoutine(){
-        if (!m_routine)
-            qFatal("no this routine!");
-        return m_routine;
+    std::shared_ptr<transaction> getTransaction(){
+        if (!m_transaction)
+            qFatal("no this transaction!");
+        return m_transaction;
     }
     QString m_tag;
     std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> m_cache;
     std::shared_ptr<std::vector<std::pair<QString, std::shared_ptr<stream0>>>> m_outs = nullptr;
-    std::shared_ptr<routine> m_routine = nullptr;
+    std::shared_ptr<transaction> m_transaction = nullptr;
     friend class pipe0;
     template<typename T, typename F>
     friend class pipe;
@@ -94,13 +94,13 @@ template <typename T>
 class stream : public stream0{
 public:
     stream() : stream0(){}
-    stream(T aInput, const QString& aTag = "", std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> aCache = nullptr, std::shared_ptr<routine> aRoutine = nullptr) : stream0(aTag){
+    stream(T aInput, const QString& aTag = "", std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> aCache = nullptr, std::shared_ptr<transaction> aTransaction = nullptr) : stream0(aTag){
         m_data = aInput;
         if (aCache)
             m_cache = aCache;
         else
             m_cache = std::make_shared<QHash<QString, std::shared_ptr<stream0>>>();
-        m_routine = aRoutine;
+        m_transaction = aTransaction;
     }
     stream<T>* setData(T aData) {
         m_data = aData;
@@ -119,7 +119,7 @@ public:
     stream<S>* outs(S aOut, const QString& aNext = "", const QString& aTag = "", bool aShareCache = true){
         if (!m_outs)
             m_outs = std::make_shared<std::vector<std::pair<QString, std::shared_ptr<stream0>>>>();
-        auto ot = std::make_shared<stream<S>>(aOut, aTag, aShareCache ? m_cache : nullptr, m_routine);
+        auto ot = std::make_shared<stream<S>>(aOut, aTag, aShareCache ? m_cache : nullptr, m_transaction);
         m_outs->push_back(std::pair<QString, std::shared_ptr<stream0>>(aNext, ot));
         return ot.get();
     }
@@ -273,14 +273,14 @@ public:
     }
 
     template<typename T>
-    static void run(const QString& aName, T aInput, const QString& aTag = "", bool aRoutine = true){
+    static void run(const QString& aName, T aInput, const QString& aTag = "", bool aTransaction = true){
         auto pip = instance()->m_pipes.value(aName);
         if (pip){
-            auto rt = aRoutine ? std::make_shared<routine>(aName, aTag) : nullptr;
+            auto rt = aTransaction ? std::make_shared<transaction>(aName, aTag) : nullptr;
             if (rt){
-                auto st = instance()->m_pipes.value("routineStart");
+                auto st = instance()->m_pipes.value("transactionStart");
                 if (st)
-                    st->execute(std::make_shared<stream<routine*>>(rt.get()));
+                    st->execute(std::make_shared<stream<transaction*>>(rt.get()));
             }
             pip->execute(std::make_shared<stream<T>>(aInput, "", nullptr, rt), aTag);
         }
@@ -301,7 +301,7 @@ private:
     QHash<int, std::shared_ptr<QThread>> m_threads;
     friend pipe0;
     friend pipeFuture;
-    friend routine;
+    friend transaction;
 };
 
 template <typename T>
@@ -320,7 +320,7 @@ public:
        aFunc(aStream.get());
     }
     std::shared_ptr<stream0> createStreamList(std::vector<T>& aDataList, std::shared_ptr<stream<T>> aStream){
-        auto stms = std::make_shared<stream<std::vector<T>>>(aDataList, "", aStream->m_cache, aStream->m_routine);
+        auto stms = std::make_shared<stream<std::vector<T>>>(aDataList, "", aStream->m_cache, aStream->m_transaction);
         stms->out();
         return stms;
     }
@@ -354,8 +354,8 @@ protected:
     }
     void doEvent(const std::shared_ptr<stream<T>> aStream){
         m_busy = true;
-        if (m_stream_cache && !aStream->m_routine){
-            aStream->m_routine = m_stream_cache->m_routine;
+        if (m_stream_cache && !aStream->m_transaction){
+            aStream->m_transaction = m_stream_cache->m_transaction;
             aStream->m_cache = m_stream_cache->m_cache;
             m_stream_cache = nullptr;
         }

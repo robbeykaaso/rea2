@@ -2,11 +2,14 @@ import QtQuick 2.12
 import QtQuick.Window 2.12
 import QtQuick.Controls 2.5
 import Pipeline 1.0
+import QtQuick.Controls.Universal 2.3
 
-Window {
-    width: 400
-    height: 200
+ApplicationWindow {
+    width: 800
+    height: 600
     visible: true
+
+    Universal.theme: Universal.Dark
 
     Row{
         anchors.fill: parent
@@ -22,8 +25,8 @@ Window {
             width: 60
             height: 30
             anchors.verticalCenter: parent.verticalCenter
-            text: "Routine"
-            onClicked: Pipeline.run("logRoutine", 0, "", false)
+            text: "transaction"
+            onClicked: Pipeline.run("logTransaction", 0, "", false)
         }
     }
 

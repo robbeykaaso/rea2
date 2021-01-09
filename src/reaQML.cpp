@@ -119,17 +119,17 @@ pipelineQML::~pipelineQML(){
     }
 }
 
-void pipelineQML::run(const QString& aName, const QJSValue& aInput, const QString& aTag, bool aRoutine){
+void pipelineQML::run(const QString& aName, const QJSValue& aInput, const QString& aTag, bool aTransaction){
     if (aInput.isString())
-        pipeline::run<QString>(aName, aInput.toString(), aTag, aRoutine);
+        pipeline::run<QString>(aName, aInput.toString(), aTag, aTransaction);
     else if (aInput.isBool())
-        pipeline::run<bool>(aName, aInput.toBool(), aTag, aRoutine);
+        pipeline::run<bool>(aName, aInput.toBool(), aTag, aTransaction);
     else if (aInput.isNumber())
-        pipeline::run<double>(aName, aInput.toNumber(), aTag, aRoutine);
+        pipeline::run<double>(aName, aInput.toNumber(), aTag, aTransaction);
     else if (aInput.isArray())
-        pipeline::run<QJsonArray>(aName, QJsonArray::fromVariantList(aInput.toVariant().toList()), aTag, aRoutine);
+        pipeline::run<QJsonArray>(aName, QJsonArray::fromVariantList(aInput.toVariant().toList()), aTag, aTransaction);
     else
-        pipeline::run<QJsonObject>(aName, QJsonObject::fromVariantMap(aInput.toVariant().toMap()), aTag, aRoutine);
+        pipeline::run<QJsonObject>(aName, QJsonObject::fromVariantMap(aInput.toVariant().toMap()), aTag, aTransaction);
 }
 
 void pipelineQML::remove(const QString& aName){

@@ -14,14 +14,14 @@ class qmlStream : public QObject
     Q_OBJECT
 public:
     qmlStream(){}
-    qmlStream(QJSValue aInput, const QString& aTag = "", std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> aCache = nullptr, std::shared_ptr<routine> aRoutine = nullptr){
+    qmlStream(QJSValue aInput, const QString& aTag = "", std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> aCache = nullptr, std::shared_ptr<transaction> aTransaction = nullptr){
         m_data = aInput;
         m_tag = aTag;
         if (aCache)
             m_cache = aCache;
         else
             m_cache = std::make_shared<QHash<QString, std::shared_ptr<stream0>>>();
-        m_routine = aRoutine;
+        m_transaction = aTransaction;
     }
     Q_INVOKABLE QVariant setData(QJSValue aData){
         m_data = aData;
@@ -39,7 +39,7 @@ public:
     Q_INVOKABLE QVariant outs(QJSValue aOut, const QString& aNext = "", const QString& aTag = "", bool aShareCache = true){
         if (!m_outs)
             m_outs = std::make_shared<std::vector<std::pair<QString, std::shared_ptr<qmlStream>>>>();
-        auto ot = std::make_shared<qmlStream>(aOut, aTag, aShareCache ? m_cache : nullptr, m_routine);
+        auto ot = std::make_shared<qmlStream>(aOut, aTag, aShareCache ? m_cache : nullptr, m_transaction);
         m_outs->push_back(std::pair<QString, std::shared_ptr<qmlStream>>(aNext, ot));
         return QVariant::fromValue<QObject*>(ot.get());
     }
@@ -50,22 +50,22 @@ public:
     Q_INVOKABLE QVariant var(const QString& aName, QJSValue aData);
     Q_INVOKABLE QJSValue varData(const QString& aName, const QString& aType = "object");
     Q_INVOKABLE void fail(){
-        getRoutine()->fail();
+        getTransaction()->fail();
     }
     Q_INVOKABLE void log(const QString& aLog){
-        getRoutine()->log(aLog);
+        getTransaction()->log(aLog);
     }
 private:
-    std::shared_ptr<routine> getRoutine(){
-        if (!m_routine)
-            qFatal("no this routine!");
-        return m_routine;
+    std::shared_ptr<transaction> getTransaction(){
+        if (!m_transaction)
+            qFatal("no this transaction!");
+        return m_transaction;
     }
     QJSValue m_data;
     std::shared_ptr<std::vector<std::pair<QString, std::shared_ptr<qmlStream>>>> m_outs = nullptr;
     QString m_tag;
     std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> m_cache;
-    std::shared_ptr<routine> m_routine;
+    std::shared_ptr<transaction> m_transaction;
     template<typename T, typename F>
     friend class funcType;
 };
@@ -128,7 +128,7 @@ public:
     void doEvent(QJSValue aFunc, std::shared_ptr<stream<T>> aStream){
         if (pipeline::instance()->engine != nullptr && !aFunc.equals(QJsonValue::Null)){
             QJSValueList paramList;
-            qmlStream stm(pipeline::instance()->engine->toScriptValue(aStream->data()), "", aStream->m_cache, aStream->m_routine);
+            qmlStream stm(pipeline::instance()->engine->toScriptValue(aStream->data()), "", aStream->m_cache, aStream->m_transaction);
             paramList.append(pipeline::instance()->engine->toScriptValue(QVariant::fromValue<QObject*>(&stm)));
             aFunc.call(paramList);
             aStream->setData(valType<T>::data(stm.data()));
@@ -168,7 +168,7 @@ public:
         QJsonArray lst;
         for (int i = 0; i < aDataList.size(); ++i)
             lst.push_back(QJsonValue(aDataList[i]));
-        auto stms = std::make_shared<stream<QJsonArray>>(lst, "", aStream->m_cache, aStream->m_routine);
+        auto stms = std::make_shared<stream<QJsonArray>>(lst, "", aStream->m_cache, aStream->m_transaction);
         stms->out();
         return std::move(stms);
     }
@@ -210,7 +210,7 @@ public:
 
         return new pipelineQML();
     }
-    static Q_INVOKABLE void run(const QString& aName, const QJSValue& aInput, const QString& aTag = "", bool aRoutine = true);
+    static Q_INVOKABLE void run(const QString& aName, const QJSValue& aInput, const QString& aTag = "", bool aTransaction = true);
     static Q_INVOKABLE void remove(const QString& aName);
     /*
      * @aParam

@@ -156,4 +156,47 @@ void progress_display::display_tic(){
     pipeline::run<QJsonObject>("updateCommandlineProgress", rea::Json("ratio", _tic / 51.0), QString::fromStdString(m_nm));
 } // display_tic
 
+struct TimeAspect
+{
+    void Before(int i)
+    {
+        std::cout << "time before" << std::endl;
+    }
+
+    void After(int i)
+    {
+        std::cout <<"time after" << std::endl;
+    }
+};
+
+struct LoggingAspect
+{
+    void Before(int i)
+    {
+        std::cout <<"log before"<< std::endl;
+    }
+
+    void After(int i)
+    {
+        std::cout <<"log after"<< std::endl;
+    }
+};
+
+void foo(int a)
+{
+    std::cout <<"real function: " << a << std::endl;
+}
+
+static rea::regPip<QJsonObject> unit_test([](rea::stream<QJsonObject>* aInput){
+    //https://www.cnblogs.com/qicosmos/p/4772389.html
+    if (!aInput->data().value("aop").toBool()){
+        aInput->out();
+        return;
+    }
+    Invoke<LoggingAspect, TimeAspect>(&foo, 1);
+    std::cout <<"-----------------------"<< std::endl;
+    Invoke<TimeAspect, LoggingAspect>(&foo, 1);
+    aInput->out();
+}, QJsonObject(), "unitTest");
+
 }
