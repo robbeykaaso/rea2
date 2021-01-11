@@ -371,10 +371,8 @@ protected:
             aStream->m_cache = m_stream_cache->m_cache;
             m_stream_cache = nullptr;
         }
-        if (doAspect(m_before, aStream, true)){
-            aStream->m_outs = nullptr;
+        if (doAspect(m_before, aStream, true))
             funcType<T, F>().doEvent(m_func, aStream);
-        }
         executed(aStream);
         if (aStream->m_outs)
             doAspect(m_after, aStream, false);

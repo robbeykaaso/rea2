@@ -48,5 +48,6 @@
         <file>qml/gui/Pipe/TreeNodeView/TreeNodeView.qml</file>
         <file>qml/resource/icon-search.png</file>
         <file>qtquickcontrols2.conf</file>
+        <file>qml/gui/Basic/Gridder0.qml</file>
     </qresource>
 </RCC>

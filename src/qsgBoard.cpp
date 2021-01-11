@@ -47,7 +47,7 @@ void qsgPluginTransform::wheelEvent(QWheelEvent *event){
     rea::pipeline::run<QJsonObject>("updateQSGAttr_" + getParentName(), rea::Json("key", rea::JArray("transform"),
                                                                          "type", "zoom",
                                                                          "dir", event->delta() < 0 ? - 1 : 1,
-                                                                         "center", rea::JArray(m_lastpos.x(), m_lastpos.y())));
+                                                                         "center", rea::JArray(m_lastpos.x(), m_lastpos.y())), "zoomWCS");
 }
 
 void qsgPluginTransform::mousePressEvent(QMouseEvent *event){
@@ -70,7 +70,7 @@ bool qsgPluginTransform::tryMoveWCS(QMouseEvent *event, Qt::MouseButton aFlag){
         auto cur = event->pos();
         rea::pipeline::run<QJsonObject>("updateQSGAttr_" + getParentName(), rea::Json("key", rea::JArray("transform"),
                                                                                       "type", "move",
-                                                                                      "del", rea::JArray(cur.x() - m_lastpos.x(), cur.y() - m_lastpos.y())));
+                                                                                      "del", rea::JArray(cur.x() - m_lastpos.x(), cur.y() - m_lastpos.y())), "moveWCS");
     }
     return ret;
 }
@@ -94,7 +94,7 @@ std::function<void(void)> qsgPluginTransform::removeShape(const QString& aShape,
                                          "type", "del",
                                          "tar", aShape,
                                          "cmd", aCommand,
-                                         "id", id));
+                                         "id", id), "delObject");
         };
     }else
         return nullptr;
@@ -113,7 +113,7 @@ std::function<void(void)> qsgPluginTransform::addPoly(const QString& aShape, con
                                                 "points", aPoints,
                                                 "face", aFace),
                                      "cmd", aCommand,
-                                     "id", id));
+                                     "id", id), "addPoly");
     };
 }
 
@@ -131,7 +131,7 @@ std::function<void(void)> qsgPluginTransform::addEllipse(const QString& aShape, 
                                                 "radius", aRadius,
                                                 "face", 125),
                                      "cmd", aCommand,
-                                     "id", id));
+                                     "id", id), "addEllipse");
     };
 }
 

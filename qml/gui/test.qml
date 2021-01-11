@@ -178,7 +178,7 @@ ApplicationWindow {
                     text: "wholeArrowVisible"
                     onClicked:{
                         checked != checked
-                        Pipeline.run("updateQSGAttr_testbrd", {key: ["arrow", "visible"], val: checked})
+                        Pipeline.run("updateQSGAttr_testbrd", {key: ["arrow", "visible"], val: checked}, "wholeArrowVisible")
                     }
                 }
                 MenuItem{
@@ -186,7 +186,7 @@ ApplicationWindow {
                     text: "wholeArrowPole"
                     onClicked:{
                         checked != checked
-                        Pipeline.run("updateQSGAttr_testbrd", {key: ["arrow", "pole"], val: checked})
+                        Pipeline.run("updateQSGAttr_testbrd", {key: ["arrow", "pole"], val: checked}, "wholeArrowPole")
                     }
                 }
                 MenuItem{
@@ -194,7 +194,7 @@ ApplicationWindow {
                     text: "wholeFaceOpacity"
                     onClicked: {
                         checked != checked
-                        Pipeline.run("updateQSGAttr_testbrd", {key: ["face"], val: checked ? 200 : 0})
+                        Pipeline.run("updateQSGAttr_testbrd", {key: ["face"], val: checked ? 200 : 0}, "wholeFaceOpacity")
                     }
                 }
                 MenuItem{
@@ -202,7 +202,7 @@ ApplicationWindow {
                     text: "wholeTextVisible"
                     onClicked: {
                         checked != checked
-                        Pipeline.run("updateQSGAttr_testbrd", {key: ["text", "visible"], val: checked})
+                        Pipeline.run("updateQSGAttr_testbrd", {key: ["text", "visible"], val: checked}, "wholeTextVisible")
                     }
                 }
                 MenuItem{
@@ -210,7 +210,7 @@ ApplicationWindow {
                     text: "wholeColor"
                     onClicked: {
                         checked != checked
-                        Pipeline.run("updateQSGAttrs_testbrd", [{key: ["color"], val: checked ? "yellow" : "green"}])
+                        Pipeline.run("updateQSGAttrs_testbrd", [{key: ["color"], val: checked ? "yellow" : "green"}], "wholeColor")
                     }
                 }
 
@@ -225,7 +225,7 @@ ApplicationWindow {
                                                                                                          color: "pink",
                                                                                                          caption: "new_obj",
                                                                                                          face: 200
-                                                                                                     }}])
+                                                                                                     }}], "wholeObjects")
                     }
                 }
 
@@ -238,7 +238,7 @@ ApplicationWindow {
                     text: "polyArrowVisible"
                     onClicked:{
                         checked != checked
-                        Pipeline.run("updateQSGAttr_testbrd", {obj: "shp_0", key: ["arrow", "visible"], val: checked})
+                        Pipeline.run("updateQSGAttr_testbrd", {obj: "shp_0", key: ["arrow", "visible"], val: checked}, "polyArrowVisible")
                     }
                 }
                 MenuItem{
@@ -246,7 +246,7 @@ ApplicationWindow {
                     text: "polyArrowPole"
                     onClicked:{
                         checked != checked
-                        Pipeline.run("updateQSGAttr_testbrd", {obj: "shp_0", key: ["arrow", "pole"], val: checked})
+                        Pipeline.run("updateQSGAttr_testbrd", {obj: "shp_0", key: ["arrow", "pole"], val: checked}, "polyArrowPole")
                     }
                 }
                 MenuItem{
@@ -254,7 +254,7 @@ ApplicationWindow {
                     text: "polyFaceOpacity"
                     onClicked: {
                         checked != checked
-                        Pipeline.run("updateQSGAttr_testbrd", {obj: "shp_0", key: ["face"], val: checked ? 200 : 0})
+                        Pipeline.run("updateQSGAttr_testbrd", {obj: "shp_0", key: ["face"], val: checked ? 200 : 0}, "polyFaceOpacity")
                     }
                 }
                 MenuItem{
@@ -262,7 +262,7 @@ ApplicationWindow {
                     text: "polyTextVisible"
                     onClicked: {
                         checked != checked
-                        Pipeline.run("updateQSGAttr_testbrd", {obj: "shp_0", key: ["text", "visible"], val: checked})
+                        Pipeline.run("updateQSGAttr_testbrd", {obj: "shp_0", key: ["text", "visible"], val: checked}, "polyTextVisible")
                     }
                 }
                 MenuItem{
@@ -270,7 +270,7 @@ ApplicationWindow {
                     text: "polyColor"
                     onClicked: {
                         checked != checked
-                        Pipeline.run("updateQSGAttr_testbrd", {obj: "shp_0", key: ["color"], val: checked ? "yellow" : "green"})
+                        Pipeline.run("updateQSGAttr_testbrd", {obj: "shp_0", key: ["color"], val: checked ? "yellow" : "green"}, "polyColor")
                     }
                 }
                 MenuItem{
@@ -278,7 +278,7 @@ ApplicationWindow {
                     text: "polyCaption"
                     onClicked: {
                         checked != checked
-                        Pipeline.run("updateQSGAttr_testbrd", {obj: "shp_0", key: ["caption"], val: checked ? "poly_new" : "poly"})
+                        Pipeline.run("updateQSGAttr_testbrd", {obj: "shp_0", key: ["caption"], val: checked ? "poly_new" : "poly"}, "polyCaption")
                     }
                 }
                 MenuItem{
@@ -286,7 +286,7 @@ ApplicationWindow {
                     text: "polyWidth"
                     onClicked: {
                         checked != checked
-                        Pipeline.run("updateQSGAttr_testbrd", {obj: "shp_0", key: ["width"], val: checked ? 0 : 10})
+                        Pipeline.run("updateQSGAttr_testbrd", {obj: "shp_0", key: ["width"], val: checked ? 0 : 10}, "polyWidth")
                     }
                 }
                 MenuItem{
@@ -294,7 +294,7 @@ ApplicationWindow {
                     text: "polyPoints"
                     onClicked: {
                         checked != checked
-                        Pipeline.run("updateQSGAttr_testbrd", {obj: "shp_0", key: ["points"], val: checked ? [[50, 50, 200, 50, 200, 200, 50, 200, 50, 50], [80, 70, 120, 100, 120, 70, 80, 70]] : [[50, 50, 200, 200, 200, 50, 50, 50]]})
+                        Pipeline.run("updateQSGAttr_testbrd", {obj: "shp_0", key: ["points"], val: checked ? [[50, 50, 200, 50, 200, 200, 50, 200, 50, 50], [80, 70, 120, 100, 120, 70, 80, 70]] : [[50, 50, 200, 200, 200, 50, 50, 50]]}, "polyPoints")
                     }
                 }
                 MenuItem{
@@ -302,7 +302,7 @@ ApplicationWindow {
                     text: "polyStyle"
                     onClicked: {
                         checked != checked
-                        Pipeline.run("updateQSGAttr_testbrd", {obj: "shp_0", key: ["style"], val: checked ? "dash" : "solid"})
+                        Pipeline.run("updateQSGAttr_testbrd", {obj: "shp_0", key: ["style"], val: checked ? "dash" : "solid"}, "polyStyle")
                     }
                 }
                 MenuItem{
@@ -310,7 +310,7 @@ ApplicationWindow {
                     text: "ellipseAngle"
                     onClicked: {
                         checked != checked
-                        Pipeline.run("updateQSGAttr_testbrd", {obj: "shp_1", key: ["angle"], val: checked ? 90 : 20})
+                        Pipeline.run("updateQSGAttr_testbrd", {obj: "shp_1", key: ["angle"], val: checked ? 90 : 20}, "ellipseAngle")
                     }
                 }
                 MenuItem{
@@ -318,7 +318,7 @@ ApplicationWindow {
                     text: "ellipseCenter"
                     onClicked: {
                         checked != checked
-                        Pipeline.run("updateQSGAttr_testbrd", {obj: "shp_1", key: ["center"], val: checked ? [600, 400] : [400, 400]})
+                        Pipeline.run("updateQSGAttr_testbrd", {obj: "shp_1", key: ["center"], val: checked ? [600, 400] : [400, 400]}, "ellipseCenter")
                     }
                 }
                 MenuItem{
@@ -326,7 +326,7 @@ ApplicationWindow {
                     text: "ellipseRadius"
                     onClicked: {
                         checked != checked
-                        Pipeline.run("updateQSGAttr_testbrd", {obj: "shp_1", key: ["radius"], val: checked ? [200, 400] : [300, 200]})
+                        Pipeline.run("updateQSGAttr_testbrd", {obj: "shp_1", key: ["radius"], val: checked ? [200, 400] : [300, 200]}, "ellipseRadius")
                     }
                 }
                 MenuItem{
@@ -334,7 +334,7 @@ ApplicationWindow {
                     text: "ellipseCCW"
                     onClicked: {
                         checked != checked
-                        Pipeline.run("updateQSGAttr_testbrd", {obj: "shp_1", key: ["ccw"], val: checked})
+                        Pipeline.run("updateQSGAttr_testbrd", {obj: "shp_1", key: ["ccw"], val: checked}, "ellipseCCW")
                     }
                 }
                 MenuItem{
@@ -342,7 +342,7 @@ ApplicationWindow {
                     text: "imagePath"
                     onClicked: {
                         checked != checked
-                        Pipeline.run("updateQSGAttr_testbrd", {obj: "img_2", key: ["path"], val: checked ? "F:/3M/B4DT/DF Mark/V1-1.bmp" : "F:/3M/B4DT/DF Mark/V1-2.bmp"})
+                        Pipeline.run("updateQSGAttr_testbrd", {obj: "img_2", key: ["path"], val: checked ? "F:/3M/B4DT/DF Mark/V1-1.bmp" : "F:/3M/B4DT/DF Mark/V1-2.bmp"}, "imagePath")
                     }
                 }
                 MenuItem{
@@ -350,7 +350,7 @@ ApplicationWindow {
                     text: "imageRange"
                     onClicked: {
                         checked != checked
-                        Pipeline.run("updateQSGAttr_testbrd", {obj: "img_2", key: ["range"], val: checked ? [0, 0, 600, 800] : [0, 0, 400, 300]})
+                        Pipeline.run("updateQSGAttr_testbrd", {obj: "img_2", key: ["range"], val: checked ? [0, 0, 600, 800] : [0, 0, 400, 300]}, "imageRange")
                     }
                 }
             }

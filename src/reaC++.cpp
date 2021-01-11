@@ -24,7 +24,7 @@ void transaction::addTrig(const QString& aStart, const QString& aNext){
 
 transaction::transaction(const QString& aName, const QString& aTag){
     m_name = aName + ";" + aTag;
-    //addTrig(aTag, aName);
+    addTrig(aTag, aName);
 }
 
 transaction::~transaction(){
