@@ -199,23 +199,23 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext& context, const QS
     switch (type) {
     case QtDebugMsg:
         fprintf(stderr, "Debug: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
-        rea::pipeline::run<QJsonObject>("addLogRecord", rea::Json("type", "system", "level", "debug", "msg", "Debug: " + ret));
+        rea::pipeline::run<QJsonObject>("addLogRecord", rea::Json("type", "system", "level", "debug", "msg", "Debug: " + ret), "", false);
         break;
     case QtInfoMsg:
         fprintf(stderr, "Info: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
-        rea::pipeline::run<QJsonObject>("addLogRecord", rea::Json("type", "system", "level", "info", "msg", "Info: " + ret));
+        rea::pipeline::run<QJsonObject>("addLogRecord", rea::Json("type", "system", "level", "info", "msg", "Info: " + ret), "", false);
         break;
     case QtWarningMsg:
         fprintf(stderr, "Warning: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
-        rea::pipeline::run<QJsonObject>("addLogRecord", rea::Json("type", "system", "level", "warning", "msg", "Warning: " + ret));
+        rea::pipeline::run<QJsonObject>("addLogRecord", rea::Json("type", "system", "level", "warning", "msg", "Warning: " + ret, "", false));
         break;
     case QtCriticalMsg:
         fprintf(stderr, "Critical: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
-        rea::pipeline::run<QJsonObject>("addLogRecord", rea::Json("type", "system", "level", "critical", "msg", "Critical: " + ret));
+        rea::pipeline::run<QJsonObject>("addLogRecord", rea::Json("type", "system", "level", "critical", "msg", "Critical: " + ret, "", false));
         break;
     case QtFatalMsg:
         fprintf(stderr, "Fatal: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
-        rea::pipeline::run<QJsonObject>("addLogRecord", rea::Json("type", "system", "level", "error", "msg", "Fatal: " + ret));
+        rea::pipeline::run<QJsonObject>("addLogRecord", rea::Json("type", "system", "level", "error", "msg", "Fatal: " + ret, "", false));
         abort();
     }
 }

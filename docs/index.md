@@ -9,6 +9,7 @@
 # Rreference
 * *stream program*  
 * *reactive program*  
+* *aspect oriented program*  
 * *eventloop*  
 * *promise*  
 

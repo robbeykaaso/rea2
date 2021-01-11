@@ -248,7 +248,7 @@ void qsgBoard::setName(const QString& aName){
             addUpdate(m_models.back()->updateQSGAttr(aInput->data()));
             update();
         }else{
-            rea::pipeline::run<QJsonArray>("QSGAttrUpdated_" + m_name, m_updates_modification);
+            rea::pipeline::run<QJsonArray>("QSGAttrUpdated_" + m_name, m_updates_modification, "", false);
             m_updates_modification = QJsonArray();
         }
     }, rea::Json("name", "updateQSGAttr_" + m_name, "delegate", "QSGAttrUpdated_" + m_name));
@@ -262,7 +262,7 @@ void qsgBoard::setName(const QString& aName){
                 addUpdate(m_models.back()->updateQSGAttr(i.toObject()));
             update();
         }else{
-            rea::pipeline::run<QJsonArray>("QSGAttrUpdated_" + m_name, m_updates_modification);
+            rea::pipeline::run<QJsonArray>("QSGAttrUpdated_" + m_name, m_updates_modification, "", false);
             m_updates_modification = QJsonArray();
         }
     }, rea::Json("name", "updateQSGAttrs_" + m_name, "delegate", "QSGAttrUpdated_" + m_name));
@@ -333,7 +333,7 @@ QSGNode* qsgBoard::updatePaintNode(QSGNode* aOldNode, UpdatePaintNodeData* noded
     m_updates.clear();
     m_updates_model_index.clear();
     if (m_updates_modification.size() > 0){
-        rea::pipeline::run<QJsonArray>("QSGAttrUpdated_" + m_name, m_updates_modification);
+        rea::pipeline::run<QJsonArray>("QSGAttrUpdated_" + m_name, m_updates_modification, "", false);
         m_updates_modification = QJsonArray();
     }
     return ret;

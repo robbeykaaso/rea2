@@ -24,7 +24,7 @@ QImage imagePool::readCache(const QString& aPath){
         return ret;
     }
     else
-        return QImage();
+        return QImage(aPath);
 }
 
 }

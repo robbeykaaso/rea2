@@ -24,7 +24,7 @@ void transaction::addTrig(const QString& aStart, const QString& aNext){
 
 transaction::transaction(const QString& aName, const QString& aTag){
     m_name = aName + ";" + aTag;
-    addTrig(aTag, aName);
+    //addTrig(aTag, aName);
 }
 
 transaction::~transaction(){
@@ -38,11 +38,11 @@ void transaction::log(const QString& aLog){
 
 const QString transaction::print(){
     std::lock_guard<std::mutex> gd(m_mutex);
-    QString ret = "********************\n";
+    QString ret = "******************** " + m_name + "\n";
     for (auto i : m_logs)
-        ret += i + "\n";
+        ret += " " + i + "\n";
     for (auto i : m_candidates.keys())
-        ret += "alive: " + i + "*" + QString::number(m_candidates.size()) + "\n";
+        ret += " alive: " + i + "*" + QString::number(m_candidates.size()) + "\n";
     return ret;
 }
 
@@ -192,6 +192,8 @@ pipeFuture::pipeFuture(const QString& aName) : pipe0 (){
         pipeline::call<int>(aName + "_pipe_add", 0);
         for (auto i : pip->m_next2)
             insertNext(i.first, i.second);
+        m_before = pip->m_before;
+        m_after = pip->m_after;
         for (auto i : pip->m_locals.keys())
             m_locals.insert(i, pip->m_locals.value(i));
         pipeline::remove(aName);
@@ -201,6 +203,8 @@ pipeFuture::pipeFuture(const QString& aName) : pipe0 (){
         auto this_event = pipeline::find(aName, false);
         for (auto i : m_next2)
             this_event->insertNext(i.first, i.second);
+        this_event->m_before = m_before;
+        this_event->m_after = m_after;
 
         for (auto i : m_locals.keys()){
             auto loc = this_event->createLocal(aName, m_locals.value(i));
@@ -494,6 +498,40 @@ void test10(){
     rea::pipeline::run<double>("test10", 0);
 }
 
+void test11(){
+    rea::pipeline::add<double>([](rea::stream<double>* aInput){
+        auto dt = aInput->data();
+        assert(dt == 1.0);
+        aInput->setData(dt + 1)->out();
+    }, rea::Json("name", "test__11", "before", "test_11"));
+
+    rea::pipeline::add<double>([](rea::stream<double>* aInput){
+        auto dt = aInput->data();
+        assert(dt == 2.0);
+        aInput->setData(dt + 1)->out();
+    }, rea::Json("name", "test_11", "before", "test11"));
+
+    rea::pipeline::add<double>([](rea::stream<double>* aInput){
+        auto dt = aInput->data();
+        assert(dt == 3.0);
+        aInput->setData(dt + 1)->out();
+    }, rea::Json("name", "test11"));
+
+    rea::pipeline::add<double>([](rea::stream<double>* aInput){
+        auto dt = aInput->data();
+        assert(dt == 4.0);
+        aInput->setData(dt + 1)->out();
+    }, rea::Json("name", "test11_", "after", "test11"));
+
+    rea::pipeline::add<double>([](rea::stream<double>* aInput){
+        auto dt = aInput->data();
+        assert(dt == 5.0);
+        aInput->outs<QString>("Pass: test11", "testSuccess");
+    }, rea::Json("name", "test11__", "after", "test11_"));
+
+    rea::pipeline::run<double>("test11", 1);
+}
+
 void testReactive2(){
     test1(); // test anonymous next
     test2(); // test specific next and multithread
@@ -505,6 +543,7 @@ void testReactive2(){
     test8(); // test pipe QML
     test9(); // test pipe parallel
     test10(); // test pipe throttle
+    test11(); //test pipe aop
 }
 
 static regPip<QJsonObject> unit_test([](stream<QJsonObject>* aInput){
@@ -537,16 +576,30 @@ static regPip<QJsonObject> unit_test([](stream<QJsonObject>* aInput){
 
     rea::pipeline::add<QJsonObject>([](stream<QJsonObject>* aInput){
         auto dt = aInput->data();
+        auto nm = dt.value("name").toString();
         transactions.push_back(dt.value("detail").toString());
-        alive_transactions.remove(dt.value("name").toString());
+        alive_transactions.remove(nm);
         //std::cout << "***transaction end***: " << dt.value("name").toString().toStdString() << std::endl;
     }, rea::Json("name", "transactionEnd"));
 
     rea::pipeline::add<double>([](stream<double>* aInput){
-        for (auto i : transactions)
-            std::cout << i.toStdString();
-        for (auto i : alive_transactions)
-            std::cout << (i->print().toStdString() + "running!\n");
+        if (aInput->data()){
+            QString ret = "";
+            for (auto i : transactions)
+                ret += i;
+            for (auto i : alive_transactions)
+                ret += (i->print() + "running!\n");
+            QFile sv("transaction.txt");
+            if (sv.open(QFile::WriteOnly)){
+                sv.write(ret.toUtf8());
+                sv.close();
+            }
+        }else{
+            for (auto i : transactions)
+                std::cout << i.toStdString();
+            for (auto i : alive_transactions)
+                std::cout << (i->print().toStdString() + "running!\n");
+        }
     }, rea::Json("name", "logTransaction"));
 
     aInput->out();

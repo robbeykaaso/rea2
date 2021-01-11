@@ -1181,8 +1181,7 @@ static rea::regPip<QJsonObject> unit_test([](rea::stream<QJsonObject>* aInput){
             cfg.insert(i, view.value(i));
 
         aInput->outs<QJsonObject>(cfg, "updateQSGModel_testbrd");
-    }, rea::Json("name", "testQSGShow"))
-    ->next("updateQSGModel_testbrd");
+    }, rea::Json("name", "testQSGShow"));
 
     rea::pipeline::add<QJsonObject>([pth](rea::stream<QJsonObject>* aInput){
         QImage img(pth);
@@ -1199,6 +1198,18 @@ static rea::regPip<QJsonObject> unit_test([](rea::stream<QJsonObject>* aInput){
             rea::pipeline::run<QJsonObject>("updateQSGModel_testbrd", cfg);
         }
     }, rea::Json("name", "testFPS", "thread", 5));
+
+    rea::pipeline::add<transaction*>([](stream<transaction*>* aInput){
+        auto rt = aInput->data();
+        if (rt->getName() != "updateQSGPos_testbrd;")
+            aInput->out();
+    }, rea::Json("name", "filterUpdateQSGPosS", "before", "transactionStart"));
+
+    rea::pipeline::add<QJsonObject>([](stream<QJsonObject>* aInput){
+        auto dt = aInput->data();
+        if (dt.value("name") != "updateQSGPos_testbrd;")
+            aInput->out();
+    }, rea::Json("name", "filterUpdateQSGPosE", "before", "transactionEnd"));
 }, QJsonObject(), "unitTest");
 
 }

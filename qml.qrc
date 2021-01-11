@@ -46,5 +46,7 @@
         <file>qml/gui/Pipe/TreeNodeView/TreeNodeDelete.qml</file>
         <file>qml/gui/Pipe/TreeNodeView/TreeNodeTag.qml</file>
         <file>qml/gui/Pipe/TreeNodeView/TreeNodeView.qml</file>
+        <file>qml/resource/icon-search.png</file>
+        <file>qtquickcontrols2.conf</file>
     </qresource>
 </RCC>

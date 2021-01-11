@@ -59,10 +59,12 @@ public:
     stream0& operator=(stream0&&) = default;
     virtual ~stream0(){}
     void fail(){
-        getTransaction()->fail();
+        if (m_transaction)
+            m_transaction->fail();
     }
     void log(const QString& aLog){
-        getTransaction()->log(aLog);
+        if (m_transaction)
+            m_transaction->log(aLog);
     }
 protected:
     void addTrig(const QString& aStart, const QString& aNext){
@@ -70,11 +72,6 @@ protected:
             m_transaction->addTrig(aStart, aNext);
     }
     void executed(const QString& aPipe);
-    std::shared_ptr<transaction> getTransaction(){
-        if (!m_transaction)
-            qFatal("no this transaction!");
-        return m_transaction;
-    }
     QString m_tag;
     std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> m_cache;
     std::shared_ptr<std::vector<std::pair<QString, std::shared_ptr<stream0>>>> m_outs = nullptr;
@@ -113,6 +110,10 @@ public:
             m_outs = std::make_shared<std::vector<std::pair<QString, std::shared_ptr<stream0>>>>();
         m_tag = aTag;
         return this;
+    }
+
+    void noOut(){
+        m_outs = nullptr;
     }
 
     template<typename S>
@@ -210,6 +211,7 @@ protected:
     QString m_name;
     bool m_anonymous;
     QMap<QString, QString> m_next;
+    QString m_before = "", m_after = "";
     bool m_busy = false;
     std::shared_ptr<stream0> m_stream_cache = nullptr;
     QThread* m_thread = QThread::currentThread();
@@ -261,6 +263,14 @@ public:
         }
         tmp->initialize(aFunc, aParam);
         pipe0* ret = tmp;
+
+        auto bf = aParam.value("before").toString();
+        if (bf != "")
+            find(bf)->m_before = ret->actName();
+        auto af = aParam.value("after").toString();
+        if (af != "")
+            find(af)->m_after = ret->actName();
+
         return ret;
     }
 
@@ -302,6 +312,8 @@ private:
     friend pipe0;
     friend pipeFuture;
     friend transaction;
+    template<typename T, typename F>
+    friend class pipe;
 };
 
 template <typename T>
@@ -359,8 +371,13 @@ protected:
             aStream->m_cache = m_stream_cache->m_cache;
             m_stream_cache = nullptr;
         }
-        funcType<T, F>().doEvent(m_func, aStream);
+        if (doAspect(m_before, aStream, true)){
+            aStream->m_outs = nullptr;
+            funcType<T, F>().doEvent(m_func, aStream);
+        }
         executed(aStream);
+        if (aStream->m_outs)
+            doAspect(m_after, aStream, false);
         m_busy = false;
     }
 protected:
@@ -368,6 +385,25 @@ protected:
     friend pipeLocal<T, F>;
     friend pipeParallel<T, F>;
     friend pipeline;
+private:
+    bool doAspect(const QString& aName, std::shared_ptr<stream<T>> aStream, bool aBefore){
+        if (aName == "")
+            return true;
+        auto pip = rea::pipeline::instance()->m_pipes.value(aName);
+        bool ret = false;
+        if (pip){
+            auto pip2 = dynamic_cast<pipe<T, F>*>(pip);
+            pip2->doEvent(aStream);
+            ret = aStream->m_outs != nullptr;
+            if (ret){
+                if (aBefore)
+                    aStream->log(pip2->workName() + " |> " + workName());
+                else
+                    aStream->log(workName() + " >| " + pip2->workName());
+            }
+        }
+        return ret;
+    }
 };
 
 template <typename T, typename F>
