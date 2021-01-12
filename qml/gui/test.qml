@@ -485,16 +485,20 @@ ApplicationWindow {
                     MenuItem{
                         text: "files"
                         onClicked: {
-                            Pipeline.run("_selectFile", {folder: false, filter: ["Image files (*.jpg *.png *.jpeg *.bmp)"]})
+                            Pipeline.run("_selectFile", {folder: false, filter: ["Image files (*.jpg *.png *.jpeg *.bmp)"]}, "manual")
                         }
                     }
                     MenuItem{
                         text: "directory"
                         onClicked: {
-                            Pipeline.run("_selectFile", {folder: true, tag: "manual2"})
+                            Pipeline.run("_selectFile", {folder: true}, "manual2")
                         }
                     }
                     Component.onCompleted: {
+                        Pipeline.find("_selectFile")
+                        .next(function(aInput){
+                            console.log(aInput.data())
+                        }, "manual", {vtype: "array"})
                         Pipeline.find("_selectFile")
                         .next(function(aInput){
                             console.log(aInput.data())
@@ -504,9 +508,8 @@ ApplicationWindow {
 
                 MenuItem{
                     text: "color"
-                    onClicked: {
-                        Pipeline.run("_selectColor", {tag: "manual2"})
-                    }
+                    onClicked:
+                        Pipeline.run("_selectColor", {}, "manual2")
                     Component.onCompleted: {
                         Pipeline.find("_selectColor")
                         .next(function(aInput){
@@ -518,7 +521,13 @@ ApplicationWindow {
                 MenuItem{
                     text: "MsgDialog"
                     onClicked:
-                        Pipeline.run("popMessage", {title: "hello4", text: "world"})
+                        Pipeline.run("popMessage", {title: "hello4", text: "world"}, "manual")
+                    Component.onCompleted: {
+                        Pipeline.find("messagePoped")
+                        .next(function(aInput){
+                            console.log(aInput.data()["ok"])
+                        }, "manual")
+                    }
                 }
 
             }
@@ -669,7 +678,8 @@ ApplicationWindow {
                 width: parent.width
                 height: parent.height - 60
                 Column{
-                    width: parent.width * 0.3
+                    property int del_size
+                    width: parent.width * 0.3 + del_size
                     height: parent.height
                     Search {
                         text: "search"
@@ -697,13 +707,18 @@ ApplicationWindow {
                     Component.onCompleted: {
                         Pipeline.find("_Searched")
                         .next(function(aInput){
-                            console.assert(aInput === "search")
-                            console.log(aInput + " is searched")
+                            var dt = aInput.data()
+                            console.assert(dt === "search")
+                            console.log(dt + " is searched")
                         }, "manual", {vtype: "string"})
                     }
                 }
+                Sizable{
+
+                }
                 Column{
-                    width: parent.width * 0.7
+                    property int del_size
+                    width: parent.width * 0.7 + del_size
                     height: parent.height
                     QSGBoard{
                         id: testbrd
@@ -1049,7 +1064,7 @@ ApplicationWindow {
             .nextL("saveTreeView", "testTreeView")
             .next(function(aInput){
                 console.assert(sameObject(aInput.data(), sample))
-                return {out: [{out: "Pass: save/load TreeView", next: "testSuccess"}]}
+                aInput.outs("Pass: save/load TreeView", "testSuccess")
             })
             .next("testSuccess")
 
@@ -1064,13 +1079,11 @@ ApplicationWindow {
             .nextL("loadTreeView")
             .nextL("saveTreeView")
             .next(function(aInput){
-                return {data: {data: sample, style: aInput.data()}, out: {}}
+                aInput.setData({data: sample, style: aInput.data()}).out()
             })
             .nextL("loadTreeView")
             .next(function(aInput){
-                return {out: [{
-                            out: {data: aInput.data()["style"], path: "style.json"},
-                        }]}
+                aInput.outs({data: aInput.data()["style"], path: "style.json"})
             })
             .nextL("json2stg")
             .nextL("writeJson")

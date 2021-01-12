@@ -9,7 +9,7 @@ Search0 {
     Component.onCompleted: {
         Pipeline.add(function(aInput){
             focus = false
-            aInput.setData(input.text).out()
+            aInput.setData(text).out()
         }, {name: name + "_Searched", type: "Partial", vtype: "string"})
     }
 }

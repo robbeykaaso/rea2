@@ -55,6 +55,10 @@ public:
     Q_INVOKABLE void log(const QString& aLog){
         getTransaction()->log(aLog);
     }
+    Q_INVOKABLE QString tag(){
+        return m_tag;
+    }
+
 private:
     std::shared_ptr<transaction> getTransaction(){
         if (!m_transaction)
@@ -128,7 +132,7 @@ public:
     void doEvent(QJSValue aFunc, std::shared_ptr<stream<T>> aStream){
         if (pipeline::instance()->engine != nullptr && !aFunc.equals(QJsonValue::Null)){
             QJSValueList paramList;
-            qmlStream stm(pipeline::instance()->engine->toScriptValue(aStream->data()), "", aStream->m_cache, aStream->m_transaction);
+            qmlStream stm(pipeline::instance()->engine->toScriptValue(aStream->data()), aStream->tag(), aStream->m_cache, aStream->m_transaction);
             paramList.append(pipeline::instance()->engine->toScriptValue(QVariant::fromValue<QObject*>(&stm)));
             aFunc.call(paramList);
             aStream->setData(valType<T>::data(stm.data()));

@@ -66,6 +66,9 @@ public:
         if (m_transaction)
             m_transaction->log(aLog);
     }
+    QString tag(){
+        return m_tag;
+    }
 protected:
     void addTrig(const QString& aStart, const QString& aNext){
         if (m_transaction)
@@ -108,7 +111,8 @@ public:
     stream<T>* out(const QString& aTag = ""){
         if (!m_outs)
             m_outs = std::make_shared<std::vector<std::pair<QString, std::shared_ptr<stream0>>>>();
-        m_tag = aTag;
+        if (aTag != "")
+            m_tag = aTag;
         return this;
     }
 
@@ -120,7 +124,7 @@ public:
     stream<S>* outs(S aOut, const QString& aNext = "", const QString& aTag = "", bool aShareCache = true){
         if (!m_outs)
             m_outs = std::make_shared<std::vector<std::pair<QString, std::shared_ptr<stream0>>>>();
-        auto ot = std::make_shared<stream<S>>(aOut, aTag, aShareCache ? m_cache : nullptr, m_transaction);
+        auto ot = std::make_shared<stream<S>>(aOut, aTag == "" ? m_tag : aTag, aShareCache ? m_cache : nullptr, m_transaction);
         m_outs->push_back(std::pair<QString, std::shared_ptr<stream0>>(aNext, ot));
         return ot.get();
     }
@@ -170,7 +174,7 @@ public:
     virtual pipe0* nextB(pipe0* aNext, const QString& aTag = "");
     virtual pipe0* nextB(const QString& aName, const QString& aTag = "");
 
-    void execute(std::shared_ptr<stream0> aStream, const QString& aTag = "");
+    void execute(std::shared_ptr<stream0> aStream);
 
     virtual pipe0* createLocal(const QString& aName, const QJsonObject& aParam);
     bool isBusy() {return m_busy;}
@@ -181,23 +185,15 @@ protected:
     public:
         static const Type type = static_cast<Type>(QEvent::User + 1);
     public:
-        streamEvent(const QString& aName, std::shared_ptr<stream0> aStream, const QString& aTag = "") : QEvent(type) {
+        streamEvent(const QString& aName, std::shared_ptr<stream0> aStream) : QEvent(type) {
             m_name = aName;
-            m_tag = aTag;
             m_stream = aStream;
         }
         QString getName() {return m_name;}
-        QString getTag(){
-            if (m_stream->m_tag == "")
-                return m_tag;
-            else
-                return m_stream->m_tag;
-        }
         std::shared_ptr<stream0> getStream() {return m_stream;}
     private:
         QString m_name;
         std::shared_ptr<stream0> m_stream;
-        QString m_tag;
     };
     pipe0(const QString& aName = "", int aThreadNo = 0, bool aReplace = false);
     virtual QString workName() {return actName();}
@@ -292,7 +288,7 @@ public:
                 if (st)
                     st->execute(std::make_shared<stream<transaction*>>(rt.get()));
             }
-            pip->execute(std::make_shared<stream<T>>(aInput, "", nullptr, rt), aTag);
+            pip->execute(std::make_shared<stream<T>>(aInput, aTag, nullptr, rt));
         }
     }
 
@@ -366,9 +362,12 @@ protected:
     }
     void doEvent(const std::shared_ptr<stream<T>> aStream){
         m_busy = true;
-        if (m_stream_cache && !aStream->m_transaction){
-            aStream->m_transaction = m_stream_cache->m_transaction;
-            aStream->m_cache = m_stream_cache->m_cache;
+        if (m_stream_cache){
+            if (!aStream->m_transaction){
+                aStream->m_transaction = m_stream_cache->m_transaction;
+                aStream->m_cache = m_stream_cache->m_cache;
+                aStream->m_tag = m_stream_cache->m_tag;
+            }
             m_stream_cache = nullptr;
         }
         if (doAspect(m_before, aStream, true))
@@ -478,7 +477,7 @@ private:
     friend pipeline;
 };
 
-template <typename T, typename F = pipeFunc<T>>
+template <typename T, typename F>
 class pipePartial : public pipe<T, F> {
 public:
     pipe0* next(pipe0* aNext, const QString& aTag = "") override{
@@ -507,9 +506,8 @@ protected:
             if (eve->getName() == pipe0::m_name){
                 auto stm = std::dynamic_pointer_cast<stream<T>>(eve->getStream());
                 doEvent(stm);
-                auto tg = eve->getTag();
-                if (tg != "")
-                    doNextEvent(m_next2.value(tg), stm);
+                if (stm->tag() != "")
+                    doNextEvent(m_next2.value(stm->tag()), stm);
             }
         }
         return true;

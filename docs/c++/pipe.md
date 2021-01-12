@@ -11,45 +11,29 @@ input -> pipe1(calculate on thread2) -> pipe2(store data on thread1) -> pipe3(re
     - the actual name of pipe  
 </br>
 
-* **pipe0* next(const QString& aName / pipe0\* aNext, const QJsonObject& aParam = QJsonObject())**  
+* **pipe0* next(const QString& aName / pipe0\* aNext, const QString& aTag = "")**  
     - connect a pipe after self  
     - return the next pipe  
-    - the next pipe will be executed and get the stream after self is executed  
-    - `aParam` is the pipe connected parameter  
+    - the next pipe will try to be executed and get the stream after self is executed  
+    - `aTag` is the pipe connected parameter  
 _sample_:
 ```
-next("doSomething", dst::Json("tag", "id0"))  
+next("doSomething", "service0")  
 ```  
 </br>
 
-* **pipe0* nextF(pipeFunc<T> aNextFunc, const QJsonObject& aParam = QJsonObject(), const QJsonObject& aPipeParam = QJsonObject())**  
-    - `aNextFunc` is the lambda function of the pipe  
+* **pipe0* nextF(pipeFunc<T> aNextFunc, const QString& aTag = "", const QJsonObject& aParam = QJsonObject())**  
+    - `aNextFunc` is the lambda function of this pipe  
+    - `aParam` is the param of this pipe  
     - the function is like `next`  
 </br>
 
-* **pipe0* previous(const QString& aName / pipe0\* aPrevious, const QJsonObject& aParam = QJsonObject())**  
-    - connect a pipe before self  
-    - return the previous pipe  
-    - self will be executed and get the stream after the previous pipe is executed  
-    - `aParam` is the pipe connected parameter  
-</br>
-
-* **pipe0* nextBEx(int aReturn, const QString& aName / pipe0\* aNext, const QJsonObject& aParam, Args&&... rest)**  
-    - connect a next branch pipe  
-    - return the specified pipe by `aReturn`  
-    - the branch pipeline will be executed and get the stream after self is executed
-_sample_:
-```
-nextB(1, "step1", QJsonObject(), "step2", QJsonObject())  //this will return the "step1" pipe
-```  
-</br>
-
-* **pipe0* nextB(const QString& aName / pipe0\* aNext, const QJsonObject& aParam = QJsonObject())**  
+* **pipe0* nextB(const QString& aName / pipe0\* aNext, const QString& aTag = "")**  
     - connect a next branch pipe  
     - return self  
 _sample_:
 ```
-nextB("doSomething", dst::Json("previous", "id0"))  
+nextB("doSomething", "service0")  
 ```  
 </br>
 
@@ -57,5 +41,9 @@ nextB("doSomething", dst::Json("previous", "id0"))
     - remove the next pipe  
 </br>
 
+* **execute(std::shared_ptr<stream0> aStream)**  
+    - trig the pipe and input a stream  
+</br>
+
 # Child classes
-_pipeFuture, [pipeLocal](pipeLocal.md), [pipeDelegate](pipeDelegate.md), [pipePartial](pipePartial.md), [pipeBuffer](pipeBuffer.md)..._
+_pipeFuture, [pipeLocal](pipeLocal.md), [pipeDelegate](pipeDelegate.md), [pipePartial](pipePartial.md), [pipeBuffer](pipeBuffer.md), [pipeThrottle](pipeThrottle.md), [pipeParallel](pipeParallel.md)..._

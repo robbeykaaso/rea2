@@ -7,19 +7,20 @@ ColorDialog{
     property string service_tag
 
     onAccepted: {
-        Pipeline.run(name + "_colorSelected", "", service_tag, false)
+        Pipeline.run(name + "_colorSelected", color.toString(), service_tag, false)
         close()
     }
     onRejected: {
+        Pipeline.run(name + "_colorSelected", "", service_tag, false)
         close()
     }
     Component.onCompleted: {
         Pipeline.add(function(aInput){
-            aInput.setData(color.toString()).out()
+            aInput.out()
         }, {name: name + "_colorSelected", type: "Partial", vtype: "string"})
 
         Pipeline.add(function(aInput){
-            service_tag = aInput.data()["tag"] || "manual"
+            service_tag = aInput.tag()
             open()
         }, {name: name + "_selectColor", type: "Delegate", delegate: name + "_colorSelected"})
     }

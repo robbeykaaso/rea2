@@ -46,7 +46,6 @@ void fsStorage0::writeByteArray(const QString& aPath, const QByteArray& aData){
         fl.write(aData);
         fl.close();
     }else{
-        rea::pipeline::run<QJsonObject>("popMessage", rea::Json("title", "error", "text", "Storage cann't be written!\nPlease check your config_.json!"));
         qDebug() << "write bytearray: " + aPath + " failed!\n";
     }
 }

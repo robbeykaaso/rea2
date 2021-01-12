@@ -12,9 +12,9 @@
     - return self  
 </br>
 
-* **stream<T\>* out(const QJsonObject& aParam = QJsonObject())**  
+* **stream<T\>* out(const QString& aTag = "")**  
     - pass the stream to all its next pipes by default  
-    - `aParam` is the param of the stream which will format the pipe connected param  
+    - `aTag` decides which pipe of nexts will be executed if this is a pipePartial  
     - return self  
 _example_:  
 ```
@@ -22,13 +22,13 @@ _example_:
 ```  
 </br>
 
-* **stream<S\>* out(S aOutput, const QString& aNext = "", const QJsonObject& aParam = QJsonObject(), bool aShareCache = true)**  
+* **stream<S\>* outs(S aOutput, const QString& aNext = "", const QString& aTag = "", bool aShareCache = true)**  
     - pass the stream to its next specific pipe by `aNext`  
     - if `aNext` equals to "", it will only run all the anonymous nexts  
     - if `aNext` doesn't equal to "" and isn't connected, it will try to run the `localPipe` with the same name. if there still not exists the same name `localPipe`, it will try to run the specific pipe directly on whole range  
-    - this function will format the stragety of the above API  
-    - `aShareCache` denotes whether the out stream to share the cache with self  
-    - return the specific out stream  
+    - this function will format the stragety of `out`  
+    - `aShareCache` denotes whether the out stream to share the scope cache with self  
+    - return this out stream  
 _example_:
 ```
     out<int>(5, "pipe1");  // pass the stream to pipe1 and run pipe1 on next
@@ -36,12 +36,33 @@ _example_:
 ```  
 </br>
 
-* **stream<T\>* cache(S aData, int aIndex = - 1)**  
-    - cache some data  
-    - if `aIndex` is in the cache range, it will replace the old cache  
-    - return self    
+* **stream<S\>* outsB(S aOutput, const QString& aNext = "", const QString& aTag = "", bool aShareCache = true)**  
+    - work like `outs`  
+    - return this stream  
 </br>
 
-* **S cacheData(int aIndex)**  
-    - return the specific cache by index  
+* **noOut()**  
+    - clear the out streams flowing the next pipes  
+</br>
+
+* **stream<T\>* var(const QString& aName, S aData)**  
+    - cache some data by name  
+    - if `aName` has been existed in the scope cache, it will replace the old cache  
+    - return this stream  
+</br>
+
+* **S varData(const QString& aName)**  
+    - return the specific cache data by its name  
+</br>
+
+* **QString tag()**  
+    - return the tag of this stream  
+</br>
+
+* **void fail()**  
+    - tag fail status for this transaction if exists  
+</br>
+
+* **void log(const QString& aLog)**  
+    - add a log to this transaction if exists
 </br>

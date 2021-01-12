@@ -11,18 +11,22 @@ FileDialog {
     selectFolder: false
    // nameFilters: ["Image files (*.jpg *.png *.jpeg *.bmp)"] //"All files(*)"
     onAccepted: {
+        var pths = []
+        for (var i in fileUrls){
+            //https://stackoverflow.com/questions/24927850/get-the-path-from-a-qml-url
+            pths.push(decodeURIComponent(fileUrls[i].replace(/^(file:\/{3})|(qrc:\/{2})|(http:\/{2})/,"")))
+            // unescape html codes like '%23' for '#'
+            //pths += fileUrls[i].substring(8, fileUrls[i].length) + ";"
+        }
+        Pipeline.run(name + "_fileSelected", pths, service_tag, false)
+    }
+    onRejected: {
         Pipeline.run(name + "_fileSelected", [], service_tag, false)
     }
+
     Component.onCompleted: {
         Pipeline.add(function(aInput){
-            var pths = []
-            for (var i in fileUrls){
-                //https://stackoverflow.com/questions/24927850/get-the-path-from-a-qml-url
-                pths.push(decodeURIComponent(fileUrls[i].replace(/^(file:\/{3})|(qrc:\/{2})|(http:\/{2})/,"")))
-                // unescape html codes like '%23' for '#'
-                //pths += fileUrls[i].substring(8, fileUrls[i].length) + ";"
-            }
-            aInput.setData(pths).out()
+            aInput.out()
         }, {name: name + "_fileSelected", type: "Partial", vtype: "array"})
 
         Pipeline.add(function(aInput){
@@ -37,7 +41,7 @@ FileDialog {
                 selectMultiple = true
             }
             selectExisting = mdl["save"] === undefined
-            service_tag = mdl["tag"] || "manual"
+            service_tag = aInput.tag()
             open()
         }, {name: name + "_selectFile", type: "Delegate", delegate: name + "_fileSelected"})
     }

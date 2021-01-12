@@ -24,7 +24,7 @@ void transaction::addTrig(const QString& aStart, const QString& aNext){
 
 transaction::transaction(const QString& aName, const QString& aTag){
     m_name = aName + ";" + aTag;
-    addTrig(aTag, aName);
+    addTrig(aTag + ":", aName);
 }
 
 transaction::~transaction(){
@@ -106,7 +106,7 @@ void pipe0::doNextEvent(const QMap<QString, QString>& aNexts, std::shared_ptr<st
                         auto pip = pipeline::find(j, false);
                         if (pip && pip->m_anonymous){
                             aStream->addTrig(workName(), pip->workName());
-                            pip->execute(i.second, i.second->m_tag == "" ? aNexts.value(j) : i.second->m_tag);
+                            pip->execute(i.second);
                         }
                     }
                 }else{
@@ -114,7 +114,7 @@ void pipe0::doNextEvent(const QMap<QString, QString>& aNexts, std::shared_ptr<st
                         auto pip = pipeline::find(i.first, false);
                         if (pip){
                             aStream->addTrig(workName(), pip->workName());
-                            pip->execute(i.second, i.second->m_tag == "" ? aNexts.value(i.first) : i.second->m_tag);
+                            pip->execute(i.second);
                         }
                     }else{
                         bool exed = false;
@@ -122,7 +122,7 @@ void pipe0::doNextEvent(const QMap<QString, QString>& aNexts, std::shared_ptr<st
                             auto pip = pipeline::find(j, false);
                             if (pip && pip->localName() == i.first){
                                 aStream->addTrig(workName(), pip->workName());
-                                pip->execute(i.second, i.second->m_tag == "" ? aNexts.value(i.first) : i.second->m_tag);
+                                pip->execute(i.second);
                                 exed = true;
                             }
                         }
@@ -130,7 +130,7 @@ void pipe0::doNextEvent(const QMap<QString, QString>& aNexts, std::shared_ptr<st
                             auto pip = pipeline::find(i.first, false);
                             if (pip){
                                 aStream->addTrig(workName(), pip->workName());
-                                pip->execute(i.second, i.second->m_tag);
+                                pip->execute(i.second);
                             }
                         }
                     }
@@ -140,18 +140,18 @@ void pipe0::doNextEvent(const QMap<QString, QString>& aNexts, std::shared_ptr<st
                 auto pip = pipeline::find(i, false);
                 if (pip){
                     aStream->addTrig(workName(), pip->workName());
-                    pip->execute(aStream, aNexts.value(i));
+                    pip->execute(aStream);
                 }
             }
     }
 }
 
-void pipe0::execute(std::shared_ptr<stream0> aStream, const QString& aTag){
+void pipe0::execute(std::shared_ptr<stream0> aStream){
     if (QThread::currentThread() == m_thread){
-        streamEvent nxt_eve(m_name, aStream, aTag);
+        streamEvent nxt_eve(m_name, aStream);
         QCoreApplication::sendEvent(this, &nxt_eve);
     }else{
-        auto nxt_eve = std::make_unique<streamEvent>(m_name, aStream, aTag);
+        auto nxt_eve = std::make_unique<streamEvent>(m_name, aStream);
         QCoreApplication::postEvent(this, nxt_eve.release());  //https://stackoverflow.com/questions/32583078/does-postevent-free-the-event-after-posting-double-free-or-corruption // still memory leak, reason is unknown
     }
 }

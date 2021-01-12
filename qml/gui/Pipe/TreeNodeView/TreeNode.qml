@@ -277,7 +277,7 @@ Column{
 
     function addJsonChild(aType, aKey, aValue, aStyle, aInitialize){
         var ret
-        var src = "import QtQuick 2.12; import '../Basic'; import Pipeline 1.0; import TextFieldDoubleValidator 1.0;"
+        var src = "import QtQuick 2.12; import '../../Basic'; import Pipeline 1.0; import TextFieldDoubleValidator 1.0;"
         src += "Row{"
         if (aStyle && aStyle["jsst"] && aStyle["jsst"]["invisible"])
             src += "visible: false;"
@@ -405,9 +405,6 @@ Column{
                 src += "}"
             }
             src += "}"
-
-           // if (aStyle)
-           //     console.log(src)
 
             ret = Qt.createQmlObject(src, cld)
             ret.children[1].scr_root = scr_root
