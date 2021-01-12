@@ -3,11 +3,16 @@ a serial modbus master, the constructor config is QModbusDevice::SerialPortNameP
 
 # API Pipe
 * **callSlave**  
-send "func", "payload", and "server" to the slave. it is a pipeDelegate for _receiveFromSlave_. data type: QJsonObject  
+    - send "func", "payload", and "server" to the slave  
+    - input: QJsonObject  
+    - output: QByteArray  
+    - type: pipePartial  
 </br>
 
-* **receiveFromSlave**  
-got the message from slave. datt type: QByteArray  
+* **modbusBoardcast**  
+    - boardcast some information from serial  
+    - output: QJsonObject  
+    - type: pipe  
 </br>
 
 # Test and Demo

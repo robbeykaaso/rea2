@@ -47,6 +47,7 @@ public:
         outs(aOut, aNext, aTag, aShareCache);
         return QVariant::fromValue<QObject*>(this);
     }
+    Q_INVOKABLE void noOut(){m_outs = nullptr;}
     Q_INVOKABLE QVariant var(const QString& aName, QJSValue aData);
     Q_INVOKABLE QJSValue varData(const QString& aName, const QString& aType = "object");
     Q_INVOKABLE void fail(){
@@ -178,6 +179,8 @@ public:
     }
 };
 
+class pipelineQML;
+
 class qmlPipe : public QObject
 {
     Q_OBJECT
@@ -192,11 +195,11 @@ public:
     Q_INVOKABLE QVariant nextB(const QString& aName, const QString& aTag = "");
     Q_INVOKABLE QVariant nextL(const QString& aName, const QString& aTag = "", const QJsonObject& aPipeParam = QJsonObject());
     Q_INVOKABLE void removeNext(const QString& aName);
-    void setPipe(const QString& aPipe) {m_pipe = aPipe;}
     static qmlPipe* createPipe(QJSValue aFunc, const QJsonObject& aParam);
 private:
     QString m_pipe;
     QJsonObject m_param;
+    friend pipelineQML;
 };
 
 class pipelineQML : public QObject

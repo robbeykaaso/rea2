@@ -23,7 +23,9 @@ _sample_:
         img_2: {
             type: "image",  //the type of imageObject
             path: "c:/xxx/xx.png",  //the path of the image in the imagePool or file system
-            range: [0, 0, 400, 400]  //the view port of the image, the default is the boundbox of it
+            range: [0, 0, 400, 400],  //the view port of the image, the default is the boundbox of it
+            caption: "Text",  //the text value
+            color: "green"  //the text color
         },
         shp_0: {
             type: "poly",  //the type of polyObject which inherits from shapeObject
@@ -31,7 +33,7 @@ _sample_:
             color: "red",  //as above in the whole attributes
             width: 3,  //the line width
             caption: "hello",  //the text value
-            angle: 20,  //the rotate angle
+            style: "dash", //the line style
             face: 50  //as above in the whole attributes
             text: {
                 visible: true,  //as above in the whole attributes
@@ -43,8 +45,9 @@ _sample_:
             center: [400, 400],  //the center
             radius: [300, 200],  //the x, y radius
             width: 5,  //as above in the polyObject
+            style: "dash", //as above in the polyObject
             ccw: true,  //whether is counterclockwise
-            angle: 30,  //as above in the polyObject
+            angle: 30,  //the rotate angle
             caption: "world"  //as above in the polyObject
         }
     }
@@ -53,13 +56,15 @@ _sample_:
 </br>
 
 # Modification format
-* use "updateQSGAttr" api to update specific attribute of the qsgModel  
+* use "updateQSGAttr" or "updateQSGAttrs" api to update specific attribute of the qsgModel  
 _sample_:
 ```
 {
     obj: "shp_0", //the object name, if there is no "obj", it will be for the whole attributes
     key: ["text", "visible"],  //the attribute key chain
-    val: true  //the new attribute value
+    val: true,  //the new attribute value
+    force: false,  //whether to force updating the attributes which have the same values
+    id: "" //if it declares the id and which is not the same with that of the qsmModel, the update will not be executed
 }
 ```  
 </br>

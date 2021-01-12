@@ -3,19 +3,29 @@ a normal tcp socket client which link a server
 
 # API Pipe
 * **callServer**  
-send the json message to the server. it is a pipeDelegate for _receiveFromServer_. data type: QJsonObject  
+    - send the json message to the server  
+    - input: QJsonObject  
+    - type: pipeDelegate: receiveFromServer  
 </br>
 
 * **receiveFromServer**  
-got the message from the server. it is a pipePartial and the "tag" is defined by the specific service. data type: QJsonObject  
+    - got the message from a server  
+    - output: clientMessage  
+    - type: pipePartial  
+    - tag: type in the message  
 </br>
 
 * **tryLinkServer**  
-either try link server which has specific "ip", "port", "id" or use ssdp protocal to link server. data type: QJsonObject  
+    - either try link server which has specific "ip", "port", "id" or use ssdp protocal to link server  
+    - input: QJsonObject  
+    - output: QJsonObject  
+    - type: pipe  
 </br>
 
 * **clientBoardcast**  
-boardcast some information after some specific operation  
+    - boardcast some information from socket  
+    - output: QJsonObject  
+    - type: pipe  
 </br>
 
 # Test and Demo

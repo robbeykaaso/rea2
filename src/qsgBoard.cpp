@@ -33,7 +33,7 @@ QString qsgPluginTransform::getName(qsgBoard* aParent) {
                 }
             }
         aInput->out();
-    }, rea::Json("name", "QSGTransformUpdated_" + getParentName())));
+    }));
     return ret;
 }
 
@@ -239,7 +239,7 @@ void qsgBoard::setName(const QString& aName){
     rea::pipeline::add<QJsonObject>([this](rea::stream<QJsonObject>* aInput){
         m_models.push_back(std::make_shared<qsgModel>(aInput->data()));
         update();
-        aInput->outs<std::shared_ptr<qsgModel>>(m_models.back());
+        aInput->out();
     }, rea::Json("name", "updateQSGModel_" + m_name));
 
     rea::pipeline::add<QJsonObject, pipeDelegate>([this](rea::stream<QJsonObject>* aInput){

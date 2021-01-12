@@ -143,7 +143,7 @@ QVariant pipelineQML::add(QJSValue aFunc, const QJsonObject& aPipeParam){
 
 QVariant pipelineQML::find(const QString& aName){
     qmlPipe* ret = new qmlPipe();
-    ret->setPipe(aName);
+    ret->m_pipe = aName;
     return QVariant::fromValue<QObject*>(ret);
 }
 

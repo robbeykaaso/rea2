@@ -23,6 +23,7 @@ normalServer::normalServer(const QJsonObject& aConfig) : QObject()
                     std::this_thread::sleep_for(std::chrono::milliseconds(5));
             }
         }
+        aInput->out();
     }, rea::Json("name", "callClient"));
 
     rea::pipeline::add<clientMessage, rea::pipePartial>([](rea::stream<clientMessage>* aInput){

@@ -21,7 +21,9 @@
 
 # API Pipe
 * **transactionStart**  
-a trig to get the created transaction once it is created  
+    - a trig to get the created transaction once it is created
+    - output: transaction*  
+    - type: trig  
 _sample_:  
 ```
     rea::pipeline::add<transaction*>([](stream<transaction*>* aInput){
@@ -32,7 +34,9 @@ _sample_:
 </br>
 
 * **transactionEnd**  
-a trig to get the ended transaction once it is destroyed  
+    - a trig to get the ended transaction once it is destroyed  
+    - output: QJsonObject  
+    - type: trig  
 _sample_:
 ```
     rea::pipeline::add<QJsonObject>([](stream<QJsonObject>* aInput){
