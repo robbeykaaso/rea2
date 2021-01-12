@@ -1,5 +1,5 @@
 # Abstract
-a automatic layout component for qml  
+the automatic layout component for qml  
 
 # Attribute
 * rows: the row count  
@@ -8,5 +8,5 @@ a automatic layout component for qml
 </br>
 
 # Test and Demo
-main.qml: qsTr("nestView")  
+test.qml: qsTr("nestView")  
 </br>

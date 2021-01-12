@@ -1,5 +1,5 @@
 # Abstract
-a text edit component for qml  
+the text edit component for qml  
 
 # Attribute
 * caption: the Text object  
@@ -17,5 +17,5 @@ _sample_:
 </br>
 
 # Test and Demo
-main.qml: qsTr("baseCtrl")  
+test.qml: qsTr("baseCtrl")  
 </br>

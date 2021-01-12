@@ -16,6 +16,10 @@ _sample_:
 ```  
 </br>
 
+# Signal
+* accepted: This signal will be emitted when the mouse click or input is complete  
+</br>
+
 # API Pipe
 * **name + _Searched**  
 output the search text. its type is PipePartial  

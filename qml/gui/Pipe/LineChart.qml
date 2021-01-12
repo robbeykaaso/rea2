@@ -3,6 +3,7 @@ import "../Basic"
 import Pipeline 1.0
 
 LineChart0 {
+    property string name
     title: Pipeline.tr("Demo")
 
     Component.onCompleted: {

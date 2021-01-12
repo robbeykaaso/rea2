@@ -24,15 +24,6 @@ Gridder{
 ```  
 </br>
 
-# API Pipe
-* **name + _updateViewCount**  
-renew the grid count and layout  
-_sample_:  
-```
-Pipeline2.run(gridder_cld.name + "_updateViewCount", {size: [5, 5]})
-```  
-</br>
-
 # Test and Demo
-main.qml: qsTr("gridder")  
+test.qml: qsTr("gridder")  
 </br>

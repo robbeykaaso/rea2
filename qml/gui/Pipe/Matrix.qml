@@ -3,6 +3,7 @@ import "../Basic"
 import Pipeline 1.0
 
 Matrix0 {
+    property string name
     onSelected: function(aIndex){
         Pipeline.run(name + "_matrixSelected", aIndex, "manual")
     }

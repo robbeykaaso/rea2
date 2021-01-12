@@ -1,5 +1,5 @@
 # Abstract
-the autosize logic for `Edit`, `Check`, `Combo` and `Track`  
+the autosize logic for the sibling components who has `caption` and `ratio`  
 
 # Sample 
 ```
@@ -9,5 +9,5 @@ the autosize logic for `Edit`, `Check`, `Combo` and `Track`
 </br>
 
 # Test and Demo
-main.qml: qsTr("baseCtrl")  
+test.qml: qsTr("baseCtrl")  
 </br>

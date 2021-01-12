@@ -38,10 +38,12 @@ Log0{
                 if (tp === cur_type && lev === cur_level)
                     loglist.append({msg: mdl["msg"]})
             }
+            aInput.out()
         }, {name: "addLogRecord"})
 
         Pipeline.add(function(aInput){
             visible = true
+            aInput.out()
         }, {name: "showLogPanel"})
 
         content = {}

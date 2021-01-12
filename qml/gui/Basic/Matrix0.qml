@@ -4,7 +4,6 @@ import QtQuick.Layouts 1.12
 import "../Basic"
 
 Nest{
-    property string name
     property alias rowcap: rowcap
     property alias colcap: colcap
     property int fontsize: 16

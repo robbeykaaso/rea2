@@ -3,6 +3,7 @@ import Pipeline 1.0
 import "../Basic"
 
 Histogram0 {
+    property string name
     title: Pipeline.tr("Score")
     Component.onCompleted: {
         Pipeline.add(function(aInput){

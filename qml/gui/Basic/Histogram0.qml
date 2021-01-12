@@ -4,8 +4,6 @@ import QtCharts 2.3
 import QtQuick.Window 2.12
 
 ChartView {
-    property string name
-
     width: parent.width
     height: parent.height * 0.8
     antialiasing:true

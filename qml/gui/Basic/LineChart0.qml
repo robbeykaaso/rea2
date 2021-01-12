@@ -2,7 +2,6 @@ import QtQuick 2.12
 import QtCharts 2.3
 
 ChartView {
-    property string name
     property var content: [10, 20, 15, 30, 10, 60]
 
     antialiasing:true

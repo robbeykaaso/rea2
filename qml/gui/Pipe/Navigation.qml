@@ -3,6 +3,7 @@ import "../Basic"
 import Pipeline 1.0
 
 Navigation0 {
+    property string name
     onUpdated: {
         Pipeline.run(name + "_updateNavigation", menu, "manual")
     }

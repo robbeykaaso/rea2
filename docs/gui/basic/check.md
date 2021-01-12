@@ -9,12 +9,12 @@ _sample_:
 ```
     Check{
         width: 180
-        caption.text: qsTr("attr2") + ":"
+        caption.text: "attr2:"
         ratio: 0.4
     }
 ```  
 </br>
 
 # Test and Demo
-main.qml: qsTr("baseCtrl")  
+test.qml: qsTr("baseCtrl")  
 </br>

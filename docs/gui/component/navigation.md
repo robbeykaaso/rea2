@@ -1,17 +1,19 @@
 # Abstract
-a navigation component for qml  
+the wrapper of navigation0  
 
 # Attribute
 * name: the instance name  
-* menu: the navigation menu list  
-* customfont: the font style  
 </br>
 
 # API Pipe
 * **name + _updateNavigation**  
-update the content in the navigation. the input data is array. its type is pipePartial  
+    - update the content in the navigation
+    - input: QJsonArray  
+    - output: QJsonArray  
+    - type: pipePartial  
+    - tag: manual
 </br>
 
 # Test and Demo
-main.qml: qsTr("navigation")
+test.qml: qsTr("navigation")
 </br>

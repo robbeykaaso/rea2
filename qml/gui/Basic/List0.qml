@@ -2,7 +2,6 @@ import QtQuick 2.12
 import QtQuick.Controls 2.0
 
 Column {
-    property string name: ""
     property string selectSuffix: ""
     property var title: ["attr0", "attr1", "attr2"]
     property var selects: []

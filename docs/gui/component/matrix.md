@@ -1,27 +1,19 @@
 # Abstract
-a matrix component for qml  
+the wrapper of matrix0  
 
 # Attribute
 * name: the instance name  
-* rowcap: the row title Label  
-* colcap: the column title Label  
-* content: the matrix data, it is a 2D array  
-_sample_:  
-```
-Matrix{
-    rowcap.text: "hello"
-    colcap.text: "world"
-    content: [[1, 2], [3, 4], [5, 6]]
-}
-```  
 </br>
 
 # API Pipe
 * **name + _updateMatrix**  
-update the matrix show  
+    - update the matrix show  
+    - input: QJsonObject  
+    - output: QJsonObject  
+    - type: pipe  
 _sample_:  
 ```
-Pipeline2.run("_updateMatrix", {rowcap: "hello2",  //the row title
+Pipeline.run("_updateMatrix", {rowcap: "hello2",  //the row title
                                 colcap: "world2",  //the column title
                                 content: [[1, 2, 3, 4],  //the content
                                           [5, 6, 7, 8],
@@ -32,9 +24,11 @@ Pipeline2.run("_updateMatrix", {rowcap: "hello2",  //the row title
 </br>
 
 * **name + _matrixSelected**
-output the 1D index in the content. its type is PipePartial  
+    - output the 1D index in the content. its type is PipePartial  
+    - output: number  
+    - type: pipe  
 </br>
 
 # Test and Demo
-main.qml: qsTr("matrix")  
+test.qml: qsTr("matrix")  
 </br>
