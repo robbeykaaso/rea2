@@ -15,16 +15,17 @@ next pipes will not be executed until this pipe collects the specific count data
 # Sample
 **add and connect pipe:**  
 ```
-pipeline::add<int, pipeBuffer>(nullptr, dst::Json("param", dst::Json("count", 2)))  //c++
-->next(pipeline::add<std::vector<int>>([](stream<std::vector<int>>* aInput){
+pipeline::add<int, pipeBuffer>(nullptr, dst::Json("count", 2))  //c++
+->next<std::vector<int>>([](stream<std::vector<int>>* aInput){
     aInput->out();
-}))
+})
 
-Pipeline2.add(null, {name: "test7_", type: "Buffer", param: {count: 2}})  //qml
+Pipeline2.add(null, {name: "test7_", type: "Buffer", count: 2})  //qml
 .next(function(aInput){
-    console.assert(aInput["0"]["hello"] === "world")
-    console.assert(aInput["00"]["hello"] === "world2")
-    return {out: [{out: "Pass: test7_"}]}
+    var dt = aInput.data()
+    console.assert(dt["0"]["hello"] === "world")
+    console.assert(dt["00"]["hello"] === "world2")
+    aInput.outs("Pass: test7_")
 })
 ```  
 </br>

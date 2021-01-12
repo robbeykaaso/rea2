@@ -1,7 +1,7 @@
 # Abstract
 next pipes will be executed by its delegate pipe
 ```
-    input -> pipeDelegate                        //pipeDelegate will do nothing
+    input -> pipeDelegate                        
                    -> delegate pipe -> output
 ```
 
@@ -10,7 +10,7 @@ next pipes will be executed by its delegate pipe
 ```
 re::pipeManager::add<QJsonObject, pipeDelegate>(stream<QJsonObject>* aInput){
     
-}, dst::Json("name", "selectFolder", "param", dst::Json("delegate", "folderSelected")))
+}, dst::Json("name", "selectFolder", "delegate", "folderSelected"))
 ->next("doSomething")  //selectFolder -> doSomething  ==> folderSelected -> doSomething
 
 re::pipeManager::add<QJsonObject>([](stream<QJsonObject>* aInput){

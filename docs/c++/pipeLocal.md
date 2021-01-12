@@ -1,5 +1,5 @@
 # Abstract
-an anonymous pipe which does the same thing as the same named pipe. they use the same callback, but are different pipe instances
+an anonymous pipe which does the same thing as the same named pipe. they use the same callback function, but are different pipe instances
 
 # API
 * **pipe0* local(const QString& aName, const QJsonObject& aParam = QJsonObject())**  

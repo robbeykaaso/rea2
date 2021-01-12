@@ -13,18 +13,18 @@ pipePartial
 pipeline::add<QJsonObject, pipePartial>([](stream<QJsonObject>* aInput){  //c++
     aInput.out();
 }, Json("name", "WCS2SCS"))
-->next("doSomething", Json("tag", "service1"))  //the previous pipe of the pipePartial whose connect parameter of "tag" is "service1" will activate "doSomething"
+->next("doSomething", "service1")  //tag the connection
+
+
 
 Pipeline2.add(function(aInput){  //qml
-    return {out: {}}
-}, {name: "WCS2SCS_", type: "Partial"})
+    aInput.out()  
+}, {name: "WCS2SCS", type: "Partial"})
 ```  
 
 **make it work:**  
 ```
-pipeline::run<QJsonObject>("WCS2SCS", QJsonObject(), Json("tag", "service1"))  //case 1
-
-pipeline::find("beforeWCS2SCS")->next("WCS2SCS", Json("tag", "service1"))  //case 2
+pipeline::run<QJsonObject>("WCS2SCS", QJsonObject(), "service1")  //the conection with service1 tag will be executed
 ```  
 </br>
 

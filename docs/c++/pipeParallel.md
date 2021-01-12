@@ -6,7 +6,7 @@ it will execute the function in a thread pool with 8 threads
 ```
 
 # API
-* **pipe0* parallel(const QString& aName)**  
+* **pipe0* parallel<T\>(const QString& aName)**  
     - create a pipeParallel of the specific pipe  
 _sample_:  
 ```
@@ -19,7 +19,7 @@ parallel("test9");
 ```
 pipeline::add<QString, pipeParallel>([](rea::stream<QString>* aInput){
     aInput->out();
-}, Json("param", rea::Json("delegate", "pipe")))  //if the function is null, it will use the function of the delegate, else it will use the function
+}, Json("delegate", "pipe"))  //if the function is null, it will use the function of the delegate, else it will use the function
 ->next(local("doSomething"));
 ```  
 </br>
