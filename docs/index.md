@@ -18,7 +18,7 @@
 * stream: a data wrapper which is transported in the pipes  
 * scope cache: a cache data which based on some streams or all the streams  
 * transaction: a procedure which denotes the start trig from one pipe and the ends of all its related activative pipes  
-<center><p>![avatar](../img/rea.png)</p></center>
+<center><p>![avatar](img/rea.png)</p></center>
 </br>
 
 # Language
