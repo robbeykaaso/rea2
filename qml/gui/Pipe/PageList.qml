@@ -3,6 +3,7 @@ import "../Basic"
 import Pipeline 1.0
 
 PageList0 {
+    property string name: ""
     tr: Pipeline.tr
     onSelected: {
         Pipeline.run(name + "_listViewSelected", [], "manual")

@@ -1,5 +1,5 @@
 # Abstract
-a status bar component for qml  
+the wrapper of status0  
 
 # Attribute
 * name: the instance name  
@@ -7,9 +7,12 @@ a status bar component for qml
 
 # API Pipe
 * **name + _updateStatus**  
-update the content in the status bar. the input data is array  
+    - update the content in the status bar  
+    - input: QJsonArray  
+    - output: QJsonArray  
+    - type: pipe  
 </br>
 
 # Test and Demo
-main.qml: qsTr("status")
+test.qml: qsTr("status")
 </br>

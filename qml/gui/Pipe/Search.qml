@@ -3,6 +3,7 @@ import "../Basic"
 import Pipeline 1.0
 
 Search0 {
+    property string name
     onAccepted: {
         Pipeline.run(name + "_Searched", "", "manual")
     }

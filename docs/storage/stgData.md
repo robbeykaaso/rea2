@@ -1,5 +1,5 @@
 # Abstract
-a container of the API interface for storage, it inherits from QString and it self is the path
+the container of the API interface for storage, it inherits from QString and it self is the path
 
 # Sample
 ```

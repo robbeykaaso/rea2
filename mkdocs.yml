@@ -41,6 +41,7 @@ nav:
               - autosize: gui/basic/autosize.md
               - check: gui/basic/check.md
               - combo: gui/basic/combo.md
+              - comboe: gui/basic/comboe.md
               - edit: gui/basic/edit.md
               - flip: gui/basic/flip.md
               - gridder0: gui/basic/gridder0.md
@@ -52,7 +53,7 @@ nav:
               - navigation0: gui/basic/navigation0.md
               - nest: gui/basic/nest.md
               - pagelist0: gui/basic/pagelist0.md
-              - pwindow0: gui/basic/pwindow0.md
+#              - pwindow0: gui/basic/pwindow0.md
               - radio: gui/basic/radio.md
               - search0: gui/basic/search0.md
               - sizable: gui/basic/sizable.md
@@ -77,9 +78,9 @@ nav:
               - navigation: gui/component/navigation.md
               - pagelist: gui/component/pagelist.md
               - progress: gui/component/progress.md
-              - pwindow: gui/component/pwindow.md
+#              - pwindow: gui/component/pwindow.md
               - search: gui/component/search.md
               - status: gui/component/status.md
-              - treeNodeView: gui/component/treeNodeView.md
+#              - treeNodeView: gui/component/treeNodeView.md
     - About: about.md
 theme: readthedocs

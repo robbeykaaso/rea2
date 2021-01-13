@@ -1,6 +1,6 @@
 # Abstract
-a customized warp for Radio component  
+a customized wrapper for Radio component  
 
 # Test and Demo
-main.qml: qsTr("baseCtrl")  
+test.qml: qsTr("baseCtrl")  
 </br>

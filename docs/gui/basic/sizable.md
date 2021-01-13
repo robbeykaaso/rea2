@@ -32,3 +32,7 @@ the sizable component for qml
     }
 ```  
 </br>
+
+# Test and Demo
+test.qml: Sizable  
+</br>

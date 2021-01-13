@@ -6,5 +6,5 @@ the swipe component for qml. see also `TabView`, `StackLayout`
 * pages: the alias swipeView  
 
 # Test and Demo
-main.qml: qsTr("swipeView)  
+test.qml: qsTr("swipeView)  
 </br>

@@ -2,7 +2,6 @@ import QtQuick 2.12
 
 FocusScope {
     id: wrapper
-    property string name
     property alias text: input.text
     property alias hint: hint.text
     property alias prefix: prefix.text

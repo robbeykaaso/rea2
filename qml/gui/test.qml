@@ -798,6 +798,13 @@ ApplicationWindow {
                     caption.text: "attribute3" + ":"
                     ratio: 0.4
                 }
+                ComboE{
+                    width: 180
+                    caption.text: "attributeeee6" + ":"
+                    ratio: 0.4
+                    combo.modellist: ['test1', 'test2', 'test3', 'test4']
+                    combo.currentSelect: "test2"
+                }
                 Track{
                     width: 180
                     caption.text: "attri4" + ":"
@@ -1194,7 +1201,7 @@ ApplicationWindow {
                                            }]
                                    }]
                            }]
-                buildDefaultTree('folder1', tmp)
+                buildDefaultTree(tmp, 'folder1')
             }
         }
     }

@@ -8,7 +8,7 @@ Item {
     property string tree_name
     // 对应type的图片路径
     property var imagePath
-    property string selectWay: 'color' // color 选中改变颜色，background 选中改变背景,blod 选中字体加粗
+    property string selectWay: 'color' // color 选中改变颜色，background 选中改变背景,bold 选中字体加粗
     property string selectColor: 'red' // 选中改变字体或背景颜色
     property string openWay: 'single' // 打开关闭文件夹方式，single单击打开，double双击打开，all 单击双击都要，
     // 设置当前更改的选中的模块
@@ -35,7 +35,7 @@ Item {
         }
     }
 
-    function buildDefaultTree(select, data) {
+    function buildDefaultTree(data, select) {
         if (select) {
             sel = select
         }
@@ -69,7 +69,7 @@ Item {
                     if (currentText && currentText !== txt) {
                         currentText.color = '#000'
                     }
-                } else if (selectWay === 'blod') {
+                } else if (selectWay === 'bold') {
                     txt.font.bold = true
                     if (currentText && currentText !== txt) {
                         currentText.font.bold = false

@@ -49,5 +49,9 @@
         <file>qml/resource/icon-search.png</file>
         <file>qtquickcontrols2.conf</file>
         <file>qml/gui/Basic/Gridder0.qml</file>
+        <file>qml/gui/Basic/ComboE.qml</file>
+        <file>qml/gui/Basic/EditCombo.qml</file>
+        <file>qml/resource/logo.png</file>
+        <file>qml/resource/triangle-down.png</file>
     </qresource>
 </RCC>

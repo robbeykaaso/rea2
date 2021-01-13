@@ -6,6 +6,7 @@ the track component for qml
 * slider: the Slider object  
 * ratio: the ratio between caption and background  
 * interval: the interval count  
+* signal indexChanged: it will be emitted when the value changes  
 _sample_:  
 ```
     Track{
@@ -16,11 +17,6 @@ _sample_:
 ```  
 </br>
 
-# API
-* **onIndexChanged(aIndex)**  
-emit index changed signal  
-</br>
-
 # Test and Demo
-main.qml: qsTr("baseCtrl")  
+test.qml: qsTr("baseCtrl")  
 </br>

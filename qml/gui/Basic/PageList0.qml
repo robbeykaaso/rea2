@@ -4,7 +4,6 @@ import "../Basic"
 
 Column {
     id:root
-    property string name: ""
     property var title: ["attr0", "attr1", "attr2"]
     property var selects: []
     property string selcolor: "lightskyblue"

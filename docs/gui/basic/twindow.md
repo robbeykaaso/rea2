@@ -1,5 +1,5 @@
 # Abstract
-a uniform window component for qml  
+the uniform window component for qml  
 
 # Attribute
 * caption: the title of the window  
@@ -29,5 +29,5 @@ _sample_:
 </br>
 
 # Test and Demo
-main.qml: qsTr("TWindow")  
+test.qml: qsTr("TWindow")  
 </br>

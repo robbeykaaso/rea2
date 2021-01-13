@@ -1,5 +1,5 @@
 # Abstract
-a color dialog for qml  
+the color dialog for qml  
 
 # Attribute
 * name: the instance name  
@@ -7,18 +7,21 @@ a color dialog for qml
 
 # API Pipe
 * **name + _selectColor**  
-open color dialog and select color. it is the delegate of pipe `name + _colorSelected`  
+    - open color dialog and select color  
+    - input: QJsonObject  
+    - type: pipeDelegate: name + _colorSelected  
 _sample_:  
 ```
-Pipeline2.run("_selectColor", 
-              {tag: {tag: "manual2"}})  //the service tag, the default is {tag: "manual"}
+Pipeline.run("_selectColor", {}, "manual2")
 ```  
 </br>
 
 * **name + _colorSelected**  
-output the selected color  
+    - output the selected color  
+    - ouput: string  
+    - type: pipePartial  
 </br>
 
 # Test and Demo
-main.qml: qsTr("color")  
+test.qml: qsTr("color")  
 </br>

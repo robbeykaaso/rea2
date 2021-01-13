@@ -1,9 +1,9 @@
 # Abstract
-a qmls loader component for qml  
+the qmls loader component for qml  
 
 # Attribute
 * name: the folder name. it will load all the qml files in the directory `cwd/plugin/name`  
-* onLoaded: a slot for operating the loaded component instance  
+* signal loaded: it will be emitted once the qml is loaded  
 _sample_:  
 ```
     DynamicQML{
