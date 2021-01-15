@@ -41,7 +41,7 @@ nextB("doSomething", "service0")
     - remove the next pipe  
 </br>
 
-* **execute(std::shared_ptr<stream0> aStream)**  
+* **execute(std::shared_ptr<stream0\> aStream)**  
     - trig the pipe and input a stream  
 </br>
 

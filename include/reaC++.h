@@ -41,6 +41,14 @@ private:
     friend pipeline;
 };
 
+class DSTDLL transactionManager{
+public:
+    transactionManager();
+private:
+    std::vector<QString> transactions;
+    QHash<QString, transaction*> alive_transactions;
+};
+
 class pipe0;
 template <typename T>
 class stream;
@@ -207,7 +215,7 @@ protected:
     QString m_name;
     bool m_anonymous;
     QMap<QString, QString> m_next;
-    QString m_before = "", m_after = "";
+    QString m_before = "", m_around = "", m_after = "";
     bool m_busy = false;
     std::shared_ptr<stream0> m_stream_cache = nullptr;
     QThread* m_thread = QThread::currentThread();
@@ -263,6 +271,9 @@ public:
         auto bf = aParam.value("before").toString();
         if (bf != "")
             find(bf)->m_before = ret->actName();
+        auto ar = aParam.value("around").toString();
+        if (ar != "")
+            find(ar)->m_around = ret->actName();
         auto af = aParam.value("after").toString();
         if (af != "")
             find(af)->m_after = ret->actName();
@@ -340,6 +351,7 @@ public:
     pipe0* createLocal(const QString& aName, const QJsonObject& aParam) override{
         return funcType<T, F>().createLocal(aName, aParam);
     }
+    enum AspectType {AspectBefore, AspectAround, AspectAfter};
 protected:
     pipe(const QString& aName = "", int aThreadNo = 0, bool aReplace = false) : pipe0(aName, aThreadNo, aReplace) {}
     virtual pipe0* initialize(F aFunc, const QJsonObject&){
@@ -370,11 +382,15 @@ protected:
             }
             m_stream_cache = nullptr;
         }
-        if (doAspect(m_before, aStream, true))
-            funcType<T, F>().doEvent(m_func, aStream);
+        if (doAspect(m_before, aStream, AspectType::AspectBefore)){
+            if (m_around != "")
+                doAspect(m_around, aStream, AspectType::AspectAround);
+            else
+                funcType<T, F>().doEvent(m_func, aStream);
+        }
         executed(aStream);
         if (aStream->m_outs)
-            doAspect(m_after, aStream, false);
+            doAspect(m_after, aStream, AspectType::AspectAfter);
         m_busy = false;
     }
 protected:
@@ -383,7 +399,7 @@ protected:
     friend pipeParallel<T, F>;
     friend pipeline;
 private:
-    bool doAspect(const QString& aName, std::shared_ptr<stream<T>> aStream, bool aBefore){
+    bool doAspect(const QString& aName, std::shared_ptr<stream<T>> aStream, AspectType aType){
         if (aName == "")
             return true;
         auto pip = rea::pipeline::instance()->m_pipes.value(aName);
@@ -393,10 +409,12 @@ private:
             pip2->doEvent(aStream);
             ret = aStream->m_outs != nullptr;
             if (ret){
-                if (aBefore)
-                    aStream->log(pip2->workName() + " |> " + workName());
-                else
+                if (aType == AspectType::AspectBefore){
+                    aStream->log(pip2->workName() + " <| " + workName());
+                }else if (aType == AspectType::AspectAfter)
                     aStream->log(workName() + " >| " + pip2->workName());
+                else
+                    aStream->log(workName() + " | " + pip2->workName());
             }
         }
         return ret;

@@ -240,7 +240,7 @@ public:
     QJSValue func;
 };
 
-QString tr0(const QString& aOrigin);
+DSTDLL QString tr0(const QString& aOrigin);
 
 //https://stackoverflow.com/questions/35178569/doublevalidator-is-not-checking-the-ranges-properly
 class TextFieldDoubleValidator : public QDoubleValidator {

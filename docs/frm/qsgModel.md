@@ -106,7 +106,7 @@ _sample_:
 </br>
 
 # Test and Demo
-main.qml: qsTr("qsgShow")  
+test.qml: qsTr("qsgShow")  
 </br>
 
 # Reference

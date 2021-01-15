@@ -2,7 +2,6 @@ import QtQuick 2.12
 import "../Basic"
 
 TWindow{
-    property string service_tag
     property var tr
     signal accept()
     signal reject()
@@ -112,7 +111,6 @@ TWindow{
             else
                 edit.createObject(sets, {key: i})
         setHeight(Object.keys(cnt).length * 30 + 100)
-        service_tag = aInput["tag"] || "manual"
         show()
     }
 

@@ -230,7 +230,7 @@ static regPip<QQmlApplicationEngine*> reg_recative2_qml([](stream<QQmlApplicatio
     qmlRegisterSingletonType<pipelineQML>("Pipeline", 1, 0, "Pipeline", &pipelineQML::qmlInstance);
     qmlRegisterType<TextFieldDoubleValidator>("TextFieldDoubleValidator", 1, 0, "TextFieldDoubleValidator");
     aInput->out();
-}, rea::Json("name", "regQML"));
+}, rea::Json("name", "install0_QML"), "regQML");
 
 }
 

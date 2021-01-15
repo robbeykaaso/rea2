@@ -1,5 +1,6 @@
 #include "reaC++.h"
 #include <QDir>
+#include <QApplication>
 
 namespace rea {
 
@@ -39,7 +40,7 @@ void getAllFormatFiles0( std::string path, std::vector<std::string>& files, std:
 
 void loadExtendLibraries(){
     std::vector<std::string> m_list;
-    getAllFormatFiles0((QDir::currentPath() + "/plugin").toStdString(), m_list, ".dll");
+    getAllFormatFiles0((QApplication::applicationDirPath() + "/plugin").toStdString(), m_list, ".dll");
     for (auto i : m_list){
         std::cout << "load: " << i << std::endl;
         LoadLibrary(i.data());
@@ -57,7 +58,7 @@ static regPip<QQmlApplicationEngine*> reg_dynamic_dll([](stream<QQmlApplicationE
     //ref from: https://stackoverflow.com/questions/25403363/how-to-implement-a-singleton-provider-for-qmlregistersingletontype
     loadExtendLibraries();
     aInput->out();
-}, rea::Json("name", "install0_LoadDll"), "regQML");
+}, rea::Json("name", "regQML"));
 
 static regPip<QString, pipePartial> reg_dynamic_qml([](stream<QString>* aInput){
     std::vector<std::string> m_list;

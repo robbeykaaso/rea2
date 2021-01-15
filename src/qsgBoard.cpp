@@ -33,7 +33,7 @@ QString qsgPluginTransform::getName(qsgBoard* aParent) {
                 }
             }
         aInput->out();
-    }));
+    }, rea::Json("name", "QSGTransformUpdated_" + getParentName())));  //the name is used to overwrite the same pipe of the old transform plugin
     return ret;
 }
 
