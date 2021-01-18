@@ -43,6 +43,11 @@ transactionManager::transactionManager(){
     }, rea::Json("name", "logTransaction"));
 }
 
+transactionManager::~transactionManager(){
+    rea::pipeline::remove("transactionStart");
+    rea::pipeline::remove("transactionEnd");
+    rea::pipeline::remove("logTransaction");
+}
 
 void transaction::executed(const QString& aPipe){
     auto cnt = m_candidates.value(aPipe) - 1;
@@ -298,6 +303,7 @@ pipeline::~pipeline(){
         }
     for (auto i : m_pipes.values())
         delete i;
+    m_pipes.clear();
 }
 
 pipe0* local(const QString& aName, const QJsonObject& aParam){

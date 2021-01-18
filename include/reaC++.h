@@ -44,6 +44,7 @@ private:
 class DSTDLL transactionManager{
 public:
     transactionManager();
+    ~transactionManager();
 private:
     std::vector<QString> transactions;
     QHash<QString, transaction*> alive_transactions;
