@@ -213,7 +213,6 @@ protected:
     void doNextEvent(const QMap<QString, QString>& aNexts, std::shared_ptr<stream0> aStream);
 protected:
     QString m_name;
-    bool m_anonymous;
     QMap<QString, QString> m_next;
     QString m_before = "", m_around = "", m_after = "";
     bool m_busy = false;
@@ -269,15 +268,26 @@ public:
         pipe0* ret = tmp;
 
         auto bf = aParam.value("before").toString();
-        if (bf != "")
-            find(bf)->m_before = ret->actName();
+        if (bf != ""){
+            auto joint = find(bf);
+            if (joint->m_before != "")
+                joint->m_before += ";";
+            joint->m_before += ret->actName();
+        }
         auto ar = aParam.value("around").toString();
-        if (ar != "")
-            find(ar)->m_around = ret->actName();
+        if (ar != ""){
+            auto joint = find(ar);
+            if (joint->m_around != "")
+                joint->m_around += ";";
+            joint->m_around += ret->actName();
+        }
         auto af = aParam.value("after").toString();
-        if (af != "")
-            find(af)->m_after = ret->actName();
-
+        if (af != ""){
+            auto joint = find(af);
+            if (joint->m_after != "")
+                joint->m_after += ";";
+            joint->m_after += ret->actName();
+        }
         return ret;
     }
 
@@ -402,19 +412,22 @@ private:
     bool doAspect(const QString& aName, std::shared_ptr<stream<T>> aStream, AspectType aType){
         if (aName == "")
             return true;
-        auto pip = rea::pipeline::instance()->m_pipes.value(aName);
         bool ret = false;
-        if (pip){
-            auto pip2 = dynamic_cast<pipe<T, F>*>(pip);
-            pip2->doEvent(aStream);
-            ret = aStream->m_outs != nullptr;
-            if (ret){
-                if (aType == AspectType::AspectBefore){
-                    aStream->log(pip2->workName() + " <| " + workName());
-                }else if (aType == AspectType::AspectAfter)
-                    aStream->log(workName() + " >| " + pip2->workName());
-                else
-                    aStream->log(workName() + " | " + pip2->workName());
+        auto nms = aName.split(";");
+        for (auto i : nms){
+            auto pip = rea::pipeline::instance()->m_pipes.value(i);
+            if (pip){
+                auto pip2 = dynamic_cast<pipe<T, F>*>(pip);
+                pip2->doEvent(aStream);
+                if (aStream->m_outs){
+                    ret = true;
+                    if (aType == AspectType::AspectBefore){
+                        aStream->log(pip2->workName() + " <| " + workName());
+                    }else if (aType == AspectType::AspectAfter)
+                        aStream->log(workName() + " >| " + pip2->workName());
+                    else
+                        aStream->log(workName() + " | " + pip2->workName());
+                }
             }
         }
         return ret;

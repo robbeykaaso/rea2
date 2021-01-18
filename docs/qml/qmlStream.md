@@ -19,8 +19,8 @@
 
 * **QVariant outs(QJSValue aOut, const QString& aNext = "", const QString& aTag = "", bool aShareCache = true)**  
     - pass the stream to its next specific pipe by `aNext`  
-    - if `aNext` equals to "", it will only run all the anonymous nexts  
-    - if `aNext` doesn't equal to "" and isn't connected, it will try to run the `localPipe` with the same name. if there still not exists the same name `localPipe`, it will try to run the specific pipe directly on whole range  
+    - if `aNext` equals to "", it will only run all the nexts  
+    - if `aNext` doesn't equal to "", it will try to run the `localPipe` with the same name. if there still not exists the same name `localPipe`, it will try to run the specific pipe directly on whole range  
     - this function will format the stragety of `out`  
     - `aShareCache` denotes whether the out stream to share the scope cache with self  
     - return this out stream  

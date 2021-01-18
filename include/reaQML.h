@@ -9,7 +9,7 @@
 
 namespace rea {
 
-class qmlStream : public QObject
+class DSTDLL qmlStream : public QObject
 {
     Q_OBJECT
 public:
@@ -140,12 +140,12 @@ public:
             if (stm.m_outs){
                 aStream->out(stm.m_tag);
                 for (auto i : *stm.m_outs){
-                    if (i.second->data().isObject()){
-                        auto ot = aStream->template outs<QJsonObject>(valType<QJsonObject>::data(i.second->data()), i.first, i.second->m_tag);
+                    if (i.second->data().isArray()){  //isArray must isObject
+                        auto ot = aStream->template outs<QJsonArray>(valType<QJsonArray>::data(i.second->data()), i.first, i.second->m_tag);
                         if (i.second->m_cache != aStream->m_cache)
                             ot->m_cache = i.second->m_cache;
-                    }else if (i.second->data().isArray()){
-                        auto ot = aStream->template outs<QJsonArray>(valType<QJsonArray>::data(i.second->data()), i.first, i.second->m_tag);
+                    }else if (i.second->data().isObject()){
+                        auto ot = aStream->template outs<QJsonObject>(valType<QJsonObject>::data(i.second->data()), i.first, i.second->m_tag);
                         if (i.second->m_cache != aStream->m_cache)
                             ot->m_cache = i.second->m_cache;
                     }else if (i.second->data().isNumber()){

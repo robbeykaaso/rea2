@@ -62,6 +62,21 @@ TWindow{
         }
     }
 
+    Component{
+        id: cmbe
+        ComboE{
+            property string key
+            property var mdl
+            property string val
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: parent.width - 20
+            caption.text: tr(key) + ":"
+            ratio: 0.4
+            combo.modellist: mdl
+            combo.currentSelect: val
+        }
+    }
+
     content:
         Rectangle{
             anchors.fill: parent
@@ -93,7 +108,9 @@ TWindow{
                 dt[itms[i].key] = itms[i].spin.value
             else if (itms[i] instanceof Combo)
                 dt[itms[i].key] = itms[i].val[itms[i].combo.currentIndex]
-        return {data: dt, out: {}}
+            else if (itms[i] instanceof ComboE)
+                dt[itms[i].key] = itms[i].combo.currentSelect
+        return dt
     }
 
     function showModel(aInput){
@@ -102,8 +119,12 @@ TWindow{
         for (var j = 0; j < sets.children.length; ++j)
             sets.children[j].destroy()
         for (var i in cnt)
-            if (typeof cnt[i] == "object" && cnt[i]["model"])
-                cmb.createObject(sets, {key: i, mdl: cnt[i]["model"], val: cnt[i]["value"] || cnt[i]["model"], idx: cnt[i]["index"]})
+            if (typeof cnt[i] == "object"){
+                if (cnt[i]["model"])
+                    cmb.createObject(sets, {key: i, mdl: cnt[i]["model"], val: cnt[i]["value"] || cnt[i]["model"], idx: cnt[i]["index"]})
+                else if (cnt[i]["modele"])
+                    cmbe.createObject(sets, {key: i, mdl: cnt[i]["modele"], val: cnt[i]["value"] || (cnt[i]["modele"].length > 0 ? cnt[i]["modele"][0] : "" )})
+            }
             else if (typeof cnt[i] == "number")
                 spn.createObject(sets, {key: i, val: cnt[i]})
             else if (typeof cnt[i] == "boolean")

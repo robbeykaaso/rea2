@@ -90,8 +90,7 @@ void stream0::executed(const QString& aPipe){
 }
 
 pipe0::pipe0(const QString& aName, int aThreadNo, bool aReplace){
-    m_anonymous = aName == "";
-    if (m_anonymous)
+    if (aName == "")
         m_name = generateUUID();
     else
         m_name = aName;
@@ -142,34 +141,26 @@ void pipe0::doNextEvent(const QMap<QString, QString>& aNexts, std::shared_ptr<st
                 if (i.first == ""){
                     for (auto j : aNexts.keys()){
                         auto pip = pipeline::find(j, false);
-                        if (pip && pip->m_anonymous){
+                        if (pip){
                             aStream->addTrig(workName(), pip->workName());
                             pip->execute(i.second);
                         }
                     }
                 }else{
-                    if (aNexts.contains(i.first)){
+                    bool exed = false;
+                    for (auto j : aNexts.keys()){
+                        auto pip = pipeline::find(j, false);
+                        if (pip && pip->localName() == i.first){
+                            aStream->addTrig(workName(), pip->workName());
+                            pip->execute(i.second);
+                            exed = true;
+                        }
+                    }
+                    if (!exed){
                         auto pip = pipeline::find(i.first, false);
                         if (pip){
                             aStream->addTrig(workName(), pip->workName());
                             pip->execute(i.second);
-                        }
-                    }else{
-                        bool exed = false;
-                        for (auto j : aNexts.keys()){
-                            auto pip = pipeline::find(j, false);
-                            if (pip && pip->localName() == i.first){
-                                aStream->addTrig(workName(), pip->workName());
-                                pip->execute(i.second);
-                                exed = true;
-                            }
-                        }
-                        if (!exed){
-                            auto pip = pipeline::find(i.first, false);
-                            if (pip){
-                                aStream->addTrig(workName(), pip->workName());
-                                pip->execute(i.second);
-                            }
                         }
                     }
                 }
