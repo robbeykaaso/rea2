@@ -12,6 +12,7 @@ PWindow0 {
     }
 
     onReject: {
+        Pipeline.run("_objectNew", {}, service_tag, false)
         close()
     }
 

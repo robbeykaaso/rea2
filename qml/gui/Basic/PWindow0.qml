@@ -96,6 +96,10 @@ TWindow{
         }}
     ]
 
+    onClosed: {
+        reject()
+    }
+
     function outputModel(){
         var dt = {}
         var itms = sets.children

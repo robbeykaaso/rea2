@@ -11,6 +11,7 @@ Window{
     property var titlebuttons
     property var footbuttons
     property bool titlevisible: true
+    signal closed()
     flags: Qt.Window | Qt.CustomizeWindowHint //Qt.FramelessWindowHint
     modality: Qt.WindowModal
     width: 400
@@ -137,6 +138,7 @@ Window{
                     }
                     btns.model.append({cap: "X"})
                     btns.itemAt(btns.count - 1).clicked.connect(function(){
+                        closed()
                         close()
                     })
                 }

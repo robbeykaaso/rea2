@@ -538,8 +538,7 @@ protected:
             if (eve->getName() == pipe0::m_name){
                 auto stm = std::dynamic_pointer_cast<stream<T>>(eve->getStream());
                 doEvent(stm);
-                if (stm->tag() != "")
-                    doNextEvent(m_next2.value(stm->tag()), stm);
+                doNextEvent(m_next2.value(stm->tag()), stm);
             }
         }
         return true;
