@@ -130,7 +130,7 @@ public:
     }
 
     template<typename S>
-    stream<S>* outs(S aOut, const QString& aNext = "", const QString& aTag = "", bool aShareCache = true){
+    stream<S>* outs(S aOut = S(), const QString& aNext = "", const QString& aTag = "", bool aShareCache = true){
         if (!m_outs)
             m_outs = std::make_shared<std::vector<std::pair<QString, std::shared_ptr<stream0>>>>();
         auto ot = std::make_shared<stream<S>>(aOut, aTag == "" ? m_tag : aTag, aShareCache ? m_cache : nullptr, m_transaction);
@@ -139,13 +139,13 @@ public:
     }
 
     template<typename S>
-    stream<T>* outsB(S aOut, const QString& aNext = "", const QString& aTag = "", bool aShareCache = true){
+    stream<T>* outsB(S aOut = S(), const QString& aNext = "", const QString& aTag = "", bool aShareCache = true){
         outs<S>(aOut, aNext, aTag, aShareCache);
         return this;
     }
 
     template<typename S>
-    stream<T>* var(const QString& aName, S aData){
+    stream<T>* var(const QString& aName, S aData = S()){
         m_cache->insert(aName, std::make_shared<stream<S>>(aData));
         return this;
     }
@@ -512,15 +512,6 @@ private:
 template <typename T, typename F>
 class pipePartial : public pipe<T, F> {
 public:
-    pipe0* next(pipe0* aNext, const QString& aTag = "") override{
-        insertNext(aNext->actName(), aTag);
-        return aNext;
-    }
-    pipe0* next(const QString& aName, const QString& aTag = "") override{
-        insertNext(aName, aTag);
-        auto nxt = pipeline::find(aName);
-        return nxt;
-    }
     void removeNext(const QString& aName) override {
         for (auto i : m_next2)
             i.remove(aName);

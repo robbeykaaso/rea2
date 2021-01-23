@@ -25,7 +25,7 @@ pipeline::add<QString, pipeParallel>([](rea::stream<QString>* aInput){
 </br>
 
 # Test and Demo
-src/reactive2.cpp: test9()  
+test_rea.cpp: test9()  
 </br>
 
 # Reference

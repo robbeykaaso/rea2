@@ -56,7 +56,6 @@ add_library(REA SHARED
     "src/modbusMaster.cpp"
     "src/server.cpp"
     "src/client.cpp"
-    "src/unitTest.cpp"
     )
 
 # 创建动态库别名

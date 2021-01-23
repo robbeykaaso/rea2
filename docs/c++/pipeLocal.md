@@ -23,7 +23,7 @@ pipeline::add<QString>([](stream<QString>* aInput){
 </br>
 
 # Test and Demo
-src/reactive2.cpp: test4()  
+test_rea.cpp: test4()  
 </br>
 
 # Reference

@@ -17,7 +17,7 @@ a normal tcp socket server which maintains multi-clients
 </br>
 
 # Test and Demo
-unitTest.cpp: testSocket()  
+test_tcp.cpp    
 </br>
 
 # Reference

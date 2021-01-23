@@ -17,7 +17,7 @@ re::pipeManager::add<QJsonObject, pipeThrottle>(stream<QJsonObject>* aInput){
 </br>
 
 # Test and Demo
-src/reactive2.cpp: test10()  
+test_rea.cpp: test10()  
 </br>
 
 # Reference

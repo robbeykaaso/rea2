@@ -43,7 +43,7 @@ _sample_:
 </br>
 
 # Test and Demo
-storage0.cpp: testStorage(const QString& aRoot = "")
+test_storage.cpp    
 
 # Reference
 [stgData](stgData.md)  

@@ -106,7 +106,7 @@ _sample_:
 </br>
 
 # Test and Demo
-test.qml: qsTr("qsgShow")  
+test.qml: qsTr("qsgShow"); test_qsg.cpp  
 </br>
 
 # Reference

@@ -31,7 +31,7 @@ Pipeline2.add(null, {name: "test7_", type: "Buffer", count: 2})  //qml
 </br>
 
 # Test and Demo
-src/reactive2.cpp: test7()  
+test_rea.cpp: test7()  
 </br>
 
 # Reference

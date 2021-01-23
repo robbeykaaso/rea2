@@ -29,7 +29,7 @@ a normal tcp socket client which link a server
 </br>
 
 # Test and Demo
-unitTest.cpp: testSocket()  
+test_tcp.cpp  
 </br>
 
 # Reference

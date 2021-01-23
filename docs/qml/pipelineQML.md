@@ -36,4 +36,4 @@ Pipeline.run("pathSelected", {path: ""}, "service1")
 </br>
 
 # Test and Demo
-src/reactive2.cpp: test8()
+test_rea.cpp: test8()

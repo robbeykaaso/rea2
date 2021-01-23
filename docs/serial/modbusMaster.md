@@ -16,5 +16,5 @@ a serial modbus master, the constructor config is QModbusDevice::SerialPortNameP
 </br>
 
 # Test and Demo
-modbusMaster.cpp: unit_test  
+test_modbus.cpp  
 </br>

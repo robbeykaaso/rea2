@@ -13,8 +13,7 @@ pipePartial
 pipeline::add<QJsonObject, pipePartial>([](stream<QJsonObject>* aInput){  //c++
     aInput.out();
 }, Json("name", "WCS2SCS"))
-->next("doSomething", "service1")  //tag the connection
-
+->next("doSomething", "service1;service2")  //tag the connection; support multiple services by semicolon
 
 
 Pipeline2.add(function(aInput){  //qml
@@ -29,7 +28,7 @@ pipeline::run<QJsonObject>("WCS2SCS", QJsonObject(), "service1")  //the conectio
 </br>
 
 # Test and Demo
-src/reactive2.cpp: test6()  
+test_rea.cpp: test6()  
 </br>
 
 # Reference

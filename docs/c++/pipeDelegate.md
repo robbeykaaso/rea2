@@ -20,7 +20,7 @@ re::pipeManager::add<QJsonObject>([](stream<QJsonObject>* aInput){
 </br>
 
 # Test and Demo
-src/reactive2.cpp: test5()  
+test_rea.cpp: test5()  
 </br>
 
 # Reference
