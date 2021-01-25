@@ -56,7 +56,7 @@ Window{
                     anchors.fill: parent
                     property variant source: Image{
                         anchors.fill: parent
-                        source: "file:resource/logo.png"
+                        source: "../../resource/logo.png"
                     }
                     property real amplitude: 0
                     property real frequency: 20
