@@ -28,7 +28,7 @@ find_package(Qt5 COMPONENTS Widgets Core Quick SerialPort SerialBus REQUIRED)
 
 # 根据库文件代码生成动态库
 add_library(REA SHARED
-#    "qml.qrc"
+    "qml.qrc"
     "include/ssdp.h"
     "include/util.h"
     "include/reaC++.h"

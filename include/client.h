@@ -27,6 +27,7 @@ private:
     bool m_valid = false;
     QTimer search_timer_;
     QString m_detail;
+    QHash<QString, QQueue<QString>> m_calls;
 };
 
 }

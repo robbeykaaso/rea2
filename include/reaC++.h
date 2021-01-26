@@ -59,7 +59,7 @@ using pipeFunc = std::function<void(stream<T>*)>;
 template <typename T, typename F = pipeFunc<T>>
 class pipe;
 
-class DSTDLL stream0{
+class DSTDLL stream0 : public std::enable_shared_from_this<stream0>{
 public:
     stream0(const QString& aTag = "") {m_tag = aTag;}
     stream0(const stream0&) = default;
@@ -78,6 +78,7 @@ public:
     QString tag(){
         return m_tag;
     }
+    QString cache();
 protected:
     void addTrig(const QString& aStart, const QString& aNext){
         if (m_transaction)
@@ -89,6 +90,7 @@ protected:
     std::shared_ptr<std::vector<std::pair<QString, std::shared_ptr<stream0>>>> m_outs = nullptr;
     std::shared_ptr<transaction> m_transaction = nullptr;
     friend class pipe0;
+    friend pipeline;
     template<typename T, typename F>
     friend class pipe;
 };
@@ -314,6 +316,19 @@ public:
         }
     }
 
+    template<typename T>
+    static void runC(const QString& aName, T aInput, const QString& aStreamID, const QString& aTag = ""){
+        auto pip = instance()->m_pipes.value(aName);
+        if (pip){
+            auto stm = instance()->m_stream_cache.value(aStreamID);
+            if (stm){
+                instance()->m_stream_cache.remove(aStreamID);
+                pip->execute(std::make_shared<stream<T>>(aInput, aTag == "" ? stm->tag() : aTag, stm->m_cache, stm->m_transaction));
+            }else
+                pip->execute(std::make_shared<stream<T>>(aInput, aTag, nullptr, nullptr));
+        }
+    }
+
     template<typename T, typename F = pipeFunc<T>>
     static void call(const QString& aName, T aInput){
         auto pip = instance()->m_pipes.value(aName);
@@ -327,9 +342,11 @@ private:
     QThread* findThread(int aNo);
     QHash<QString, pipe0*> m_pipes;
     QHash<int, std::shared_ptr<QThread>> m_threads;
+    QHash<QString, std::shared_ptr<stream0>> m_stream_cache;
     friend pipe0;
     friend pipeFuture;
     friend transaction;
+    friend stream0;
     template<typename T, typename F>
     friend class pipe;
 };
@@ -389,7 +406,8 @@ protected:
             if (!aStream->m_transaction){
                 aStream->m_transaction = m_stream_cache->m_transaction;
                 aStream->m_cache = m_stream_cache->m_cache;
-                aStream->m_tag = m_stream_cache->m_tag;
+                if (aStream->m_tag == "")
+                    aStream->m_tag = m_stream_cache->m_tag;
             }
             m_stream_cache = nullptr;
         }

@@ -46,7 +46,7 @@ void fsStorage0::writeByteArray(const QString& aPath, const QByteArray& aData){
         fl.write(aData);
         fl.close();
     }else{
-        qDebug() << "write bytearray: " + aPath + " failed!\n";
+//        qDebug() << "write bytearray: " + aPath + " failed!\n";
     }
 }
 
@@ -57,8 +57,9 @@ QJsonObject fsStorage0::readJson(const QString& aPath){
         QJsonDocument doc = QJsonDocument::fromJson(fl.readAll());
         ret = doc.object();
         fl.close();
-    }else
-        qDebug() << "read json: " + aPath + " failed!\n";
+    }else{
+//        qDebug() << "read json: " + aPath + " failed!\n";
+    }
     return ret;
 }
 
@@ -72,8 +73,9 @@ QByteArray fsStorage0::readByteArray(const QString& aPath){
     if (fl.open(QFile::ReadOnly)){
         ret = fl.readAll();
         fl.close();
-    }else
-        qDebug() << "read bytearray: " + aPath + " failed!\n";
+    }else{
+//        qDebug() << "read bytearray: " + aPath + " failed!\n";
+    }
     return ret;
 }
 

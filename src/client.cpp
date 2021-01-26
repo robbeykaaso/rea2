@@ -1,5 +1,6 @@
 #include "client.h"
 #include "reaC++.h"
+#include <QQueue>
 #include <QJsonDocument>
 #include <QNetworkProxy>
 
@@ -15,7 +16,7 @@ normalClient::normalClient(const QJsonObject& aConfig) : QObject()
 
     connect(&m_socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(ReceiveState(QAbstractSocket::SocketState)));
 
-    rea::pipeline::add<QJsonObject, rea::pipeDelegate>([this](rea::stream<QJsonObject>* aInput){
+    auto send_server = [this](rea::stream<QJsonObject>* aInput){
         if (!m_valid)
             return;
         auto dt = aInput->data();
@@ -25,7 +26,13 @@ normalClient::normalClient(const QJsonObject& aConfig) : QObject()
         m_socket.flush();  //waitForBytesWritten
         while (m_socket.bytesToWrite() > 0)
             std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        aInput->out();
+    };
+    rea::pipeline::add<QJsonObject, rea::pipeDelegate>([this, send_server](rea::stream<QJsonObject>* aInput){
+        send_server(aInput);
+        tryFind(&m_calls, aInput->data().value("type").toString())->push_back(aInput->cache());
     }, rea::Json("name", "callServer", "delegate", "receiveFromServer"));
+    rea::pipeline::add<QJsonObject, rea::pipePartial>(send_server, rea::Json("name", "postServer"));
 
     rea::pipeline::add<QJsonObject, rea::pipePartial>([](rea::stream<QJsonObject>* aInput){
         aInput->out();
@@ -98,7 +105,13 @@ void normalClient::ReceiveMessage()
         QJsonDocument doc = QJsonDocument::fromJson(msg.toUtf8());
         auto res = doc.object();
         rea::pipeline::run<QJsonObject>("clientBoardcast", rea::Json("value", "receive from server: " + res.value("type").toString()));
-        rea::pipeline::run<QJsonObject>("receiveFromServer", res, res.value("type").toString(), false);
+        auto tp = res.value("type").toString();
+        auto cls = tryFind(&m_calls, tp);
+        if (cls->size() > 0){
+            rea::pipeline::runC<QJsonObject>("receiveFromServer", res, cls->front(), tp);
+            cls->pop_back();
+        }else
+            rea::pipeline::run<QJsonObject>("receiveFromServer", res, tp);
     }
 }
 

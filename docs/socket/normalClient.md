@@ -8,6 +8,12 @@ a normal tcp socket client which link a server
     - type: pipeDelegate: receiveFromServer  
 </br>
 
+* **postServer**  
+    - post the json message to the server  
+    - input: QJsonObject  
+    - type: pipePartial  
+</br>
+
 * **receiveFromServer**  
     - got the message from a server  
     - output: clientMessage  

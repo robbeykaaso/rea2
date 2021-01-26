@@ -76,7 +76,7 @@ QHostAddress GetLocalIP()
     foreach (QHostAddress address, list)
     {
         if(address.protocol() == QAbstractSocket::IPv4Protocol){
-            if (address.toString().indexOf("192") == 0){
+            if (address.toString().indexOf("172") == 0){
                 return address;
             }
             rets.push_back(address);
