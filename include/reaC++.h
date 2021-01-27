@@ -303,7 +303,7 @@ public:
     }
 
     template<typename T>
-    static void run(const QString& aName, T aInput, const QString& aTag = "", bool aTransaction = true){
+    static void run(const QString& aName, T aInput, const QString& aTag = "", bool aTransaction = true, std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> aScopeCache = nullptr){
         auto pip = instance()->m_pipes.value(aName);
         if (pip){
             auto rt = aTransaction ? std::make_shared<transaction>(aName, aTag) : nullptr;
@@ -312,7 +312,7 @@ public:
                 if (st)
                     st->execute(std::make_shared<stream<transaction*>>(rt.get()));
             }
-            pip->execute(std::make_shared<stream<T>>(aInput, aTag, nullptr, rt));
+            pip->execute(std::make_shared<stream<T>>(aInput, aTag, aScopeCache, rt));
         }
     }
 

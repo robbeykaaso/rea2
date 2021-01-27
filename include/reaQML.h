@@ -217,7 +217,7 @@ public:
 
         return new pipelineQML();
     }
-    static Q_INVOKABLE void run(const QString& aName, const QJSValue& aInput, const QString& aTag = "", bool aTransaction = true);
+    static Q_INVOKABLE void run(const QString& aName, const QJSValue& aInput, const QString& aTag = "", bool aTransaction = true, const QJsonObject& aScopeCache = QJsonObject());
     static Q_INVOKABLE void remove(const QString& aName);
     /*
      * @aParam

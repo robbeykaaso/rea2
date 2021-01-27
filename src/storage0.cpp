@@ -139,6 +139,20 @@ fsStorage0::fsStorage0(const QString& aRoot){
         aInput->out();
     }, rea::Json("name", m_root + "deletePath", "thread", 11));
 
+    rea::pipeline::add<QString, rea::pipePartial>(
+        [this](rea::stream<QString>* aInput) {
+            auto dt = aInput->data();
+            aInput->var<QJsonObject>(dt, readJson(dt))->out();
+        },
+        rea::Json("name", m_root + "readJson2", "thread", 10));
+
+    rea::pipeline::add<QString, rea::pipePartial>(
+        [this](rea::stream<QString>* aInput) {
+            auto dt = aInput->data();
+            writeJson(dt, aInput->varData<QJsonObject>(dt));
+            aInput->out();
+        },
+        rea::Json("name", m_root + "writeJson2", "thread", 11));
 }
 
 /*bool safetyWrite(const QString& aPath, const QByteArray& aData){

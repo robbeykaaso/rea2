@@ -59,7 +59,7 @@ Item {
                 if (imagePath[type]) {
                     return imagePath[type]
                 } else {
-                    return 'text.png'
+                    return '../../resource/text.png'
                 }
             }
 
@@ -137,7 +137,7 @@ Item {
                                      && (openWay === 'single'
                                          || openWay === 'all')
                             anchors.rightMargin: openOrClose.visible ? 20 : 0
-                            source: objRecursiveColumn.children[1].visible ? "triangle-down.png" : "triangle-right.png"
+                            source: objRecursiveColumn.children[1].visible ? "../../resource/triangle-down.png" : "../../resource/triangle-right.png"
 
                             MouseArea {
                                 anchors.fill: parent
@@ -155,7 +155,7 @@ Item {
                                      && (openWay === 'double'
                                          || openWay === 'all')
                             anchors.leftMargin: folder.visible ? 5 : 0
-                            source: objRecursiveColumn.children[1].visible ? "open.png" : "folder.png"
+                            source: objRecursiveColumn.children[1].visible ? "../../resource/open.png" : "../../resource/folder.png"
                         }
 
                         Image {

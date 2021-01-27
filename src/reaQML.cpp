@@ -119,17 +119,34 @@ pipelineQML::~pipelineQML(){
     }
 }
 
-void pipelineQML::run(const QString& aName, const QJSValue& aInput, const QString& aTag, bool aTransaction){
+void pipelineQML::run(const QString& aName, const QJSValue& aInput, const QString& aTag, bool aTransaction, const QJsonObject& aScopeCache){
+    std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> ch = nullptr;
+    if (!aScopeCache.empty()){
+        ch = std::make_shared<QHash<QString, std::shared_ptr<stream0>>>();
+        for (auto i : aScopeCache.keys()){
+            auto val = aScopeCache.value(i);
+            if (val.isString())
+                ch->insert(i, std::make_shared<stream<QString>>(val.toString()));
+            else if (val.isBool())
+                ch->insert(i, std::make_shared<stream<bool>>(val.toBool()));
+            else if (val.isDouble())
+                ch->insert(i, std::make_shared<stream<double>>(val.toDouble()));
+            else if (val.isArray())
+                ch->insert(i, std::make_shared<stream<QJsonArray>>(val.toArray()));
+            else
+                ch->insert(i, std::make_shared<stream<QJsonObject>>(val.toObject()));
+        }
+    }
     if (aInput.isString())
-        pipeline::run<QString>(aName, aInput.toString(), aTag, aTransaction);
+        pipeline::run<QString>(aName, aInput.toString(), aTag, aTransaction, ch);
     else if (aInput.isBool())
-        pipeline::run<bool>(aName, aInput.toBool(), aTag, aTransaction);
+        pipeline::run<bool>(aName, aInput.toBool(), aTag, aTransaction, ch);
     else if (aInput.isNumber())
-        pipeline::run<double>(aName, aInput.toNumber(), aTag, aTransaction);
+        pipeline::run<double>(aName, aInput.toNumber(), aTag, aTransaction, ch);
     else if (aInput.isArray())
-        pipeline::run<QJsonArray>(aName, QJsonArray::fromVariantList(aInput.toVariant().toList()), aTag, aTransaction);
+        pipeline::run<QJsonArray>(aName, QJsonArray::fromVariantList(aInput.toVariant().toList()), aTag, aTransaction, ch);
     else
-        pipeline::run<QJsonObject>(aName, QJsonObject::fromVariantMap(aInput.toVariant().toMap()), aTag, aTransaction);
+        pipeline::run<QJsonObject>(aName, QJsonObject::fromVariantMap(aInput.toVariant().toMap()), aTag, aTransaction, ch);
 }
 
 void pipelineQML::remove(const QString& aName){
