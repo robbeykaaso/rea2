@@ -51,5 +51,11 @@
         <file>qml/gui/Basic/EditCombo.qml</file>
         <file>qml/resource/logo.png</file>
         <file>qml/resource/triangle-down.png</file>
+        <file>qml/resource/folder.png</file>
+        <file>qml/resource/image.png</file>
+        <file>qml/resource/open.png</file>
+        <file>qml/resource/shape.png</file>
+        <file>qml/resource/text.png</file>
+        <file>qml/resource/triangle-right.png</file>
     </qresource>
 </RCC>

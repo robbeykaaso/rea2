@@ -64,5 +64,12 @@ _example_:
 </br>
 
 * **void log(const QString& aLog)**  
-    - add a log to this transaction if exists
+    - add a log to this transaction if exists  
+</br>
+
+* **QString cache(const QString& aID = "")**  
+    - cache the stream into the pipeline  
+    - it is used with `runC` of pipeline for the continous of the pipeDelegate  
+    - it returns the stream id  
+    - `aID` is provoided for other languages wrapper  
 </br>

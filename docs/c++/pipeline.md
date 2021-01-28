@@ -30,17 +30,23 @@ topo result: pipe... -> pipe3(pipe0) -> pipe1 -> pipe...
     - `needFuture` is used for the case that the pipe is not existed now, but will be existed in the future  
 </br>
 
-* **void run<T>(const QString& aName, T aInput, const QString& aTag = "", bool aTransaction = true)**  
+* **void run<T>(const QString& aName, T aInput, const QString& aTag = "", bool aTransaction = true, std::shared_ptr<QHash<QString, std::shared_ptr<stream0\>\>\> aScopeCache = nullptr)**  
     - execute the specific pipe by name and start a pipeline procedure  
     - `aTransaction` denotes whether to create atransaction for this whole procedure  
+    - `aScopeCache` denotes the scopecache for the stream  
 _sample_:  
 ```
 run<int>("pipe0", 0, "service0")
 ```  
 </br>
 
+* **void runC<T>(const QString& aName, T aInput, const QString& aStreamID, const QString& aTag = "")**  
+    - execute the specific pipe by name with the cached stream  
+    - it is used with `cache` of stream for pipeDelegate  
+</br>
+
 * **void call<T, F\>(const QString& aName, T aInput)**  
-    - execute the specific pipe only on current thread  
+    - only execute the specific pipe on current thread  
 </br>
 
 * **void remove(const QString& aName)**  

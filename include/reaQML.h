@@ -59,7 +59,10 @@ public:
     Q_INVOKABLE QString tag(){
         return m_tag;
     }
-
+    Q_INVOKABLE QString cache(){
+        m_cache_id = generateUUID();
+        return m_cache_id;
+    }
 private:
     std::shared_ptr<transaction> getTransaction(){
         if (!m_transaction)
@@ -69,6 +72,7 @@ private:
     QJSValue m_data;
     std::shared_ptr<std::vector<std::pair<QString, std::shared_ptr<qmlStream>>>> m_outs = nullptr;
     QString m_tag;
+    QString m_cache_id = "";
     std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> m_cache;
     std::shared_ptr<transaction> m_transaction;
     template<typename T, typename F>
@@ -167,6 +171,8 @@ public:
                         qFatal("Invalid data type in qmlStream!");
                 }
             }
+            if (stm.m_cache_id != "")
+                aStream->cache(stm.m_cache_id);
         }
     }
     std::shared_ptr<stream0> createStreamList(std::vector<T>& aDataList, std::shared_ptr<stream<T>> aStream){
@@ -218,6 +224,8 @@ public:
         return new pipelineQML();
     }
     static Q_INVOKABLE void run(const QString& aName, const QJSValue& aInput, const QString& aTag = "", bool aTransaction = true, const QJsonObject& aScopeCache = QJsonObject());
+    static Q_INVOKABLE void runC(const QString& aName, const QJSValue& aInput, const QString& aStreamID, const QString& aTag = "");
+    static Q_INVOKABLE void call(const QString& aName, const QJSValue& aInput);
     static Q_INVOKABLE void remove(const QString& aName);
     /*
      * @aParam

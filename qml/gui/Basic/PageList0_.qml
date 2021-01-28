@@ -17,31 +17,12 @@ Column {
     property int select: - 1
     property int entrycount: 0
     property int pageindex: 0
-
-    property var tableLists: []
-
-    onWidthChanged: updateChildrenWidth()
-
-    function updateChildrenWidth() {
-        for (var i = 0; i < rep.children.length; ++i) {
-            rep.children[i].width = parent.width / title.length + (i == title.length - 1 ? 0 : 1)
-
-            var lists = tableLists.filter(v => v.index === i)
-
-            for (var j = 0; j < lists.length; ++j) {
-                lists[j].component.width = rep.children[i].width
-            }
-        }
-    }
-
     width: 100
     height: 200
     Row {
         width: parent.width
         height: 30
         spacing: -1
-        id: rep
-
         Repeater {
             model: title.length
             delegate: Rectangle {
@@ -49,83 +30,10 @@ Column {
                 width: parent.width / title.length + (index == title.length - 1 ? 0 : 1)
                 height: parent.height
                 Text {
-                    id: textV
                     text: tr(title[index])
                     anchors.fill: parent
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
-                    elide: Text.ElideRight
-                    clip: true
-                }
-
-                Rectangle {
-                    width: 1
-                    height: parent.height
-                    anchors.left: textV.right
-                    visible: index !== title.length - 1
-
-                    Rectangle {
-                        width: 1
-                        height: parent.height
-                        color: 'black'
-                    }
-
-                    MouseArea {
-                        hoverEnabled: true
-                        width: 1
-                        height: parent.height
-
-                        property var origin_shape
-                        property int coor_x
-                        property int coor_y
-
-                        onEntered: {
-                            if (index !== title.length - 1) {
-                                origin_shape = cursorShape
-                                cursorShape = Qt.SplitHCursor
-                            }
-                        }
-                        onExited: {
-                            if (index !== title.length - 1) {
-                                cursorShape = origin_shape
-                            }
-                        }
-                        onPressed: function (aInput) {
-                            coor_x = aInput["x"]
-                            coor_y = aInput["y"]
-                        }
-                        onPositionChanged: function (aInput) {
-                            if (aInput.buttons === Qt.LeftButton
-                                    && index !== title.length - 1) {
-                                var allWidth = rep.children[index].width
-                                        + rep.children[index + 1].width
-
-                                var x = aInput.x
-                                if (x < 0 && Math.abs(
-                                            x) < rep.children[index].width) {
-
-                                    rep.children[index + 1].width
-                                            = rep.children[index + 1].width + Math.abs(
-                                                x)
-                                    rep.children[index].width = allWidth
-                                            - rep.children[index + 1].width
-                                } else if (x > 0
-                                           && x < rep.children[index + 1].width) {
-                                    rep.children[index].width = rep.children[index].width + x
-                                    rep.children[index + 1].width = allWidth
-                                            - rep.children[index].width
-                                }
-
-                                for (var i = 0; i < rep.children.length; ++i) {
-                                    var lists = tableLists.filter(v => v.index === i)
-
-                                    for (var j = 0; j < lists.length; ++j) {
-                                        lists[j].component.width = rep.children[i].width
-                                    }
-                                }
-                            }
-                        }
-                    }
                 }
             }
         }
@@ -147,7 +55,6 @@ Column {
                 Repeater {
                     model: title.length
                     delegate: Text {
-                        id: textR
                         width: parent.width / title.length + (index == title.length - 1 ? 0 : 1)
                         height: parent.height
                         text: entry[index]
@@ -156,14 +63,6 @@ Column {
                         verticalAlignment: Text.AlignVCenter
                         elide: Text.ElideRight
                         clip: true
-
-                        Component.onCompleted: {
-                            var item = {
-                                "index": index,
-                                "component": textR
-                            }
-                            tableLists.push(item)
-                        }
                     }
                 }
             }

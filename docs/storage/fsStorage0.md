@@ -14,6 +14,19 @@ _sample_:
 ```  
 </br>
 
+* **afileRoot + readJson2/writeJson2**  
+    - read/write the QJsonObject  
+    - input: QString(the path)  
+    - output: QString  
+    - varData: (the path: QJsonObject)  
+    - type: pipePartial  
+_sample_:
+```
+import Pipeline 1.0
+Pipeline.run("writeJson2", "testFS2.json", "testQMLStg", false, {"testFS2.json": {hello: "world"}})
+```  
+</br>
+
 * **afileRoot + readByteArray/writeByteArray**  
     - read/write the QByteArray  
     - input: stgData<QByteArray\>  

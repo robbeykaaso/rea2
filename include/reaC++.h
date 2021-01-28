@@ -78,7 +78,7 @@ public:
     QString tag(){
         return m_tag;
     }
-    QString cache();
+    QString cache(const QString& aID = "");
 protected:
     void addTrig(const QString& aStart, const QString& aNext){
         if (m_transaction)

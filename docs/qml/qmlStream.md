@@ -55,5 +55,11 @@
 </br>
 
 * **void log(const QString& aLog)**  
-    - add a log to this transaction if exists
+    - add a log to this transaction if exists  
+</br>
+
+* **QString cache()**  
+    - cache the stream into the pipeline  
+    - it is used with `runC` of pipeline for the continous of the pipeDelegate  
+    - it returns the stream id  
 </br>

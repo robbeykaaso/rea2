@@ -19,12 +19,23 @@ Pipeline.add(function(aInput){
     - find the specific qmlPipe by name  
 </br>
 
-* **void run(const QString& aName, const QJSValue& aInput, const QString& aTag = "", bool aTransaction = true)**  
+* **void run(const QString& aName, const QJSValue& aInput, const QString& aTag = "", bool aTransaction = true, const QJsonObject& aScopeCache = QJsonObject())**  
     - execute the specific pipe by name  
+    - `aTransaction` denotes whether to create atransaction for this whole procedure  
+    - `aScopeCache` denotes the scopecache for the stream  
 _sample_:
 ```
 Pipeline.run("pathSelected", {path: ""}, "service1")
 ```  
+</br>
+
+* **void runC(const QString& aName, const QJSValue& aInput, const QString& aStreamID, const QString& aTag = "")**  
+    - execute the specific pipe by name with the cached stream  
+    - it is used with `cache` of stream for pipeDelegate  
+</br>
+
+* **void call<T, F\>(const QString& aName, const QJSValue& aInput)**  
+    - only execute the specific pipe on current thread  
 </br>
 
 * **void remove(const QString& aName)**  

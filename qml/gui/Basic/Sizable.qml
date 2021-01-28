@@ -6,8 +6,8 @@ MouseArea{
     property int coor_x
     property int coor_y
     hoverEnabled: true
-    width: 1
-    height: parent.height
+    width: parent instanceof Row ? 1 : parent.width
+    height: parent instanceof Row ? parent.height : 1
 
     function getSibling(aPrev){
         for (var i = 0; i < parent.children.length; ++i){

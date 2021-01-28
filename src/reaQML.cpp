@@ -149,6 +149,32 @@ void pipelineQML::run(const QString& aName, const QJSValue& aInput, const QStrin
         pipeline::run<QJsonObject>(aName, QJsonObject::fromVariantMap(aInput.toVariant().toMap()), aTag, aTransaction, ch);
 }
 
+void pipelineQML::runC(const QString& aName, const QJSValue& aInput, const QString& aStreamID, const QString& aTag){
+    if (aInput.isString())
+        pipeline::runC<QString>(aName, aInput.toString(), aStreamID, aTag);
+    else if (aInput.isBool())
+        pipeline::runC<bool>(aName, aInput.toBool(), aStreamID, aTag);
+    else if (aInput.isNumber())
+        pipeline::runC<double>(aName, aInput.toNumber(), aStreamID, aTag);
+    else if (aInput.isArray())
+        pipeline::runC<QJsonArray>(aName, QJsonArray::fromVariantList(aInput.toVariant().toList()), aStreamID, aTag);
+    else
+        pipeline::runC<QJsonObject>(aName, QJsonObject::fromVariantMap(aInput.toVariant().toMap()), aStreamID, aTag);
+}
+
+void pipelineQML::call(const QString& aName, const QJSValue& aInput){
+    if (aInput.isString())
+        pipeline::call<QString>(aName, aInput.toString());
+    else if (aInput.isBool())
+        pipeline::call<bool>(aName, aInput.toBool());
+    else if (aInput.isNumber())
+        pipeline::call<double>(aName, aInput.toNumber());
+    else if (aInput.isArray())
+        pipeline::call<QJsonArray>(aName, QJsonArray::fromVariantList(aInput.toVariant().toList()));
+    else
+        pipeline::call<QJsonObject>(aName, QJsonObject::fromVariantMap(aInput.toVariant().toMap()));
+}
+
 void pipelineQML::remove(const QString& aName){
     pipeline::remove(aName);
 }

@@ -94,8 +94,10 @@ void stream0::executed(const QString& aPipe){
         m_transaction->executed(aPipe);
 }
 
-QString stream0::cache(){
-    auto id = generateUUID();
+QString stream0::cache(const QString& aID){
+    auto id = aID;
+    if (id == "")
+        generateUUID();
     pipeline::instance()->m_stream_cache.insert(id, this->shared_from_this());
     return id;
 }
