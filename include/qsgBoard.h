@@ -52,22 +52,25 @@ public:
             m_name = rea::generateUUID();
     }
     virtual ~qsgBoardPlugin() = default;
-
-private:
-    friend qsgBoard;
-protected:
     virtual QString getName(qsgBoard* aParent = nullptr) {
         if (aParent)
             m_parent = aParent;
         return m_name;
     }
-    virtual void beforeDestroy(){}
+    virtual void beforeDestroy(){
+        for (auto i : m_handles)
+            i->removeQSGNodes();
+        m_handles.clear();
+    }
     virtual void keyPressEvent(QKeyEvent *event){}
     virtual void mousePressEvent(QMouseEvent *event){}
     virtual void mouseReleaseEvent(QMouseEvent *event){}
     virtual void mouseMoveEvent(QMouseEvent *event){}
     virtual void wheelEvent(QWheelEvent *event){}
     virtual void hoverMoveEvent(QHoverEvent *event){}
+private:
+    friend qsgBoard;
+protected:
     QString getParentName() {return m_parent ? m_parent->getName() : "";}
     std::shared_ptr<qsgModel> getQSGModel() {return m_parent->m_models.size() > 0 ? m_parent->m_models.back() : nullptr;}
     void updateParent(IUpdateQSGAttr aUpdate){
@@ -82,26 +85,11 @@ protected:
     QSGTransformNode* getTransNode(){
         return m_parent->m_trans_node;
     }
-    qsgBoard* m_parent;
-    QString m_name;
-};
-
-class DSTDLL qsgPluginTransform : public qsgBoardPlugin{
-public:
-    qsgPluginTransform(const QJsonObject& aConfig) : qsgBoardPlugin(aConfig){}
-    ~qsgPluginTransform() override;
-protected:
-    QString getName(qsgBoard* aParent = nullptr) override;
-    void beforeDestroy() override;
-    void wheelEvent(QWheelEvent *event) override;
-    void mousePressEvent(QMouseEvent *event) override;
-    void mouseReleaseEvent(QMouseEvent *event) override;
-    void mouseMoveEvent(QMouseEvent *event) override;
-    void hoverMoveEvent(QHoverEvent *event) override;
-    virtual QJsonObject getMenu() {return QJsonObject();}
-    bool tryMoveWCS(QMouseEvent * event, Qt::MouseButton aFlag);
+    virtual void updatePos(const QPoint& aPos, const QMatrix4x4& aSCS2WCS);
     QPoint m_lastpos;
     QPointF m_wcspos;
+    qsgBoard* m_parent = nullptr;
+    QString m_name;
 protected:
     QString newShapeID();
     std::function<void(void)> removeShape(const QString& aShape, bool aCommand = true);
@@ -111,10 +99,26 @@ protected:
                                                      const QJsonArray& aCenter = rea::JArray(0, 0), const QString& aColor = "red");
     void updateHandlePos(int aIndex, const QPoint& aPos);
     void updateHandleRadius(int aIndex, int aRadius);
-    void updatePos(const QPoint& aPos);
     std::vector<std::shared_ptr<shapeObject>> m_handles;
 private:
     rea::qsgModel m_mdl;
+};
+
+class DSTDLL qsgPluginTransform : public qsgBoardPlugin{
+public:
+    qsgPluginTransform(const QJsonObject& aConfig) : qsgBoardPlugin(aConfig){}
+    ~qsgPluginTransform() override;
+    QString getName(qsgBoard* aParent = nullptr) override;
+    void wheelEvent(QWheelEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void hoverMoveEvent(QHoverEvent *event) override;
+protected:
+    virtual QJsonObject getMenu() {return QJsonObject();}
+    bool tryMoveWCS(QMouseEvent * event, Qt::MouseButton aFlag);
+protected:
+    void updatePos2(const QPoint& aPos);
 };
 
 }

@@ -5,6 +5,96 @@
 
 namespace rea{
 
+QString qsgBoardPlugin::newShapeID(){
+    return "shp_" + generateUUID();
+}
+
+void qsgBoardPlugin::updatePos(const QPoint& aPos, const QMatrix4x4& aSCS2WCS){
+    m_lastpos = aPos;
+    m_wcspos = aSCS2WCS.map(m_lastpos);
+}
+
+std::function<void(void)> qsgBoardPlugin::removeShape(const QString& aShape, bool aCommand){
+    auto nm = getParentName();
+    auto mdl = getQSGModel();
+    if (mdl){
+        auto id = getQSGModel()->value("id");
+        return [nm, aShape, aCommand, id](){
+            rea::pipeline::run("updateQSGAttr_" + nm,
+                               rea::Json("key", rea::JArray("objects"),
+                                         "type", "del",
+                                         "tar", aShape,
+                                         "cmd", aCommand,
+                                         "id", id), "delObject");
+        };
+    }else
+        return nullptr;
+}
+
+std::function<void(void)> qsgBoardPlugin::addPoly(const QString& aShape, const QJsonArray& aPoints, bool aCommand, int aFace){
+    auto nm = getParentName();
+    auto id = getQSGModel()->value("id");
+    return [nm, aShape, aPoints, aCommand, id, aFace](){
+        rea::pipeline::run("updateQSGAttr_" + nm,
+                           rea::Json("key", rea::JArray("objects"),
+                                     "type", "add",
+                                     "tar", aShape,
+                                     "val", rea::Json(
+                                                "type", "poly",
+                                                "points", aPoints,
+                                                "face", aFace),
+                                     "cmd", aCommand,
+                                     "id", id), "addPoly");
+    };
+}
+
+std::function<void(void)> qsgBoardPlugin::addEllipse(const QString& aShape, const QJsonArray& aCenter, const QJsonArray& aRadius, bool aCommand){
+    auto nm = getParentName();
+    auto id = getQSGModel()->value("id");
+    return [nm, aShape, aCenter, aRadius, aCommand, id](){
+        rea::pipeline::run("updateQSGAttr_" + nm,
+                           rea::Json("key", rea::JArray("objects"),
+                                     "type", "add",
+                                     "tar", aShape,
+                                     "val", rea::Json(
+                                                "type", "ellipse",
+                                                "center", aCenter,
+                                                "radius", aRadius,
+                                                "face", 125),
+                                     "cmd", aCommand,
+                                     "id", id), "addEllipse");
+    };
+}
+
+std::shared_ptr<shapeObject> qsgBoardPlugin::createEllipseHandle(QSGNode* aTransformNode, int aRadius, int aFace, const QJsonArray& aCenter, const QString& aColor){
+    m_handles.push_back(std::make_shared<rea::ellipseObject>(rea::Json(
+        "type", "ellipse",
+        "center", aCenter,
+        "radius", rea::JArray(aRadius, aRadius),
+        "width", 0,
+        "color", aColor,
+        "face", aFace)));
+    m_handles.back()->setParent(&m_mdl);
+    m_handles.back()->getQSGNodes(m_parent, aTransformNode->parent());
+    return m_handles.back();
+}
+
+void qsgBoardPlugin::updateHandlePos(int aIndex, const QPoint& aPos){
+    if (aIndex < m_handles.size()){
+        auto hdl = m_handles[aIndex];
+        hdl->insert("center", rea::JArray(aPos.x(), aPos.y()));
+        updateParent(hdl->updateQSGAttr("center_"));
+    }
+}
+
+void qsgBoardPlugin::updateHandleRadius(int aIndex, int aRadius){
+    if (aIndex < m_handles.size()){
+        auto hdl = m_handles[aIndex];
+        hdl->insert("radius", rea::JArray(aRadius, aRadius));
+        updateParent(hdl->updateQSGAttr("radius_"));
+    }
+}
+
 qsgPluginTransform::~qsgPluginTransform(){
 //    pipeline::remove("updateQSGPos_" + getParentName());
 //    pipeline::remove("updateQSGMenu_" + getParentName());
@@ -37,12 +127,6 @@ QString qsgPluginTransform::getName(qsgBoard* aParent) {
     return ret;
 }
 
-void qsgPluginTransform::beforeDestroy(){
-    for (auto i : m_handles)
-        i->removeQSGNodes();
-    m_handles.clear();
-}
-
 void qsgPluginTransform::wheelEvent(QWheelEvent *event){
     rea::pipeline::run<QJsonObject>("updateQSGAttr_" + getParentName(), rea::Json("key", rea::JArray("transform"),
                                                                          "type", "zoom",
@@ -61,7 +145,7 @@ void qsgPluginTransform::mouseReleaseEvent(QMouseEvent *event){
 
 void qsgPluginTransform::mouseMoveEvent(QMouseEvent *event){
     tryMoveWCS(event, Qt::MiddleButton);
-    updatePos(event->pos());
+    updatePos2(event->pos());
 }
 
 bool qsgPluginTransform::tryMoveWCS(QMouseEvent *event, Qt::MouseButton aFlag){
@@ -76,99 +160,12 @@ bool qsgPluginTransform::tryMoveWCS(QMouseEvent *event, Qt::MouseButton aFlag){
 }
 
 void qsgPluginTransform::hoverMoveEvent(QHoverEvent *event){
-    updatePos(event->pos());
+    updatePos2(event->pos());
 }
 
-QString qsgPluginTransform::newShapeID(){
-    return "shp_" + generateUUID();
-}
-
-std::function<void(void)> qsgPluginTransform::removeShape(const QString& aShape, bool aCommand){
-    auto nm = getParentName();
-    auto mdl = getQSGModel();
-    if (mdl){
-        auto id = getQSGModel()->value("id");
-        return [nm, aShape, aCommand, id](){
-            rea::pipeline::run("updateQSGAttr_" + nm,
-                               rea::Json("key", rea::JArray("objects"),
-                                         "type", "del",
-                                         "tar", aShape,
-                                         "cmd", aCommand,
-                                         "id", id), "delObject");
-        };
-    }else
-        return nullptr;
-}
-
-std::function<void(void)> qsgPluginTransform::addPoly(const QString& aShape, const QJsonArray& aPoints, bool aCommand, int aFace){
-    auto nm = getParentName();
-    auto id = getQSGModel()->value("id");
-    return [nm, aShape, aPoints, aCommand, id, aFace](){
-        rea::pipeline::run("updateQSGAttr_" + nm,
-                           rea::Json("key", rea::JArray("objects"),
-                                     "type", "add",
-                                     "tar", aShape,
-                                     "val", rea::Json(
-                                                "type", "poly",
-                                                "points", aPoints,
-                                                "face", aFace),
-                                     "cmd", aCommand,
-                                     "id", id), "addPoly");
-    };
-}
-
-std::function<void(void)> qsgPluginTransform::addEllipse(const QString& aShape, const QJsonArray& aCenter, const QJsonArray& aRadius, bool aCommand){
-    auto nm = getParentName();
-    auto id = getQSGModel()->value("id");
-    return [nm, aShape, aCenter, aRadius, aCommand, id](){
-        rea::pipeline::run("updateQSGAttr_" + nm,
-                           rea::Json("key", rea::JArray("objects"),
-                                     "type", "add",
-                                     "tar", aShape,
-                                     "val", rea::Json(
-                                                "type", "ellipse",
-                                                "center", aCenter,
-                                                "radius", aRadius,
-                                                "face", 125),
-                                     "cmd", aCommand,
-                                     "id", id), "addEllipse");
-    };
-}
-
-std::shared_ptr<shapeObject> qsgPluginTransform::createEllipseHandle(QSGNode* aTransformNode, int aRadius, int aFace,
-                                                                     const QJsonArray& aCenter, const QString& aColor){
-    m_handles.push_back(std::make_shared<rea::ellipseObject>(rea::Json(
-        "type", "ellipse",
-        "center", aCenter,
-        "radius", rea::JArray(aRadius, aRadius),
-        "width", 0,
-        "color", aColor,
-        "face", aFace)));
-    m_handles.back()->setParent(&m_mdl);
-    m_handles.back()->getQSGNodes(m_parent, aTransformNode->parent());
-    return m_handles.back();
-}
-
-void qsgPluginTransform::updateHandlePos(int aIndex, const QPoint& aPos){
-    if (aIndex < m_handles.size()){
-        auto hdl = m_handles[aIndex];
-        hdl->insert("center", rea::JArray(aPos.x(), aPos.y()));
-        updateParent(hdl->updateQSGAttr("center_"));
-    }
-}
-
-void qsgPluginTransform::updateHandleRadius(int aIndex, int aRadius){
-    if (aIndex < m_handles.size()){
-        auto hdl = m_handles[aIndex];
-        hdl->insert("radius", rea::JArray(aRadius, aRadius));
-        updateParent(hdl->updateQSGAttr("radius_"));
-    }
-}
-
-void qsgPluginTransform::updatePos(const QPoint &aPos){
-    m_lastpos = aPos;
+void qsgPluginTransform::updatePos2(const QPoint &aPos){
     auto inv = getTransNode()->matrix().inverted();
-    m_wcspos = inv.map(QPointF(aPos));
+    qsgBoardPlugin::updatePos(aPos, inv);
     auto mdl = getQSGModel();
     rea::pipeline::run<QJsonObject>("updateQSGPos_" + getParentName(), rea::Json("x", m_wcspos.x(),
                                                                                  "y", m_wcspos.y(),
@@ -177,7 +174,7 @@ void qsgPluginTransform::updatePos(const QPoint &aPos){
 }
 
 static rea::regPip<QJsonObject, rea::pipePartial> create_qsgboardplugin_transform([](rea::stream<QJsonObject>* aInput){
-   aInput->outs<std::shared_ptr<qsgBoardPlugin>>(std::make_shared<qsgPluginTransform>(aInput->data()));
+    aInput->var<std::shared_ptr<qsgBoardPlugin>>("result", std::make_shared<qsgPluginTransform>(aInput->data()))->out();
 }, rea::Json("name", "create_qsgboardplugin_transform"));
 
 void qsgBoard::beforeDestroy(){
@@ -283,8 +280,8 @@ void qsgBoard::setName(const QString& aName){
 }
 
 void qsgBoard::installPlugins(const QJsonArray& aPlugins){
-    m_add_qsg_plugin = rea::pipeline::add<std::shared_ptr<qsgBoardPlugin>>([this](rea::stream<std::shared_ptr<qsgBoardPlugin>>* aInput){
-        auto plg = aInput->data();
+    m_add_qsg_plugin = rea::pipeline::add<QJsonObject>([this](rea::stream<QJsonObject>* aInput){
+        auto plg = aInput->varData<std::shared_ptr<qsgBoardPlugin>>("result");
         m_plugins.insert(plg->getName(this), plg);
     });
 

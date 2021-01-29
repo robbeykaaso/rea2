@@ -214,6 +214,7 @@ protected:
     }
 protected:
     void doNextEvent(const QMap<QString, QString>& aNexts, std::shared_ptr<stream0> aStream);
+    void setAspect(QString& aTarget, const QString& aAspect);
 protected:
     QString m_name;
     QMap<QString, QString> m_next;
@@ -273,23 +274,17 @@ public:
         auto bf = aParam.value("before").toString();
         if (bf != ""){
             auto joint = find(bf);
-            if (joint->m_before != "")
-                joint->m_before += ";";
-            joint->m_before += ret->actName();
+            joint->setAspect(joint->m_before, ret->actName());
         }
         auto ar = aParam.value("around").toString();
         if (ar != ""){
             auto joint = find(ar);
-            if (joint->m_around != "")
-                joint->m_around += ";";
-            joint->m_around += ret->actName();
+            joint->setAspect(joint->m_around, ret->actName());
         }
         auto af = aParam.value("after").toString();
         if (af != ""){
             auto joint = find(af);
-            if (joint->m_after != "")
-                joint->m_after += ";";
-            joint->m_after += ret->actName();
+            joint->setAspect(joint->m_after, ret->actName());
         }
         return ret;
     }
@@ -382,8 +377,14 @@ public:
     enum AspectType {AspectBefore, AspectAround, AspectAfter};
 protected:
     pipe(const QString& aName = "", int aThreadNo = 0, bool aReplace = false) : pipe0(aName, aThreadNo, aReplace) {}
-    virtual pipe0* initialize(F aFunc, const QJsonObject&){
+    virtual pipe0* initialize(F aFunc, const QJsonObject& aParam = QJsonObject()){
         m_func = aFunc;
+        auto bf = aParam.value("befored").toString();
+        if (bf != "")
+            setAspect(m_before, bf);
+        auto ed = aParam.value("aftered").toString();
+        if (ed != "")
+            setAspect(m_after, ed);
         return this;
     }
     bool event( QEvent* e) override{

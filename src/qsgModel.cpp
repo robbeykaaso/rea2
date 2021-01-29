@@ -202,10 +202,12 @@ IUpdateQSGAttr imageObject::updateQSGAttr(const QString& aModification){
         auto pth = getPath();
         m_parent->m_image_cache.insert(pth, imagePool::readCache(pth));
         return [this](QSGNode*){
-            updateImagePath();
-            auto txt_cfg = getTextConfig();
-            if (m_parent->getTextVisible(txt_cfg) && m_text)
-                updateTextLocation(txt_cfg);
+            if (m_node){
+                updateImagePath();
+                auto txt_cfg = getTextConfig();
+                if (m_parent->getTextVisible(txt_cfg) && m_text)
+                    updateTextLocation(txt_cfg);
+            }
         };
     }
     else

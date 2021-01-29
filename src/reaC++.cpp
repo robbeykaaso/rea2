@@ -192,6 +192,12 @@ void pipe0::doNextEvent(const QMap<QString, QString>& aNexts, std::shared_ptr<st
     }
 }
 
+void pipe0::setAspect(QString& aTarget, const QString& aAspect){
+    if (aTarget != "")
+        aTarget += ";";
+    aTarget += aAspect;
+}
+
 void pipe0::execute(std::shared_ptr<stream0> aStream){
     if (QThread::currentThread() == m_thread){
         streamEvent nxt_eve(m_name, aStream);
@@ -238,9 +244,9 @@ pipeFuture::pipeFuture(const QString& aName) : pipe0 (){
         pipeline::call<int>(aName + "_pipe_add", 0);
         for (auto i : pip->m_next2)
             insertNext(i.first, i.second);
-        m_before = pip->m_before;
-        m_around = pip->m_around;
-        m_after = pip->m_after;
+        setAspect(m_before, pip->m_before);
+        setAspect(m_around, pip->m_around);
+        setAspect(m_after, pip->m_after);
         for (auto i : pip->m_locals.keys())
             m_locals.insert(i, pip->m_locals.value(i));
         pipeline::remove(aName);
@@ -250,9 +256,9 @@ pipeFuture::pipeFuture(const QString& aName) : pipe0 (){
         auto this_event = pipeline::find(aName, false);
         for (auto i : m_next2)
             this_event->insertNext(i.first, i.second);
-        this_event->m_before = m_before;
-        this_event->m_around = m_around;
-        this_event->m_after = m_after;
+        setAspect(this_event->m_before, m_before);
+        setAspect(this_event->m_around, m_around);
+        setAspect(this_event->m_after, m_after);
 
         for (auto i : m_locals.keys()){
             auto loc = this_event->createLocal(aName, m_locals.value(i));
