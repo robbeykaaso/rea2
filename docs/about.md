@@ -13,13 +13,7 @@
 
 # donate
 your supports will inspire my better job  
-<table>
-<tr>
-<td align="center">wxPay</td>
-<td align="center">aliPay</td>
-</tr>
-<tr>
-<td><p>![avatar](img/wx_pay.png)</p></td>
-<td><p>![avatar](img/ali_pay.png)</p></td>
-</tr>
-</table>
+wxPay  
+<p>![avatar](img/wx_pay.png)</p></td>
+aliPay  
+<p>![avatar](img/ali_pay.png)</p></td>
