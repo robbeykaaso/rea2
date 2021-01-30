@@ -1,7 +1,7 @@
-# version
+# Version
 8.0.0 reactive3
 
-# last versions
+# Last versions
 1.0.0 eventsmanager  
 2.0.0 eventsmanager2  
 3.0.0 rxmanager  
@@ -11,9 +11,9 @@
 7.0.0 reactive2  
 8.0.0 reactive3
 
-# donate
+# Donate
 your supports will inspire my better job  
 wxPay  
-<p>![avatar](img/wx_pay.png)</p>
+<center><p>![avatar](img/wx_pay.png)</p></center>
 aliPay  
-<p>![avatar](img/ali_pay.png)</p>
+<center><p>![avatar](img/ali_pay.png)</p></center>
