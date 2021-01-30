@@ -10,3 +10,16 @@
 6.0.0 reactive  
 7.0.0 reactive2  
 8.0.0 reactive3
+
+# donate
+your supports will inspire my better job  
+<table>
+<tr>
+<td align="center">wxPay</td>
+<td align="center">aliPay</td>
+</tr>
+<tr>
+<td><p>![avatar](img/wx_pay.png)</p></td>
+<td><p>![avatar](img/ali_pay.png)</p></td>
+</tr>
+</table>
