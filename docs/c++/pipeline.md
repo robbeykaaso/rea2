@@ -18,10 +18,14 @@ add<int, pipe, pipeFunc<int>, pipeFunc<int>>([](stream<int>* aInput){  //the sec
          "before", "pipe1", //inject this pipe before the target pipe, it will be executed on the same thread of the target pipe
          "after", "pipe2", //work like "before"
          "around", "pipe3" //work like "before", replace the function of this pipe
+         "befored", "pipe4",  //inject the target pipe before this pipe, the target pipe will be executed on the same thread of this pipe
+         "aftered", "pipe5"  //work like "befored"
     ))
 
-topo result: pipe... -> pipe3(pipe0) -> pipe1 -> pipe...
-             pipe... -> pipe2 -> pipe3(pipe0) -> pipe...
+topo result: pipe0' = pipe4 -> pipe0 -> pipe5
+             pipe... -> pipe0' -> pipe1 -> pipe...
+             pipe... -> pipe2 -> pipe0' -> pipe...
+             pipe... -> pipe3(replaced by pipe0') ->pipe...
 ```  
 </br>
 
