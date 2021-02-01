@@ -189,6 +189,7 @@ public:
 
     virtual pipe0* createLocal(const QString& aName, const QJsonObject& aParam);
     bool isBusy() {return m_busy;}
+    enum AspectType {AspectBefore, AspectAround, AspectAfter};
 private:
     friend pipeline;
 protected:
@@ -258,6 +259,8 @@ public:
     ~pipeline();
 
     static void remove(const QString& aName);
+
+    static void removeAspect(const QString& aPipe, pipe0::AspectType aType, const QString& aAspect = "");
 
     template<typename T, template<class, typename> class P = pipe, typename F = pipeFunc<T>, typename S = pipeFunc<T>>
     static pipe0* add(F aFunc, const QJsonObject& aParam = QJsonObject()){
@@ -374,7 +377,6 @@ public:
     pipe0* createLocal(const QString& aName, const QJsonObject& aParam) override{
         return funcType<T, F>().createLocal(aName, aParam);
     }
-    enum AspectType {AspectBefore, AspectAround, AspectAfter};
 protected:
     pipe(const QString& aName = "", int aThreadNo = 0, bool aReplace = false) : pipe0(aName, aThreadNo, aReplace) {}
     virtual pipe0* initialize(F aFunc, const QJsonObject& aParam = QJsonObject()){

@@ -291,6 +291,29 @@ void pipeline::remove(const QString& aName){
     }
 }
 
+void pipeline::removeAspect(const QString& aPipe, pipe0::AspectType aType, const QString& aAspect){
+    auto pipe = instance()->m_pipes.value(aPipe);
+    if (pipe){
+        QString* tar = nullptr;
+        if (aType == pipe0::AspectType::AspectAfter)
+            tar = &pipe->m_after;
+        else if (aType == pipe0::AspectType::AspectBefore)
+            tar = &pipe->m_before;
+        else if (aType == pipe0::AspectType::AspectAround)
+            tar = &pipe->m_around;
+        assert(tar);
+        if (aAspect == "")
+            *tar = "";
+        else{
+            auto idx = tar->indexOf(aAspect);
+            if (idx > 0)
+                *tar = tar->remove(idx - 1, aAspect.length());
+            else if (!idx)
+                *tar = tar->remove(idx, aAspect.length());
+        }
+    }
+}
+
 QThread* pipeline::findThread(int aNo){
     auto thread = m_threads.find(aNo);
     if (thread == m_threads.end()){

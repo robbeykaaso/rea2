@@ -57,6 +57,12 @@ run<int>("pipe0", 0, "service0")
     - remove the specific pipe by name  
 </br>
 
+* **void removeAspect(const QString& aPipe, pipe0::AspectType aType, const QString& aAspect = "")**  
+    - remove the aspect of the pipe  
+    - `aType` is the aspect type  
+    - if `aAspect` is nothing, all the aspects of this type will be removed  
+</br>
+
 # Test and Demo
 test_rea.cpp: test1(), test2(), test3(), test11()  
 </br>

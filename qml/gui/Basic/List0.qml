@@ -216,8 +216,8 @@ Column {
             height: 30
             color: selcolor
             radius: 5
-            border.width: 1
-            border.color: "#60f50a"
+            border.width: 0
+            //border.color: "#60f50a"
         }
         highlightFollowsCurrentItem: true
         focus: true

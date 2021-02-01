@@ -227,6 +227,7 @@ public:
     static Q_INVOKABLE void runC(const QString& aName, const QJSValue& aInput, const QString& aStreamID, const QString& aTag = "");
     static Q_INVOKABLE void call(const QString& aName, const QJSValue& aInput);
     static Q_INVOKABLE void remove(const QString& aName);
+    static Q_INVOKABLE void removeAspect(const QString& aPipe, pipe0::AspectType aType, const QString& aAspect = "");
     /*
      * @aParam
      * aParam["name"]: pipeName, string, if is empty, it will be set random

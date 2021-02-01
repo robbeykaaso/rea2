@@ -42,6 +42,12 @@ Pipeline.run("pathSelected", {path: ""}, "service1")
     - remove the specific pipe by name  
 </br>
 
+* **void removeAspect(const QString& aPipe, pipe0::AspectType aType, const QString& aAspect = "")**  
+    - remove the aspect of the pipe  
+    - `aType` is the aspect type, 0 is before, 1 is around, 2 is after  
+    - if `aAspect` is nothing, all the aspects of this type will be removed  
+</br>
+
 * **QVariant tr(const QString& aOrigin)**  
     - translate the string to the target string in run time  
 </br>

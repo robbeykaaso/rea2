@@ -179,6 +179,10 @@ void pipelineQML::remove(const QString& aName){
     pipeline::remove(aName);
 }
 
+void pipelineQML::removeAspect(const QString& aPipe, pipe0::AspectType aType, const QString& aAspect){
+    pipeline::removeAspect(aPipe, aType, aAspect);
+}
+
 QVariant pipelineQML::add(QJSValue aFunc, const QJsonObject& aPipeParam){
     auto ret = qmlPipe::createPipe(aFunc, aPipeParam);
     return QVariant::fromValue<QObject*>(ret);

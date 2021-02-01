@@ -18,6 +18,7 @@ _sample_:
         size: [100, 50],  //the text width and height
         location: "bottom"  //the text location: "bottom", "middle", "top"
     },
+    transform: [0, 0, 0, 0, 0, 0, 0, 0, 0],  //the world transformation matrix
     color: "blue",  //the color of the shapeObject, include text, arrow, face and shape itself
     objects: {  //the object is saved by object name and object attributes
         img_2: {
