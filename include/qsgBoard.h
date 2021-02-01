@@ -85,9 +85,6 @@ protected:
     QSGTransformNode* getTransNode(){
         return m_parent->m_trans_node;
     }
-    virtual void updatePos(const QPoint& aPos, const QMatrix4x4& aSCS2WCS);
-    QPoint m_lastpos;
-    QPointF m_wcspos;
     qsgBoard* m_parent = nullptr;
     QString m_name;
 protected:
@@ -114,11 +111,15 @@ public:
     void mouseReleaseEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void hoverMoveEvent(QHoverEvent *event) override;
+    QPoint scsPos(){return m_lastpos;}
+    QPointF wcsPos(){return m_wcspos;}
+    bool tryMoveWCS(QMouseEvent * event, Qt::MouseButton aFlag);
+    void updatePos(const QPoint& aPos);
 protected:
     virtual QJsonObject getMenu() {return QJsonObject();}
-    bool tryMoveWCS(QMouseEvent * event, Qt::MouseButton aFlag);
 protected:
-    void updatePos2(const QPoint& aPos);
+    QPoint m_lastpos;
+    QPointF m_wcspos;
 };
 
 }

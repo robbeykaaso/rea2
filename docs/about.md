@@ -14,6 +14,6 @@
 # Donate
 your supports will inspire my better job  
 wxPay  
-<center><p>![avatar](img/wx_pay.png)</p></center>
+<center><p>![avatar](img/wx_pay.png)</p></center>  
 aliPay  
 <center><p>![avatar](img/ali_pay.png)</p></center>

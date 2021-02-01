@@ -9,11 +9,6 @@ QString qsgBoardPlugin::newShapeID(){
     return "shp_" + generateUUID();
 }
 
-void qsgBoardPlugin::updatePos(const QPoint& aPos, const QMatrix4x4& aSCS2WCS){
-    m_lastpos = aPos;
-    m_wcspos = aSCS2WCS.map(m_lastpos);
-}
-
 std::function<void(void)> qsgBoardPlugin::removeShape(const QString& aShape, bool aCommand){
     auto nm = getParentName();
     auto mdl = getQSGModel();
@@ -145,7 +140,7 @@ void qsgPluginTransform::mouseReleaseEvent(QMouseEvent *event){
 
 void qsgPluginTransform::mouseMoveEvent(QMouseEvent *event){
     tryMoveWCS(event, Qt::MiddleButton);
-    updatePos2(event->pos());
+    updatePos(event->pos());
 }
 
 bool qsgPluginTransform::tryMoveWCS(QMouseEvent *event, Qt::MouseButton aFlag){
@@ -160,12 +155,13 @@ bool qsgPluginTransform::tryMoveWCS(QMouseEvent *event, Qt::MouseButton aFlag){
 }
 
 void qsgPluginTransform::hoverMoveEvent(QHoverEvent *event){
-    updatePos2(event->pos());
+    updatePos(event->pos());
 }
 
-void qsgPluginTransform::updatePos2(const QPoint &aPos){
+void qsgPluginTransform::updatePos(const QPoint &aPos){
     auto inv = getTransNode()->matrix().inverted();
-    qsgBoardPlugin::updatePos(aPos, inv);
+    m_lastpos = aPos;
+    m_wcspos = inv.map(m_lastpos);
     auto mdl = getQSGModel();
     rea::pipeline::run<QJsonObject>("updateQSGPos_" + getParentName(), rea::Json("x", m_wcspos.x(),
                                                                                  "y", m_wcspos.y(),
