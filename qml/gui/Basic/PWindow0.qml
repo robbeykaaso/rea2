@@ -80,7 +80,7 @@ TWindow{
     content:
         Rectangle{
             anchors.fill: parent
-            color: "lightskyblue"
+            color: bodycolor
             Column{
                 id: sets
                 anchors.fill: parent

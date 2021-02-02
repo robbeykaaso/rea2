@@ -7,6 +7,9 @@ Column {
     property var selects: []
     property string selcolor: "lightskyblue"
     property string dfltcolor: "transparent"
+    property string titcolor: "transparent"
+    property int titfontsize: 14
+    property int itmfontsize: 12
     property var tr
     signal selected
 
@@ -42,6 +45,7 @@ Column {
                 border.color: "black"
                 width: parent.width / title.length + (index == title.length - 1 ? 0 : 1)
                 height: parent.height
+                color: titcolor
                 Text {
                     id: textV
                     text: tr(title[index])
@@ -49,6 +53,7 @@ Column {
                     width: parent.width - 1
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
+                    font.pixelSize: titfontsize
                     elide: Text.ElideRight
                     clip: true
                 }
@@ -147,6 +152,7 @@ Column {
                         height: parent.height
                         text: entry[index]
                         color: fontclr
+                        font.pixelSize: itmfontsize
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                         elide: Text.ElideRight

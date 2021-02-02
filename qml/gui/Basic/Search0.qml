@@ -5,10 +5,12 @@ FocusScope {
     property alias text: input.text
     property alias hint: hint.text
     property alias prefix: prefix.text
+    property alias background: back
 
     signal accepted
 
     Rectangle {
+        id: back
         anchors.fill: parent
         border.color: "#707070"
         color: "white"//"#c1c1c1"

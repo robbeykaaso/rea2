@@ -8,6 +8,9 @@ Column {
     property var selects: []
     property string selcolor: "lightskyblue"
     property string dfltcolor: "transparent"
+    property string titcolor: "transparent"
+    property int titfontsize: 14
+    property int itmfontsize: 12
     property string fontclr: "black"
 
     signal selected
@@ -48,12 +51,14 @@ Column {
                 border.color: "black"
                 width: parent.width / title.length + (index == title.length - 1 ? 0 : 1)
                 height: parent.height
+                color: titcolor
                 Text {
                     id: textV
                     text: tr(title[index])
                     anchors.fill: parent
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
+                    font.pixelSize: titfontsize
                     elide: Text.ElideRight
                     clip: true
                 }
@@ -152,6 +157,7 @@ Column {
                         height: parent.height
                         text: entry[index]
                         color: fontclr
+                        font.pixelSize: itmfontsize
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                         elide: Text.ElideRight
@@ -255,6 +261,7 @@ Column {
         page_text: (pageindex + 1).toString()
         page_suffix: entries ? "/" + Math.ceil(entries.length / entrycount) : ""
         page_title: tr("Page") + ": "
+        background_color: selcolor
         onSelectSpecificPage: function(aIndex){
             if (entries){
                 pageindex = Math.min(Math.max(1, aIndex), Math.ceil(entries.length / entrycount)) - 1

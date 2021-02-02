@@ -6,6 +6,8 @@ FocusScope{
     property string page_text
     property string page_suffix
     property string page_title: "Page:"
+    property string background_color: "lightskyblue"
+    property int fontsize: 12
     signal selectSpecificPage(var aIndex)
     signal selectNeighbourPage(var aNext)
     anchors.horizontalCenter: parent.horizontalCenter
@@ -16,7 +18,8 @@ FocusScope{
         Edit{
             caption.text: page_title
             input.text: fs.page_text
-            background.color: "lightskyblue"
+            input.font.pixelSize: fontsize
+            background.color: background_color
             width: 60
             ratio: 0.5
             input.onAccepted: {
@@ -26,7 +29,7 @@ FocusScope{
         }
         Label{
             text: fs.page_suffix
-            font.pixelSize: 12
+            font.pixelSize: fontsize
             color: "black"
             anchors.verticalCenter: parent.verticalCenter
         }
@@ -39,6 +42,7 @@ FocusScope{
             anchors.verticalCenter: parent.verticalCenter
             height: 20
             width: 20
+            font.pixelSize: fontsize
             text: "<"
             onClicked: selectNeighbourPage(false)
         }
@@ -51,6 +55,7 @@ FocusScope{
             anchors.verticalCenter: parent.verticalCenter
             height: 20
             width: 20
+            font.pixelSize: fontsize
             text: ">"
             onClicked: selectNeighbourPage(true)
         }
