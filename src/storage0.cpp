@@ -153,6 +153,15 @@ fsStorage0::fsStorage0(const QString& aRoot){
             aInput->out();
         },
         rea::Json("name", m_root + "writeJson2", "thread", 11));
+
+    rea::pipeline::add<QString, rea::pipePartial>([this](rea::stream<QString>* aInput){
+        auto dt = aInput->data();
+        QJsonArray ret;
+        auto fls = listFiles(dt);
+        for (auto i : fls)
+            ret.push_back(i);
+        aInput->var<QJsonArray>(dt, ret)->out();
+    }, rea::Json("name", m_root + "listFiles2", "thread", 10));
 }
 
 /*bool safetyWrite(const QString& aPath, const QByteArray& aData){
