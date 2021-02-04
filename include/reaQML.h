@@ -47,6 +47,18 @@ public:
         outs(aOut, aNext, aTag, aShareCache);
         return QVariant::fromValue<QObject*>(this);
     }
+    Q_INVOKABLE QVariant outs(QJSValue aOut, const QString& aNext, const QString& aTag, int aShareCache){
+        auto cache = m_cache;
+        if (m_outs && size_t(aShareCache) < m_outs->size())
+            cache = m_outs->at(size_t(aShareCache)).second->m_cache;
+        auto ot = std::make_shared<qmlStream>(aOut, aTag, cache, m_transaction);
+        m_outs->push_back(std::pair<QString, std::shared_ptr<qmlStream>>(aNext, ot));
+        return QVariant::fromValue<QObject*>(ot.get());
+    }
+    Q_INVOKABLE QVariant outsB(QJSValue aOut, const QString& aNext, const QString& aTag, int aShareCache){
+        outs(aOut, aNext, aTag, aShareCache);
+        return QVariant::fromValue<QObject*>(this);
+    }
     Q_INVOKABLE void noOut(){m_outs = nullptr;}
     Q_INVOKABLE QVariant var(const QString& aName, QJSValue aData);
     Q_INVOKABLE QJSValue varData(const QString& aName, const QString& aType = "object");

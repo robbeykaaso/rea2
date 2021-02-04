@@ -47,6 +47,8 @@ class DSTDLL fsStorage0 {
 
  protected:
   QString m_root;
+ private:
+     void listAllFiles(const QString& aDirectory, std::vector<QString>& aList);
 };
 
 #define REGREADSTORAGE(aType)                                    \

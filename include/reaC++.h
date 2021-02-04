@@ -58,6 +58,8 @@ using pipeFunc = std::function<void(stream<T>*)>;
 
 template <typename T, typename F = pipeFunc<T>>
 class pipe;
+template <typename T>
+class stream;
 
 class DSTDLL stream0 : public std::enable_shared_from_this<stream0>{
 public:
@@ -93,6 +95,8 @@ protected:
     friend pipeline;
     template<typename T, typename F>
     friend class pipe;
+    template <typename T>
+    friend class stream;
 };
 
 class pipeFuture;
@@ -142,6 +146,22 @@ public:
 
     template<typename S>
     stream<T>* outsB(S aOut = S(), const QString& aNext = "", const QString& aTag = "", bool aShareCache = true){
+        outs<S>(aOut, aNext, aTag, aShareCache);
+        return this;
+    }
+
+    template<typename S>
+    stream<S>* outs(S aOut, const QString& aNext, const QString& aTag, int aShareCache){
+        auto cache = m_cache;
+        if (m_outs && aShareCache < m_outs->size())
+            cache = m_outs->at(aShareCache).second->m_cache;
+        auto ot = std::make_shared<stream<S>>(aOut, aTag == "" ? m_tag : aTag, cache, m_transaction);
+        m_outs->push_back(std::pair<QString, std::shared_ptr<stream0>>(aNext, ot));
+        return ot.get();
+    }
+
+    template<typename S>
+    stream<T>* outsB(S aOut, const QString& aNext, const QString& aTag, int aShareCache){
         outs<S>(aOut, aNext, aTag, aShareCache);
         return this;
     }

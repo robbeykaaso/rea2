@@ -124,8 +124,14 @@ fsStorage0::fsStorage0(const QString& aRoot){
     rea::pipeline::add<stgVector<QString>, rea::pipePartial>([this](rea::stream<stgVector<QString>>* aInput){
         auto dt = aInput->data();
         aInput->setData(stgVector<QString>(listFiles(dt), dt))->out();
-        aInput->out();
     }, rea::Json("name", m_root + "listFiles", "thread", 10));
+
+    rea::pipeline::add<stgVector<QString>, rea::pipePartial>([this](rea::stream<stgVector<QString>>* aInput){
+        auto dt = aInput->data();
+        std::vector<QString> ret;
+        listAllFiles(dt, ret);
+        aInput->setData(stgVector<QString>(ret, dt))->out();
+    }, rea::Json("name", m_root + "listAllFiles", "thread", 10));
 
     rea::pipeline::add<stgVector<stgByteArray>, rea::pipePartial>([this](rea::stream<stgVector<stgByteArray>>* aInput){
         auto dt = aInput->data().getData();
@@ -162,6 +168,16 @@ fsStorage0::fsStorage0(const QString& aRoot){
             ret.push_back(i);
         aInput->var<QJsonArray>(dt, ret)->out();
     }, rea::Json("name", m_root + "listFiles2", "thread", 10));
+
+    rea::pipeline::add<stgVector<QString>, rea::pipePartial>([this](rea::stream<stgVector<QString>>* aInput){
+        auto dt = aInput->data();
+        std::vector<QString> ret;
+        listAllFiles(dt, ret);
+        QJsonArray act_ret;
+        for (auto i : ret)
+            act_ret.push_back(i);
+        aInput->var<QJsonArray>(dt, act_ret)->out();
+    }, rea::Json("name", m_root + "listAllFiles2", "thread", 10));
 }
 
 /*bool safetyWrite(const QString& aPath, const QByteArray& aData){
@@ -191,6 +207,17 @@ std::vector<QString> fsStorage0::listFiles(const QString& aDirectory){
     for (auto i : lst)
         ret.push_back(i);
     return ret;
+}
+
+void fsStorage0::listAllFiles(const QString& aDirectory, std::vector<QString>& aList){
+    auto ret = listFiles(aDirectory);
+    for (auto i : ret)
+        if (i != "." && i != ".."){
+            if (i.contains("."))
+                aList.push_back(aDirectory + "/" + i);
+            else
+                listAllFiles(aDirectory + "/" + i, aList);
+        }
 }
 
 }

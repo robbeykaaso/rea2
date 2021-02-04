@@ -31,6 +31,16 @@
     - return this stream  
 </br>
 
+* **stream<S\>* outs(QJSValue aOut, const QString& aNext, const QString& aTag, int aShareCache)**  
+    - work as the `outs` above  
+    - `aShareCache` is to use the specific scopecache of the existed cache, the index out of range will use self scopecache  
+</br>
+
+* **stream<S\>* outsB(QJSValue aOut, const QString& aNext, const QString& aTag, int aShareCache)**  
+    - work like `outs`  
+    - return this stream  
+</br>
+
 * **noOut()**  
     - clear the out streams flowing the next pipes  
 </br>

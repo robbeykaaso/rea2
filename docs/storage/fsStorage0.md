@@ -55,6 +55,29 @@ Pipeline.run("writeJson2", "testFS2.json", "testQMLStg", false, {"testFS2.json":
     - type: pipePartial  
 </br>
 
+* **afileRoot + listAllFiles**  
+    - list the files of the directory recursively  
+    - input: stgData<std::vector<QString\>\>  
+    - output: stgData<std::vector<QString\>\>  
+    - type: pipePartial  
+</br>
+
+* **afileRoot + listFiles2**  
+    - list the files of the directory not recursively  
+    - input: QString(the path)  
+    - output: QString  
+    - varData: (the path: QJsonArray) 
+    - type: pipePartial  
+</br>
+
+* **afileRoot + listAllFiles2**  
+    - list the files of the directory recursively  
+    - input: QString(the path)  
+    - output: QString  
+    - varData: (the path: QJsonArray)  
+    - type: pipePartial  
+</br>
+
 # Test and Demo
 test_storage.cpp    
 

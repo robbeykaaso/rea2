@@ -22,7 +22,7 @@ _example_:
 ```  
 </br>
 
-* **stream<S\>* outs(S aOutput, const QString& aNext = "", const QString& aTag = "", bool aShareCache = true)**  
+* **stream<S\>* outs(S aOut = S(), const QString& aNext = "", const QString& aTag = "", bool aShareCache = true)**  
     - pass the stream to its next specific pipe by `aNext`  
     - if `aNext` equals to "", it will only run all the nexts  
     - if `aNext` doesn't equal to "", it will try to run the `localPipe` with the same name. if there still not exists the same name `localPipe`, it will try to run the specific pipe directly on whole range  
@@ -36,7 +36,17 @@ _example_:
 ```  
 </br>
 
-* **stream<S\>* outsB(S aOutput, const QString& aNext = "", const QString& aTag = "", bool aShareCache = true)**  
+* **stream<S\>* outsB(S aOut = S(), const QString& aNext = "", const QString& aTag = "", bool aShareCache = true)**  
+    - work like `outs`  
+    - return this stream  
+</br>
+
+* **stream<S\>* outs(S aOut, const QString& aNext, const QString& aTag, int aShareCache)**  
+    - work as the `outs` above  
+    - `aShareCache` is to use the specific scopecache of the existed cache, the index out of range will use self scopecache  
+</br>
+
+* **stream<S\>* outsB(S aOut, const QString& aNext, const QString& aTag, int aShareCache)**  
     - work like `outs`  
     - return this stream  
 </br>
