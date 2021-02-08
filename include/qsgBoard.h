@@ -114,10 +114,9 @@ public:
     QPoint scsPos(){return m_lastpos;}
     QPointF wcsPos(){return m_wcspos;}
     bool tryMoveWCS(QMouseEvent * event, Qt::MouseButton aFlag);
-    void updatePos(const QPoint& aPos);
+    void updatePos(const QPoint& aPos); 
 protected:
     virtual QJsonObject getMenu() {return QJsonObject();}
-protected:
     QPoint m_lastpos;
     QPointF m_wcspos;
 };

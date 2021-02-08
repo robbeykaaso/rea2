@@ -108,13 +108,15 @@ QString qsgPluginTransform::getName(qsgBoard* aParent) {
             auto dt = aInput->data();
             for (auto i : dt){
                 if (i.toObject().value("type") == "zoom"){
-                    auto inv = getTransNode()->matrix().inverted();
                     auto mdl = getQSGModel();
-                    aInput->outs<QJsonObject>(rea::Json("x", m_wcspos.x(),
-                                                       "y", m_wcspos.y(),
-                                                       "ratio", 100 / inv.data()[0],
-                                                       "transform", mdl ? mdl->value("transform") : QJsonArray()), "updateQSGPos_" + getParentName());
-                    break;
+                    if (mdl){
+                        auto inv = getTransNode()->matrix().inverted();
+                        aInput->outs<QJsonObject>(rea::Json("x", m_wcspos.x(),
+                                                           "y", m_wcspos.y(),
+                                                           "ratio", 100 / inv.data()[0],
+                                                           "transform", mdl ? mdl->value("transform") : QJsonArray()), "updateQSGPos_" + getParentName());
+                        break;
+                    }
                 }
             }
         aInput->out();

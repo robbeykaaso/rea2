@@ -85,7 +85,7 @@ void normalClient::ServerFound(QString aIP, QString aPort, QString aID)
 void normalClient::ReceiveState(QAbstractSocket::SocketState aState){
     if (aState == QAbstractSocket::SocketState::ConnectedState){
         m_valid = true;
-        rea::pipeline::run<QJsonObject>("clientBoardcast", rea::Json("value", "socket is connected", "detail", m_detail));
+        rea::pipeline::run<QJsonObject>("clientBoardcast", rea::Json("value", "socket is connected", "detail", m_detail, "host", m_socket.localAddress().toString()));
         connected();
         search_timer_.stop();
     }else if (aState == QAbstractSocket::SocketState::UnconnectedState){

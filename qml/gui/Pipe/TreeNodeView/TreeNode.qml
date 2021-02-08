@@ -11,7 +11,7 @@ Column{
     property string tag: "object"
     property string caption: " "
     property alias nodechild: cld
-    property bool opt_add: true
+    property bool opt_add: false
     property var scr_root
     spacing: 5
     Row{

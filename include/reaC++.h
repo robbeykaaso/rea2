@@ -199,6 +199,12 @@ public:
     pipe0* nextF(pipeFunc<T> aNextFunc, const QString& aTag = "", const QJsonObject& aParam = QJsonObject()){
         return nextF0(this, aNextFunc, aTag, aParam);
     }
+    template <typename T>
+    pipe0* nextBF(pipeFunc<T> aNextFunc, const QString& aTag = "", const QJsonObject& aParam = QJsonObject()){
+        nextF<T>(aNextFunc, aTag, aParam);
+        return this;
+    }
+
     virtual pipe0* next(pipe0* aNext, const QString& aTag = "");
     virtual pipe0* next(const QString& aName, const QString& aTag = "");
     virtual void removeNext(const QString& aName);
@@ -353,7 +359,7 @@ public:
         if (pip){
             auto pip2 = dynamic_cast<pipe<T, F>*>(pip);
             auto stm = std::make_shared<stream<T>>(aInput);
-            pip2->m_func(stm.get());
+            pip2->doEvent(stm);
         }
     }
 private:
