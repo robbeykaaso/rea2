@@ -77,6 +77,9 @@ public:
         if (m_transaction)
             m_transaction->log(aLog);
     }
+    QString transactionName(){
+        return m_transaction ? m_transaction->getName() : "";
+    }
     QString tag(){
         return m_tag;
     }
@@ -494,8 +497,13 @@ protected:
             if (eve->getName() == pipe<T, F>::m_name){
                 if (!m_init){
                     auto pip = pipeline::find(m_act_name, false);
-                    if (pip)
-                        pipe<T, F>::m_func = dynamic_cast<pipe<T, F>*>(pip)->m_func;
+                    if (pip){
+                        auto pip2 = dynamic_cast<pipe<T, F>*>(pip);
+                        pipe<T, F>::m_func = pip2->m_func;
+                        pipe<T, F>::m_before = pip2->m_before;
+                        pipe<T, F>::m_around = pip2->m_around;
+                        pipe<T, F>::m_after = pip2->m_after;
+                    }
                     m_init = true;
                 }
                 auto stm = std::dynamic_pointer_cast<stream<T>>(eve->getStream());

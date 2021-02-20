@@ -63,10 +63,15 @@ public:
     Q_INVOKABLE QVariant var(const QString& aName, QJSValue aData);
     Q_INVOKABLE QJSValue varData(const QString& aName, const QString& aType = "object");
     Q_INVOKABLE void fail(){
-        getTransaction()->fail();
+        if (m_transaction)
+            m_transaction->fail();
     }
     Q_INVOKABLE void log(const QString& aLog){
-        getTransaction()->log(aLog);
+        if (m_transaction)
+            m_transaction->log(aLog);
+    }
+    Q_INVOKABLE QString transactionName(){
+        return m_transaction ? m_transaction->getName() : "";
     }
     Q_INVOKABLE QString tag(){
         return m_tag;
@@ -76,11 +81,6 @@ public:
         return m_cache_id;
     }
 private:
-    std::shared_ptr<transaction> getTransaction(){
-        if (!m_transaction)
-            qFatal("no this transaction!");
-        return m_transaction;
-    }
     QJSValue m_data;
     std::shared_ptr<std::vector<std::pair<QString, std::shared_ptr<qmlStream>>>> m_outs = nullptr;
     QString m_tag;

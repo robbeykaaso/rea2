@@ -71,7 +71,7 @@ transaction::transaction(const QString& aName, const QString& aTag){
 }
 
 transaction::~transaction(){
-    rea::pipeline::run<QJsonObject>("transactionEnd", rea::Json("name", m_name, "detail", print()), "", false);
+    rea::pipeline::run<QJsonObject>("transactionEnd", rea::Json("name", m_name, "detail", print(), "fail", m_fail), "", false);
 }
 
 void transaction::log(const QString& aLog){
