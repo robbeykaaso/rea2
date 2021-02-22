@@ -7,13 +7,13 @@ PWindow0 {
     tr: Pipeline.tr
 
     onAccept: {
-        Pipeline.run("_objectNew", outputModel(), service_tag, false)
         close()
+        Pipeline.run("_objectNew", outputModel(), service_tag, false)
     }
 
     onReject: {
-        Pipeline.run("_objectNew", {}, service_tag, false)
         close()
+        Pipeline.run("_objectNew", {}, service_tag, false)
     }
 
     Component.onCompleted: {

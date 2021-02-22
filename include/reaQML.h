@@ -66,6 +66,9 @@ public:
         if (m_transaction)
             m_transaction->fail();
     }
+    Q_INVOKABLE bool failed(){
+        return m_transaction ? m_transaction->failed() : false;
+    }
     Q_INVOKABLE void log(const QString& aLog){
         if (m_transaction)
             m_transaction->log(aLog);

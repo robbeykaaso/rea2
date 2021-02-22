@@ -3,6 +3,7 @@
 #include <sstream>
 #include <QFile>
 #include <QCoreApplication>
+#include <QJsonDocument>
 
 namespace rea {
 
@@ -291,6 +292,13 @@ void pipeline::remove(const QString& aName){
     }
 }
 
+bool pipeline::isValidModule(const QString& aModule, const QString& aName){
+    if (m_pipe_version.contains(aName) && m_pipe_version.value(aName) != aModule)
+        std::cout << (aName + "is existed in module " + m_pipe_version.value(aName) + ";the version of " + aModule + " will be used!").toStdString() << std::endl;
+    m_pipe_version.insert(aName, aModule);
+    return m_modules.contains(aModule);
+}
+
 void pipeline::removeAspect(const QString& aPipe, pipe0::AspectType aType, const QString& aAspect){
     auto pipe = instance()->m_pipes.value(aPipe);
     if (pipe){
@@ -333,6 +341,13 @@ pipeline* pipeline::instance(){
 }
 
 pipeline::pipeline(){
+    QFile cfg(".rea");
+    if (cfg.open(QFile::ReadOnly)){
+        auto cnt = QJsonDocument().fromJson(cfg.readAll()).object().value("modules").toArray();
+        for (auto i : cnt)
+            m_modules.insert(i.toString());
+    }
+    m_modules.insert("");
     QThreadPool::globalInstance()->setMaxThreadCount(8);
 }
 

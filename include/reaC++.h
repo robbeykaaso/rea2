@@ -13,6 +13,7 @@
 #include <QThreadPool>
 #include <QRunnable>
 #include <QEvent>
+#include <QEventLoop>
 
 namespace rea {
 
@@ -28,6 +29,7 @@ public:
         m_fail = true;
     }
     const QString print();
+    bool failed(){return m_fail;}
     QString getName(){return m_name;}
 private:
     void executed(const QString& aPipe);
@@ -79,6 +81,9 @@ public:
     }
     QString transactionName(){
         return m_transaction ? m_transaction->getName() : "";
+    }
+    bool failed(){
+        return m_transaction ? m_transaction->failed() : false;
     }
     QString tag(){
         return m_tag;
@@ -293,7 +298,10 @@ public:
 
     template<typename T, template<class, typename> class P = pipe, typename F = pipeFunc<T>, typename S = pipeFunc<T>>
     static pipe0* add(F aFunc, const QJsonObject& aParam = QJsonObject()){
+        auto md = aParam.value("module").toString();
         auto nm = aParam.value("name").toString();
+        if (!instance()->isValidModule(md, nm))
+            return nullptr;
         auto tmp = new P<T, S>(nm, aParam.value("thread").toInt(), aParam.value("replace").toBool());  //https://stackoverflow.com/questions/213761/what-are-some-uses-of-template-template-parameters
         if (nm != ""){
             auto ad = tmp->actName() + "_pipe_add";
@@ -365,11 +373,15 @@ public:
             pip2->doEvent(stm);
         }
     }
+
 private:
+    bool isValidModule(const QString& aModule, const QString& aName);
     QThread* findThread(int aNo);
     QHash<QString, pipe0*> m_pipes;
     QHash<int, std::shared_ptr<QThread>> m_threads;
     QHash<QString, std::shared_ptr<stream0>> m_stream_cache;
+    QSet<QString> m_modules;
+    QHash<QString, QString> m_pipe_version;
     friend pipe0;
     friend pipeFuture;
     friend transaction;
@@ -763,6 +775,28 @@ pipe0* parallel(const QString& aName){
 template <typename T>
 pipe0* buffer(const int aCount = 1, const QString& aName = "", const int aThread = 0){
     return pipeline::add<T, pipeBuffer>(nullptr, Json("name", aName, "thread", aThread, "count", aCount));
+}
+
+template<typename T>
+std::shared_ptr<rea::stream<T>> asyncCall(const QString& aName, T aInput){
+    auto pip = rea::pipeline::find(aName, false);
+    auto id = rea::generateUUID();
+    auto stm = std::make_shared<rea::stream<T>>(aInput, id, nullptr, std::make_shared<rea::transaction>(id, ""));
+    if (pip){
+        QEventLoop loop;
+        bool timeout = false;
+        auto monitor = rea::pipeline::find(aName)->nextF<T>([&loop, &timeout](rea::stream<T>*){
+            if (loop.isRunning()){
+                loop.quit();
+            }else
+                timeout = true;
+        }, id);
+        pip->execute(stm);
+        if (!timeout)
+            loop.exec();
+        rea::pipeline::remove(monitor->actName());
+    }
+    return stm;
 }
 
 }
