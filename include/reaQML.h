@@ -60,7 +60,8 @@ public:
         return QVariant::fromValue<QObject*>(this);
     }
     Q_INVOKABLE QVariant map(QJSValue aInput);
-    Q_INVOKABLE QVariant call(const QString& aName);
+    Q_INVOKABLE QVariant call(const QString& aName, const QString& aType = "");
+    Q_INVOKABLE QVariant call(QJSValue aFunc, const QJsonObject& aPipeParam = QJsonObject());
     Q_INVOKABLE void noOut(){m_outs = nullptr;}
     Q_INVOKABLE QVariant var(const QString& aName, QJSValue aData);
     Q_INVOKABLE QJSValue varData(const QString& aName, const QString& aType = "object");
@@ -86,14 +87,14 @@ public:
         return m_cache_id;
     }
 private:
-    template<typename T>
+    template<typename T, typename S = T>
     void doCall(const QString& aName, const T& aData){
         auto pip = pipeline::find(aName, false);
         if (!pip)
             return;
         QEventLoop loop;
         bool timeout = false;
-        auto monitor = pipeline::find(aName)->nextF<T>([&loop, &timeout, this](stream<T>* aInput){
+        auto monitor = pipeline::find(aName)->nextF<S>([&loop, &timeout, this](stream<S>* aInput){
             m_data = pipeline::instance()->engine->toScriptValue(aInput->data());
             if (loop.isRunning()){
                 loop.quit();
@@ -263,6 +264,8 @@ public:
     static Q_INVOKABLE void run(const QString& aName, const QJSValue& aInput, const QString& aTag = "", bool aTransaction = true, const QJsonObject& aScopeCache = QJsonObject());
     static Q_INVOKABLE void runC(const QString& aName, const QJSValue& aInput, const QString& aStreamID, const QString& aTag = "");
     static Q_INVOKABLE void syncCall(const QString& aName, const QJSValue& aInput);
+    static Q_INVOKABLE QVariant call(const QString& aName, const QJSValue& aInput);
+    static Q_INVOKABLE QVariant input(const QJSValue& aInput, const QString& aTag = "", bool aTransaction = true, const QJsonObject& aScopeCache = QJsonObject());
     static Q_INVOKABLE void remove(const QString& aName);
     static Q_INVOKABLE void removeAspect(const QString& aPipe, pipe0::AspectType aType, const QString& aAspect = "");
     /*

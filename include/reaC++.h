@@ -287,25 +287,14 @@ public:
     }
 
     template<typename T>
-    std::shared_ptr<stream<T>> call(const QString& aName, T aInput = T()){
-        auto pip = find(aName, false);
-        auto id = generateUUID();
-        auto stm = std::make_shared<stream<T>>(aInput, id, nullptr, std::make_shared<transaction>(id, ""));
-        if (pip){
-            QEventLoop loop;
-            bool timeout = false;
-            auto monitor = find(aName)->nextF<T>([&loop, &timeout](stream<T>*){
-                if (loop.isRunning()){
-                    loop.quit();
-                }else
-                    timeout = true;
-            }, id);
-            pip->execute(stm);
-            if (!timeout)
-                loop.exec();
-            remove(monitor->actName());
-        }
-        return stm;
+    static std::shared_ptr<stream<T>> call(const QString& aName, T aInput = T()){
+        return input<T>(aInput)->call(aName);
+    }
+
+    template<typename T>
+    static std::shared_ptr<stream<T>> input(T aInput = T(), const QString& aTag = "", bool aTransaction = true, std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> aScopeCache = nullptr){
+        auto tag = aTag == "" ? generateUUID() : aTag;
+        return std::make_shared<stream<T>>(aInput, tag, aScopeCache, aTransaction ? std::make_shared<transaction>(tag, "") : nullptr);
     }
 private:
     void startTransaction(pipe0* aStartPipe, std::shared_ptr<transaction> aTransaction);
@@ -407,12 +396,15 @@ public:
         return std::make_shared<stream<S>>(aInput, m_tag, m_cache, m_transaction);
     }
 
-    std::shared_ptr<stream<T>> call(const QString& aName){
+    template<typename S = T>
+    std::shared_ptr<stream<S>> call(const QString& aName){
         auto pip = pipeline::find(aName, false);
+        std::shared_ptr<stream<S>> ret = nullptr;
         if (pip){
             QEventLoop loop;
             bool timeout = false;
-            auto monitor = pipeline::find(aName)->nextF<T>([&loop, &timeout](stream<T>*){
+            auto monitor = pipeline::find(aName)->nextF<S>([&loop, &timeout, &ret, this](stream<S>* aInput){
+                ret = map<S>(aInput->data());
                 if (loop.isRunning()){
                     loop.quit();
                 }else
@@ -423,7 +415,15 @@ public:
                 loop.exec();
             pipeline::remove(monitor->actName());
         }
-        return std::dynamic_pointer_cast<stream<T>>(shared_from_this());
+        return ret; //std::dynamic_pointer_cast<stream<T>>(shared_from_this());
+    }
+
+    template<typename S = T, template<class, typename> class P = pipe>
+    std::shared_ptr<stream<S>> call(pipeFunc<T> aFunc, const QJsonObject& aParam = QJsonObject()){
+        auto pip = pipeline::add<T, P>(aFunc, aParam);
+        auto ret = call<S>(pip->actName());
+        pipeline::remove(pip->actName());
+        return ret;
     }
 private:
     T m_data;

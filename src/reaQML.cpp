@@ -9,18 +9,55 @@ QVariant qmlStream::map(QJSValue aInput){
     return QVariant::fromValue<QObject*>(stm);
 }
 
-QVariant qmlStream::call(const QString& aName){
+QVariant qmlStream::call(const QString& aName, const QString& aType){
+    #define DOCALL(TYPE) \
+    if (aType == "object") \
+        doCall<TYPE, QJsonObject>(aName, valType<TYPE>::data(m_data)); \
+    else if (aType == "array") \
+        doCall<TYPE, QJsonArray>(aName, valType<TYPE>::data(m_data)); \
+    else if (aType == "bool") \
+        doCall<TYPE, bool>(aName, valType<TYPE>::data(m_data)); \
+    else if (aType == "number") \
+        doCall<TYPE, double>(aName, valType<TYPE>::data(m_data)); \
+    else if (aType == "string") \
+        doCall<TYPE, QString>(aName, valType<TYPE>::data(m_data)); \
+    else \
+        doCall<TYPE>(aName, valType<TYPE>::data(m_data));
+
     if (m_data.isString())
-        doCall<QString>(aName, m_data.toString());
+        DOCALL(QString)
     else if (m_data.isBool())
-        doCall<bool>(aName, m_data.toBool());
+        DOCALL(bool)
     else if (m_data.isNumber())
-        doCall<double>(aName, m_data.toNumber());
+        DOCALL(double)
     else if (m_data.isArray())
-        doCall<QJsonArray>(aName, QJsonArray::fromVariantList(m_data.toVariant().toList()));
+        DOCALL(QJsonArray)
     else
-        doCall<QJsonObject>(aName, QJsonObject::fromVariantMap(m_data.toVariant().toMap()));
+        DOCALL(QJsonObject)
     return QVariant::fromValue<QObject*>(this);
+}
+
+QVariant qmlStream::call(QJSValue aFunc, const QJsonObject& aPipeParam){
+    QString tp = "";
+    if (m_data.isString())
+        tp = "string";
+    else if (m_data.isBool())
+        tp = "bool";
+    else if (m_data.isNumber())
+        tp = "number";
+    else if (m_data.isArray())
+        tp = "array";
+    else if (m_data.isObject())
+        tp = "object";
+    else
+        assert(0);
+    auto tp2 = aPipeParam.value("vtype").toString();
+    auto prm = aPipeParam;
+    auto pip = qmlPipe::createPipe(aFunc, rea::Json(prm, "vtype", tp));
+    auto ret = call(pip->actName(), tp2);
+    pipeline::remove(pip->actName());
+    pip->deleteLater();
+    return ret;
 }
 
 QVariant qmlStream::var(const QString& aName, QJSValue aData){
@@ -138,7 +175,7 @@ pipelineQML::~pipelineQML(){
     }
 }
 
-void pipelineQML::run(const QString& aName, const QJSValue& aInput, const QString& aTag, bool aTransaction, const QJsonObject& aScopeCache){
+std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> createScopeCache(const QJsonObject& aScopeCache){
     std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> ch = nullptr;
     if (!aScopeCache.empty()){
         ch = std::make_shared<QHash<QString, std::shared_ptr<stream0>>>();
@@ -156,6 +193,11 @@ void pipelineQML::run(const QString& aName, const QJSValue& aInput, const QStrin
                 ch->insert(i, std::make_shared<stream<QJsonObject>>(val.toObject()));
         }
     }
+    return ch;
+}
+
+void pipelineQML::run(const QString& aName, const QJSValue& aInput, const QString& aTag, bool aTransaction, const QJsonObject& aScopeCache){
+    auto ch = createScopeCache(aScopeCache);
     if (aInput.isString())
         pipeline::run<QString>(aName, aInput.toString(), aTag, aTransaction, ch);
     else if (aInput.isBool())
@@ -192,6 +234,18 @@ void pipelineQML::syncCall(const QString& aName, const QJSValue& aInput){
         pipeline::syncCall<QJsonArray>(aName, QJsonArray::fromVariantList(aInput.toVariant().toList()));
     else
         pipeline::syncCall<QJsonObject>(aName, QJsonObject::fromVariantMap(aInput.toVariant().toMap()));
+}
+
+QVariant pipelineQML::call(const QString& aName, const QJSValue& aInput){
+    auto id = generateUUID();
+    auto stm = new qmlStream(aInput, id, nullptr, std::make_shared<transaction>(id, ""));
+    return stm->call(aName);
+}
+
+QVariant pipelineQML::input(const QJSValue& aInput, const QString& aTag, bool aTransaction, const QJsonObject& aScopeCache){
+    auto id = aTag == "" ? generateUUID() : aTag;
+    auto stm = new qmlStream(aInput, id, createScopeCache(aScopeCache), aTransaction ? std::make_shared<transaction>(id, "") : nullptr);
+    return QVariant::fromValue<QObject*>(stm);
 }
 
 void pipelineQML::remove(const QString& aName){
