@@ -2,6 +2,7 @@ import QtQuick 2.12
 import QtQuick.Controls 2.12
 import QtQuick.Window 2.12
 import QtQuick.Controls.Universal 2.3
+import '../Basic'
 
 Window{
     id: root
@@ -20,26 +21,42 @@ Window{
     modality: Qt.WindowModal
     width: 400
     height: 300
+    color: bodycolor
 
-    MouseArea{
-        property int coor_x
-        property int coor_y
-        width: parent.width
-        height: Screen.desktopAvailableHeight * 0.03
-        z: - 1
-        onPressed: function(aInput){
-            coor_x = aInput["x"]
-            coor_y = aInput["y"]
-        }
-        onPositionChanged: function(aInput){
-            root.x += aInput["x"] - coor_x
-            root.y += aInput["y"] - coor_y
+    onVisibleChanged: function(aInput){
+        if (aInput) {
+            cont.show()
+        } else {
+            cont.close()
         }
     }
 
-    Rectangle{
-        anchors.fill: parent
+    Window{
+        id: cont
+        width: root.width
+        x: root.x
+        height: root.height + 7
+        y: root.y - 7
         color: bodycolor
+        visible: true
+        flags: Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
+
+        MouseArea{
+            property int coor_x
+            property int coor_y
+            width: parent.width
+            height: Screen.desktopAvailableHeight * 0.03
+            z: -1
+            onPressed: function(aInput){
+                coor_x = aInput["x"]
+                coor_y = aInput["y"]
+            }
+            onPositionChanged: function(aInput){
+                root.x += aInput["x"] - coor_x
+                root.y += aInput["y"] - coor_y
+            }
+        }
+
         Column{
             anchors.fill: parent
             Rectangle{
@@ -135,14 +152,14 @@ Window{
                                 height: parent.height
                                 contentItem: Text{
                                     text: cap
-                                    color: fontcolor
+                                    color: parent.hovered ? buttoncolor : fontcolor
                                     font.pixelSize: 12
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
                                 }
                                 background: Rectangle{
                                     border.color: parent.hovered ? "gray" : "transparent"
-                                    color: "transparent"
+                                    color: parent.hovered ? "#ececec" : 'transparent'
                                 }
                             }
                         }
@@ -186,15 +203,15 @@ Window{
                         width: height * 2.5
                         contentItem: Text{
                             text: cap
-                            color: fontcolor
+                            color: parent.hovered ? buttoncolor : fontcolor
                             font.pixelSize: 12
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
                         }
                         anchors.verticalCenter: parent.verticalCenter
                         background: Rectangle{
-                            color: parent.hovered ? "transparent" : buttoncolor
-                            border.color: parent.hovered ? buttoncolor : "transparent"
+                            color: parent.hovered ? "#d7d7d7" : buttoncolor
+                            border.color: parent.hovered ? buttoncolor : "#d7d7d7"
                         }
                     }
                 }

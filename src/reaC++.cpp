@@ -242,7 +242,7 @@ pipeFuture::pipeFuture(const QString& aName) : pipe0 (){
 
     if (pipeline::find(aName + "_pipe_add", false)){  //there will be another pipeFuture before, this future should inherit its records before it is removed
         auto pip = new pipeFuture0(aName);
-        pipeline::call<int>(aName + "_pipe_add", 0);
+        pipeline::syncCall<int>(aName + "_pipe_add", 0);
         for (auto i : pip->m_next2)
             insertNext(i.first, i.second);
         setAspect(m_before, pip->m_before);
@@ -265,7 +265,7 @@ pipeFuture::pipeFuture(const QString& aName) : pipe0 (){
             auto loc = this_event->createLocal(aName, m_locals.value(i));
             if (loc){
                 auto pip = new pipeFuture0(i);
-                pipeline::call<int>(i + "_pipe_add", 0);
+                pipeline::syncCall<int>(i + "_pipe_add", 0);
                 for (auto i : pip->m_next2)
                     loc->insertNext(i.first, i.second);
                 pipeline::remove(i);
@@ -290,6 +290,11 @@ void pipeline::remove(const QString& aName){
         instance()->m_pipes.remove(aName);
         delete pipe; //if aName is from pipe, this must be write in the end
     }
+}
+
+void pipeline::startTransaction(pipe0* aStartPipe, std::shared_ptr<transaction> aTransaction){
+    if (aStartPipe)
+        aStartPipe->execute(std::make_shared<stream<transaction*>>(aTransaction.get()));
 }
 
 bool pipeline::isValidModule(const QString& aModule, const QString& aName){

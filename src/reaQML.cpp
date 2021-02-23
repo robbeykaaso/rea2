@@ -4,6 +4,25 @@
 
 namespace rea {
 
+QVariant qmlStream::map(QJSValue aInput){
+    auto stm = new qmlStream(aInput, m_tag, m_cache, m_transaction);
+    return QVariant::fromValue<QObject*>(stm);
+}
+
+QVariant qmlStream::call(const QString& aName){
+    if (m_data.isString())
+        doCall<QString>(aName, m_data.toString());
+    else if (m_data.isBool())
+        doCall<bool>(aName, m_data.toBool());
+    else if (m_data.isNumber())
+        doCall<double>(aName, m_data.toNumber());
+    else if (m_data.isArray())
+        doCall<QJsonArray>(aName, QJsonArray::fromVariantList(m_data.toVariant().toList()));
+    else
+        doCall<QJsonObject>(aName, QJsonObject::fromVariantMap(m_data.toVariant().toMap()));
+    return QVariant::fromValue<QObject*>(this);
+}
+
 QVariant qmlStream::var(const QString& aName, QJSValue aData){
     if (aData.isObject())
         m_cache->insert(aName, std::make_shared<stream<QJsonObject>>(QJsonObject::fromVariantMap(aData.toVariant().toMap())));
@@ -162,17 +181,17 @@ void pipelineQML::runC(const QString& aName, const QJSValue& aInput, const QStri
         pipeline::runC<QJsonObject>(aName, QJsonObject::fromVariantMap(aInput.toVariant().toMap()), aStreamID, aTag);
 }
 
-void pipelineQML::call(const QString& aName, const QJSValue& aInput){
+void pipelineQML::syncCall(const QString& aName, const QJSValue& aInput){
     if (aInput.isString())
-        pipeline::call<QString>(aName, aInput.toString());
+        pipeline::syncCall<QString>(aName, aInput.toString());
     else if (aInput.isBool())
-        pipeline::call<bool>(aName, aInput.toBool());
+        pipeline::syncCall<bool>(aName, aInput.toBool());
     else if (aInput.isNumber())
-        pipeline::call<double>(aName, aInput.toNumber());
+        pipeline::syncCall<double>(aName, aInput.toNumber());
     else if (aInput.isArray())
-        pipeline::call<QJsonArray>(aName, QJsonArray::fromVariantList(aInput.toVariant().toList()));
+        pipeline::syncCall<QJsonArray>(aName, QJsonArray::fromVariantList(aInput.toVariant().toList()));
     else
-        pipeline::call<QJsonObject>(aName, QJsonObject::fromVariantMap(aInput.toVariant().toMap()));
+        pipeline::syncCall<QJsonObject>(aName, QJsonObject::fromVariantMap(aInput.toVariant().toMap()));
 }
 
 void pipelineQML::remove(const QString& aName){

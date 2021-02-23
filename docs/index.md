@@ -12,6 +12,7 @@
 * *aspect oriented program*  
 * *eventloop*  
 * *promise*  
+* *es6*  
 
 # Concept  
 * pipe: a function wrapper which does something with some special logic  

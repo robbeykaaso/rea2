@@ -60,8 +60,6 @@ using pipeFunc = std::function<void(stream<T>*)>;
 
 template <typename T, typename F = pipeFunc<T>>
 class pipe;
-template <typename T>
-class stream;
 
 class DSTDLL stream0 : public std::enable_shared_from_this<stream0>{
 public:
@@ -112,91 +110,6 @@ template<typename T, typename F>
 class funcType;
 template <typename T, typename F = pipeFunc<T>>
 class pipeDelegate;
-
-template <typename T>
-class stream : public stream0{
-public:
-    stream() : stream0(){}
-    stream(T aInput, const QString& aTag = "", std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> aCache = nullptr, std::shared_ptr<transaction> aTransaction = nullptr) : stream0(aTag){
-        m_data = aInput;
-        if (aCache)
-            m_cache = aCache;
-        else
-            m_cache = std::make_shared<QHash<QString, std::shared_ptr<stream0>>>();
-        m_transaction = aTransaction;
-    }
-    stream<T>* setData(T aData) {
-        m_data = aData;
-        return this;
-    }
-    T data() {return m_data;}
-
-    stream<T>* out(const QString& aTag = ""){
-        if (!m_outs)
-            m_outs = std::make_shared<std::vector<std::pair<QString, std::shared_ptr<stream0>>>>();
-        if (aTag != "")
-            m_tag = aTag;
-        return this;
-    }
-
-    void noOut(){
-        m_outs = nullptr;
-    }
-
-    template<typename S>
-    stream<S>* outs(S aOut = S(), const QString& aNext = "", const QString& aTag = "", bool aShareCache = true){
-        if (!m_outs)
-            m_outs = std::make_shared<std::vector<std::pair<QString, std::shared_ptr<stream0>>>>();
-        auto ot = std::make_shared<stream<S>>(aOut, aTag == "" ? m_tag : aTag, aShareCache ? m_cache : nullptr, m_transaction);
-        m_outs->push_back(std::pair<QString, std::shared_ptr<stream0>>(aNext, ot));
-        return ot.get();
-    }
-
-    template<typename S>
-    stream<T>* outsB(S aOut = S(), const QString& aNext = "", const QString& aTag = "", bool aShareCache = true){
-        outs<S>(aOut, aNext, aTag, aShareCache);
-        return this;
-    }
-
-    template<typename S>
-    stream<S>* outs(S aOut, const QString& aNext, const QString& aTag, int aShareCache){
-        auto cache = m_cache;
-        if (m_outs && aShareCache < m_outs->size())
-            cache = m_outs->at(aShareCache).second->m_cache;
-        auto ot = std::make_shared<stream<S>>(aOut, aTag == "" ? m_tag : aTag, cache, m_transaction);
-        m_outs->push_back(std::pair<QString, std::shared_ptr<stream0>>(aNext, ot));
-        return ot.get();
-    }
-
-    template<typename S>
-    stream<T>* outsB(S aOut, const QString& aNext, const QString& aTag, int aShareCache){
-        outs<S>(aOut, aNext, aTag, aShareCache);
-        return this;
-    }
-
-    template<typename S>
-    stream<T>* var(const QString& aName, S aData = S()){
-        m_cache->insert(aName, std::make_shared<stream<S>>(aData));
-        return this;
-    }
-
-    template<typename S>
-    S varData(const QString& aName){
-        auto ret = std::dynamic_pointer_cast<stream<S>>(m_cache->value(aName));
-        if (ret)
-            return ret->data();
-        else{
-            return S();
-            //assert(0);
-        }
-    }
-private:
-    T m_data;
-    template<typename T, typename F>
-    friend class funcType;
-    template <typename T, typename F>
-    friend class pipeDelegate;
-};
 
 class DSTDLL pipe0 : public QObject{
 public:
@@ -305,7 +218,7 @@ public:
         auto tmp = new P<T, S>(nm, aParam.value("thread").toInt(), aParam.value("replace").toBool());  //https://stackoverflow.com/questions/213761/what-are-some-uses-of-template-template-parameters
         if (nm != ""){
             auto ad = tmp->actName() + "_pipe_add";
-            pipeline::call<int>(ad, 0);
+            pipeline::syncCall<int>(ad, 0);
             pipeline::remove(ad);
         }
         tmp->initialize(aFunc, aParam);
@@ -344,8 +257,7 @@ public:
             auto rt = aTransaction ? std::make_shared<transaction>(aName, aTag) : nullptr;
             if (rt){
                 auto st = instance()->m_pipes.value("transactionStart");
-                if (st)
-                    st->execute(std::make_shared<stream<transaction*>>(rt.get()));
+                instance()->startTransaction(st, rt);
             }
             pip->execute(std::make_shared<stream<T>>(aInput, aTag, aScopeCache, rt));
         }
@@ -365,7 +277,7 @@ public:
     }
 
     template<typename T, typename F = pipeFunc<T>>
-    static void call(const QString& aName, T aInput){
+    static void syncCall(const QString& aName, T aInput){
         auto pip = instance()->m_pipes.value(aName);
         if (pip){
             auto pip2 = dynamic_cast<pipe<T, F>*>(pip);
@@ -374,7 +286,29 @@ public:
         }
     }
 
+    template<typename T>
+    std::shared_ptr<stream<T>> call(const QString& aName, T aInput = T()){
+        auto pip = find(aName, false);
+        auto id = generateUUID();
+        auto stm = std::make_shared<stream<T>>(aInput, id, nullptr, std::make_shared<transaction>(id, ""));
+        if (pip){
+            QEventLoop loop;
+            bool timeout = false;
+            auto monitor = find(aName)->nextF<T>([&loop, &timeout](stream<T>*){
+                if (loop.isRunning()){
+                    loop.quit();
+                }else
+                    timeout = true;
+            }, id);
+            pip->execute(stm);
+            if (!timeout)
+                loop.exec();
+            remove(monitor->actName());
+        }
+        return stm;
+    }
 private:
+    void startTransaction(pipe0* aStartPipe, std::shared_ptr<transaction> aTransaction);
     bool isValidModule(const QString& aModule, const QString& aName);
     QThread* findThread(int aNo);
     QHash<QString, pipe0*> m_pipes;
@@ -388,6 +322,115 @@ private:
     friend stream0;
     template<typename T, typename F>
     friend class pipe;
+};
+
+template <typename T>
+class stream : public stream0{
+public:
+    stream() : stream0(){}
+    stream(T aInput, const QString& aTag = "", std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> aCache = nullptr, std::shared_ptr<transaction> aTransaction = nullptr) : stream0(aTag){
+        m_data = aInput;
+        if (aCache)
+            m_cache = aCache;
+        else
+            m_cache = std::make_shared<QHash<QString, std::shared_ptr<stream0>>>();
+        m_transaction = aTransaction;
+    }
+    stream<T>* setData(T aData) {
+        m_data = aData;
+        return this;
+    }
+    T data() {return m_data;}
+
+    stream<T>* out(const QString& aTag = ""){
+        if (!m_outs)
+            m_outs = std::make_shared<std::vector<std::pair<QString, std::shared_ptr<stream0>>>>();
+        if (aTag != "")
+            m_tag = aTag;
+        return this;
+    }
+
+    void noOut(){
+        m_outs = nullptr;
+    }
+
+    template<typename S>
+    stream<S>* outs(S aOut = S(), const QString& aNext = "", const QString& aTag = "", bool aShareCache = true){
+        if (!m_outs)
+            m_outs = std::make_shared<std::vector<std::pair<QString, std::shared_ptr<stream0>>>>();
+        auto ot = std::make_shared<stream<S>>(aOut, aTag == "" ? m_tag : aTag, aShareCache ? m_cache : nullptr, m_transaction);
+        m_outs->push_back(std::pair<QString, std::shared_ptr<stream0>>(aNext, ot));
+        return ot.get();
+    }
+
+    template<typename S>
+    stream<T>* outsB(S aOut = S(), const QString& aNext = "", const QString& aTag = "", bool aShareCache = true){
+        outs<S>(aOut, aNext, aTag, aShareCache);
+        return this;
+    }
+
+    template<typename S>
+    stream<S>* outs(S aOut, const QString& aNext, const QString& aTag, int aShareCache){
+        auto cache = m_cache;
+        if (m_outs && aShareCache < m_outs->size())
+            cache = m_outs->at(aShareCache).second->m_cache;
+        auto ot = std::make_shared<stream<S>>(aOut, aTag == "" ? m_tag : aTag, cache, m_transaction);
+        m_outs->push_back(std::pair<QString, std::shared_ptr<stream0>>(aNext, ot));
+        return ot.get();
+    }
+
+    template<typename S>
+    stream<T>* outsB(S aOut, const QString& aNext, const QString& aTag, int aShareCache){
+        outs<S>(aOut, aNext, aTag, aShareCache);
+        return this;
+    }
+
+    template<typename S>
+    stream<T>* var(const QString& aName, S aData = S()){
+        m_cache->insert(aName, std::make_shared<stream<S>>(aData));
+        return this;
+    }
+
+    template<typename S>
+    S varData(const QString& aName){
+        auto ret = std::dynamic_pointer_cast<stream<S>>(m_cache->value(aName));
+        if (ret)
+            return ret->data();
+        else{
+            return S();
+            //assert(0);
+        }
+    }
+
+    template<typename S>
+    std::shared_ptr<stream<S>> map(S aInput = S()){
+        return std::make_shared<stream<S>>(aInput, m_tag, m_cache, m_transaction);
+    }
+
+    std::shared_ptr<stream<T>> call(const QString& aName){
+        auto pip = pipeline::find(aName, false);
+        if (pip){
+            QEventLoop loop;
+            bool timeout = false;
+            auto monitor = pipeline::find(aName)->nextF<T>([&loop, &timeout](stream<T>*){
+                if (loop.isRunning()){
+                    loop.quit();
+                }else
+                    timeout = true;
+            }, m_tag);
+            pip->execute(shared_from_this());
+            if (!timeout)
+                loop.exec();
+            pipeline::remove(monitor->actName());
+        }
+        return std::dynamic_pointer_cast<stream<T>>(shared_from_this());
+    }
+private:
+    T m_data;
+    template<typename T, typename F>
+    friend class funcType;
+    template <typename T, typename F>
+    friend class pipeDelegate;
 };
 
 template <typename T>
@@ -478,7 +521,7 @@ private:
         bool ret = false;
         auto nms = aName.split(";");
         for (auto i : nms){
-            auto pip = rea::pipeline::instance()->m_pipes.value(i);
+            auto pip = pipeline::instance()->m_pipes.value(i);
             if (pip){
                 auto pip2 = dynamic_cast<pipe<T, F>*>(pip);
                 pip2->doEvent(aStream);
@@ -656,7 +699,7 @@ protected:
                 auto stm = std::dynamic_pointer_cast<stream<T>>(eve->getStream());
                 for (auto i : pipe0::m_next.keys()){
                     if (!m_cache.contains(i)){
-                        auto nxt = rea::pipeline::find(i, false);
+                        auto nxt = pipeline::find(i, false);
                         if (nxt){
                             if (nxt->isBusy()){
                                 m_cache.insert(i, stm);
@@ -680,7 +723,7 @@ protected:
             auto id = tm_e->timerId();
             if (m_timer.contains(id)){
                 auto key = m_timer.value(id);
-                auto nxt = rea::pipeline::find(key, false);
+                auto nxt = pipeline::find(key, false);
                 if (nxt && !nxt->isBusy()){
                     killTimer(id);
                     auto stm = m_cache.value(key);
@@ -775,28 +818,6 @@ pipe0* parallel(const QString& aName){
 template <typename T>
 pipe0* buffer(const int aCount = 1, const QString& aName = "", const int aThread = 0){
     return pipeline::add<T, pipeBuffer>(nullptr, Json("name", aName, "thread", aThread, "count", aCount));
-}
-
-template<typename T>
-std::shared_ptr<rea::stream<T>> asyncCall(const QString& aName, T aInput){
-    auto pip = rea::pipeline::find(aName, false);
-    auto id = rea::generateUUID();
-    auto stm = std::make_shared<rea::stream<T>>(aInput, id, nullptr, std::make_shared<rea::transaction>(id, ""));
-    if (pip){
-        QEventLoop loop;
-        bool timeout = false;
-        auto monitor = rea::pipeline::find(aName)->nextF<T>([&loop, &timeout](rea::stream<T>*){
-            if (loop.isRunning()){
-                loop.quit();
-            }else
-                timeout = true;
-        }, id);
-        pip->execute(stm);
-        if (!timeout)
-            loop.exec();
-        rea::pipeline::remove(monitor->actName());
-    }
-    return stm;
 }
 
 }
