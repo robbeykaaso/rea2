@@ -37,7 +37,7 @@ QVariant qmlStream::call(const QString& aName, const QString& aType){
     return QVariant::fromValue<QObject*>(this);
 }
 
-QVariant qmlStream::call(QJSValue aFunc, const QJsonObject& aPipeParam){
+QVariant qmlStream::call(QJSValue aFunc, const QJsonObject& aParam){
     QString tp = "";
     if (m_data.isString())
         tp = "string";
@@ -238,13 +238,17 @@ void pipelineQML::syncCall(const QString& aName, const QJSValue& aInput){
 
 QVariant pipelineQML::call(const QString& aName, const QJSValue& aInput){
     auto id = generateUUID();
-    auto stm = new qmlStream(aInput, id, nullptr, std::make_shared<transaction>(id, ""));
+    auto rt = std::make_shared<transaction>("", id);
+    rea::pipeline::instance()->tryStartTransaction(rt);
+    auto stm = new qmlStream(aInput, id, nullptr, rt);
     return stm->call(aName);
 }
 
 QVariant pipelineQML::input(const QJSValue& aInput, const QString& aTag, bool aTransaction, const QJsonObject& aScopeCache){
     auto id = aTag == "" ? generateUUID() : aTag;
-    auto stm = new qmlStream(aInput, id, createScopeCache(aScopeCache), aTransaction ? std::make_shared<transaction>(id, "") : nullptr);
+    auto rt = aTransaction ? std::make_shared<transaction>("", id) : nullptr;
+    rea::pipeline::instance()->tryStartTransaction(rt);
+    auto stm = new qmlStream(aInput, id, createScopeCache(aScopeCache), rt);
     return QVariant::fromValue<QObject*>(stm);
 }
 

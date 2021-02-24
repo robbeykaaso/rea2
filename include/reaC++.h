@@ -255,10 +255,7 @@ public:
         auto pip = instance()->m_pipes.value(aName);
         if (pip){
             auto rt = aTransaction ? std::make_shared<transaction>(aName, aTag) : nullptr;
-            if (rt){
-                auto st = instance()->m_pipes.value("transactionStart");
-                instance()->startTransaction(st, rt);
-            }
+            instance()->tryStartTransaction(rt);
             pip->execute(std::make_shared<stream<T>>(aInput, aTag, aScopeCache, rt));
         }
     }
@@ -277,7 +274,7 @@ public:
     }
 
     template<typename T, typename F = pipeFunc<T>>
-    static void syncCall(const QString& aName, T aInput){
+    static void syncCall(const QString& aName, T aInput = T()){
         auto pip = instance()->m_pipes.value(aName);
         if (pip){
             auto pip2 = dynamic_cast<pipe<T, F>*>(pip);
@@ -294,10 +291,12 @@ public:
     template<typename T>
     static std::shared_ptr<stream<T>> input(T aInput = T(), const QString& aTag = "", bool aTransaction = true, std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> aScopeCache = nullptr){
         auto tag = aTag == "" ? generateUUID() : aTag;
-        return std::make_shared<stream<T>>(aInput, tag, aScopeCache, aTransaction ? std::make_shared<transaction>(tag, "") : nullptr);
+        auto rt = aTransaction ? std::make_shared<transaction>("", tag) : nullptr;
+        instance()->tryStartTransaction(rt);
+        return std::make_shared<stream<T>>(aInput, tag, aScopeCache, rt);
     }
+    void tryStartTransaction(std::shared_ptr<transaction> aTransaction);
 private:
-    void startTransaction(pipe0* aStartPipe, std::shared_ptr<transaction> aTransaction);
     bool isValidModule(const QString& aModule, const QString& aName);
     QThread* findThread(int aNo);
     QHash<QString, pipe0*> m_pipes;

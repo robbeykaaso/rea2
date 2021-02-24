@@ -34,8 +34,21 @@ Pipeline.run("pathSelected", {path: ""}, "service1")
     - it is used with `cache` of stream for pipeDelegate  
 </br>
 
-* **void call<T, F\>(const QString& aName, const QJSValue& aInput)**  
-    - only execute the specific pipe on current thread  
+* **void syncCall<T, F\>(const QString& aName, const QJSValue& aInput)**  
+    - only execute the specific pipe synchronously on current thread  
+</br>
+
+* **QVariant call(const QString& aName, const QJSValue& aInput)**  
+    - only execute the specific pipe asynchronously  
+    - return the result stream  
+    - notice: it will create a qml object and the garbage collection of qml will delete it not instantly like smarter pointer in c++  
+</br>
+
+* **QVariant input(const QJSValue& aInput, const QString& aTag = "", bool aTransaction = true, const QJsonObject& aScopeCache = QJsonObject());**  
+    - return the stream of the input  
+    - `aTransaction` denotes whether to create atransaction for this whole procedure  
+    - `aScopeCache` denotes the scopecache for the stream  
+    - notice: it will create a qml object and the garbage collection of qml will delete it not instantly like smarter pointer in c++  
 </br>
 
 * **void remove(const QString& aName)**  

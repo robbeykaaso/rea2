@@ -61,7 +61,7 @@ public:
     }
     Q_INVOKABLE QVariant map(QJSValue aInput);
     Q_INVOKABLE QVariant call(const QString& aName, const QString& aType = "");
-    Q_INVOKABLE QVariant call(QJSValue aFunc, const QJsonObject& aPipeParam = QJsonObject());
+    Q_INVOKABLE QVariant call(QJSValue aFunc, const QJsonObject& aParam = QJsonObject());
     Q_INVOKABLE void noOut(){m_outs = nullptr;}
     Q_INVOKABLE QVariant var(const QString& aName, QJSValue aData);
     Q_INVOKABLE QJSValue varData(const QString& aName, const QString& aType = "object");

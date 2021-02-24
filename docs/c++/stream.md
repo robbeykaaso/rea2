@@ -73,6 +73,10 @@ _example_:
     - tag fail status for this transaction if exists  
 </br>
 
+* **bool failed()**  
+    - return whether the transaction is failed  
+</br>
+
 * **void log(const QString& aLog)**  
     - add a log to this transaction if exists  
 </br>
@@ -82,4 +86,27 @@ _example_:
     - it is used with `runC` of pipeline for the continous of the pipeDelegate  
     - it returns the stream id  
     - `aID` is provoided for other languages wrapper  
+</br>
+
+* **QString transactionName()**  
+    - return the current transaction name  
+</br>
+
+* **std::shared_ptr<stream<S\>\> map(S aInput = S())**
+    - return the stream of the input data  
+</br>
+
+* **std::shared_ptr<stream<S\>\> call(const QString& aName)**  
+    - asynchronously execute the pipe function  
+    - return the result stream of the function  
+_sample_:  
+```
+    aInput->map<QJsonArray>()->call("project_label_listViewSelected")
+```
+</br>
+
+* **std::shared_ptr<stream<S\>\> call(pipeFunc<T> aFunc, const QJsonObject& aParam = QJsonObject())**  
+    - asynchronously execute the lamda function  
+    - `aParam` is the param of this pipe  
+    - return the result stream of the function  
 </br>

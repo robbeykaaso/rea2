@@ -68,7 +68,8 @@ void transaction::addTrig(const QString& aStart, const QString& aNext){
 
 transaction::transaction(const QString& aName, const QString& aTag){
     m_name = aName + ";" + aTag;
-    addTrig(aTag + ":", aName);
+    if (aName != "")
+        addTrig(aTag + ":", aName);
 }
 
 transaction::~transaction(){
@@ -292,9 +293,12 @@ void pipeline::remove(const QString& aName){
     }
 }
 
-void pipeline::startTransaction(pipe0* aStartPipe, std::shared_ptr<transaction> aTransaction){
-    if (aStartPipe)
-        aStartPipe->execute(std::make_shared<stream<transaction*>>(aTransaction.get()));
+void pipeline::tryStartTransaction(std::shared_ptr<transaction> aTransaction){
+    if (aTransaction){
+        auto pip = m_pipes.value("transactionStart");
+        if (pip)
+            pip->execute(std::make_shared<stream<transaction*>>(aTransaction.get()));
+    }
 }
 
 bool pipeline::isValidModule(const QString& aModule, const QString& aName){

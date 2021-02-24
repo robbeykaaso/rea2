@@ -64,6 +64,10 @@
     - tag fail status for this transaction if exists  
 </br>
 
+* **bool failed()**  
+    - return whether the transaction is failed  
+</br>
+
 * **void log(const QString& aLog)**  
     - add a log to this transaction if exists  
 </br>
@@ -72,4 +76,29 @@
     - cache the stream into the pipeline  
     - it is used with `runC` of pipeline for the continous of the pipeDelegate  
     - it returns the stream id  
+</br>
+
+* **QString transactionName()**  
+    - return the current transaction name  
+</br>
+
+* **QVariant map(QJSValue aInput)**  
+    - return the stream of the input data  
+    - notice: it will create a qml object and the garbage collection of qml will delete it not instantly like smarter pointer in c++  
+</br>
+
+* **QVariant call(const QString& aName, const QString& aType = "")**  
+    - asynchronously execute the pipe function  
+    - return the result stream of the function  
+    - `aType` is the output type such as `string`, `number`, `bool`, `array` and `object`  
+_sample_:  
+```
+    aInput.map("testFS2.json").call("readJson2")
+```
+</br>
+
+* **QVariant call(QJSValue aFunc, const QJsonObject& aPipeParam = QJsonObject())**  
+    - asynchronously execute the js function  
+    - `aParam` is the param of this pipe  
+    - return the result stream of the function  
 </br>

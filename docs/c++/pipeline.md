@@ -20,6 +20,7 @@ add<int, pipe, pipeFunc<int>, pipeFunc<int>>([](stream<int>* aInput){  //the sec
          "around", "pipe3" //work like "before", replace the function of this pipe
          "befored", "pipe4",  //inject the target pipe before this pipe, the target pipe will be executed on the same thread of this pipe
          "aftered", "pipe5"  //work like "befored"
+         "module", "module1"  //denote the pipe of which module, the default is "". only the `modules` in config of the `.rea` and "" module will be included into the pipeline
     ))
 
 topo result: pipe0' = pipe4 -> pipe0 -> pipe5
@@ -49,8 +50,19 @@ run<int>("pipe0", 0, "service0")
     - it is used with `cache` of stream for pipeDelegate  
 </br>
 
-* **void call<T, F\>(const QString& aName, T aInput)**  
-    - only execute the specific pipe on current thread  
+* **void syncCall<T, F\>(const QString& aName, T aInput)**  
+    - only execute the specific pipe synchronously on current thread  
+</br>
+
+* **std::shared_ptr<stream<T\>\> call(const QString& aName, T aInput = T())**  
+    - only execute the specific pipe asynchronously  
+    - return the result stream  
+</br>
+
+* **std::shared_ptr<stream<T\>\> input(T aInput = T(), const QString& aTag = "", bool aTransaction = true, std::shared_ptr<QHash<QString, std::shared_ptr<stream0\>\>\> aScopeCache = nullptr)**  
+    - return the stream of the input  
+    - `aTransaction` denotes whether to create atransaction for this whole procedure  
+    - `aScopeCache` denotes the scopecache for the stream  
 </br>
 
 * **void remove(const QString& aName)**  
@@ -64,6 +76,6 @@ run<int>("pipe0", 0, "service0")
 </br>
 
 # Test and Demo
-test_rea.cpp: test1(), test2(), test3(), test11()  
+test_rea.cpp: test1(), test2(), test3(), test11(), test12()  
 </br>
 

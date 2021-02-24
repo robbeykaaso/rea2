@@ -21,7 +21,7 @@ _sample_:
     transform: [1, 0, 0, 0, 1, 0, 0, 0, 1],  //the world transformation matrix
     color: "blue",  //the color of the shapeObject, include text, arrow, face and shape itself
     objects: {  //the object is saved by object name and object attributes
-        img_2: {
+        img_2: {  //the fps will be affected by the scale of the data for the render feature of QSG. developers should control the scale of the input data to satisfy the specific performence
             type: "image",  //the type of imageObject
             path: "c:/xxx/xx.png",  //the path of the image in the imagePool or file system
             range: [0, 0, 400, 400],  //the view port of the image, the default is the boundbox of it
