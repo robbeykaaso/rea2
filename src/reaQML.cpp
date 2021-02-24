@@ -51,8 +51,8 @@ QVariant qmlStream::call(QJSValue aFunc, const QJsonObject& aParam){
         tp = "object";
     else
         assert(0);
-    auto tp2 = aPipeParam.value("vtype").toString();
-    auto prm = aPipeParam;
+    auto tp2 = aParam.value("vtype").toString();
+    auto prm = aParam;
     auto pip = qmlPipe::createPipe(aFunc, rea::Json(prm, "vtype", tp));
     auto ret = call(pip->actName(), tp2);
     pipeline::remove(pip->actName());
