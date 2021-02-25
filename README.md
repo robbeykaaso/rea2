@@ -2,4 +2,4 @@
 a mini reactive framework for quickly building your program
 
 # document
-reactive program: https://rea8.readthedocs.io/en/latest/
+reactive program: https://rea3.readthedocs.io/en/latest/
