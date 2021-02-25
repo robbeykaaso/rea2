@@ -91,6 +91,7 @@
     - asynchronously execute the pipe function  
     - return the result stream of the function  
     - `aType` is the output type such as `string`, `number`, `bool`, `array` and `object`  
+    - notice: ensure the function has output streams  
 _sample_:  
 ```
     aInput.map("testFS2.json").call("readJson2")
@@ -101,4 +102,5 @@ _sample_:
     - asynchronously execute the js function  
     - `aParam` is the param of this pipe  
     - return the result stream of the function  
+    - notice: ensure the function has output streams  
 </br>

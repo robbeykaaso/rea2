@@ -99,6 +99,7 @@ _example_:
 * **std::shared_ptr<stream<S\>\> call(const QString& aName)**  
     - asynchronously execute the pipe function  
     - return the result stream of the function  
+    - notice: ensure the function has output streams  
 _sample_:  
 ```
     aInput->map<QJsonArray>()->call("project_label_listViewSelected")
@@ -109,4 +110,5 @@ _sample_:
     - asynchronously execute the lamda function  
     - `aParam` is the param of this pipe  
     - return the result stream of the function  
+    - notice: ensure the function has output streams
 </br>
