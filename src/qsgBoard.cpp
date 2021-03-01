@@ -279,7 +279,12 @@ void qsgBoard::setName(const QString& aName){
     }, rea::Json("name", "updateQSGCtrl_" + m_name));
 }
 
+QJsonArray qsgBoard::getPlugins() {
+    return m_plugins_config;
+}
+
 void qsgBoard::installPlugins(const QJsonArray& aPlugins){
+    m_plugins_config = aPlugins;
     m_add_qsg_plugin = rea::pipeline::add<QJsonObject>([this](rea::stream<QJsonObject>* aInput){
         auto plg = aInput->varData<std::shared_ptr<qsgBoardPlugin>>("result");
         m_plugins.insert(plg->getName(this), plg);

@@ -13,12 +13,14 @@ class qsgBoardPlugin;
 class qsgBoard : public QQuickItem{
     Q_OBJECT
     Q_PROPERTY(QString name WRITE setName READ getName)
-    Q_PROPERTY(QJsonArray plugins WRITE installPlugins)
+    Q_PROPERTY(QJsonArray plugins WRITE installPlugins READ getPlugins NOTIFY pluginsChanged)
 public:
     Q_INVOKABLE void beforeDestroy();
 public:
     explicit qsgBoard(QQuickItem *parent = nullptr);
     ~qsgBoard() override;
+signals:
+    void pluginsChanged();
 protected:
     QSGNode *updatePaintNode(QSGNode* aOldNode, UpdatePaintNodeData* nodedata) override;
     void keyPressEvent(QKeyEvent *event) override;
@@ -35,8 +37,10 @@ private:
     void addUpdate(const IUpdateQSGAttr& aUpdate);
     QString getName() {return m_name;}
     void installPlugins(const QJsonArray& aPlugins);
+    QJsonArray getPlugins();
     QString m_name;
     QMap<QString, std::shared_ptr<qsgBoardPlugin>> m_plugins;
+    QJsonArray m_plugins_config;
     QQueue<IUpdateQSGAttr> m_updates;
     QQueue<int> m_updates_model_index;
     QJsonArray m_updates_modification;
