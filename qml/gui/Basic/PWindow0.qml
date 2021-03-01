@@ -89,14 +89,20 @@ TWindow{
         }
     footbuttons: [
         {cap: tr("OK"), func: function(){
+            for (var j = 0; j < sets.children.length; ++j)
+                sets.children[j].destroy()
             accept()
         }},
         {cap: tr("Cancel"), func: function(){
+            for (var j = 0; j < sets.children.length; ++j)
+                sets.children[j].destroy()
             reject()
         }}
     ]
 
     onClosed: {
+        for (var j = 0; j < sets.children.length; ++j)
+            sets.children[j].destroy()
         reject()
     }
 
@@ -120,8 +126,6 @@ TWindow{
     function showModel(aInput){
         caption = tr(aInput["title"]) || tr("new object")
         var cnt = aInput["content"]
-        for (var j = 0; j < sets.children.length; ++j)
-            sets.children[j].destroy()
         for (var i in cnt)
             if (typeof cnt[i] == "object"){
                 if (cnt[i]["model"])
