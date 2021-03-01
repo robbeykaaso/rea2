@@ -246,6 +246,7 @@ void qsgBoard::setName(const QString& aName){
             rea::pipeline::run<QJsonArray>("QSGAttrUpdated_" + m_name, m_updates_modification, "", false);
             m_updates_modification = QJsonArray();
         }
+        aInput->out();
     }, rea::Json("name", "updateQSGAttr_" + m_name, "delegate", "QSGAttrUpdated_" + m_name));
 
     rea::pipeline::add<QJsonArray, pipeDelegate>([this](rea::stream<QJsonArray>* aInput){
@@ -260,6 +261,7 @@ void qsgBoard::setName(const QString& aName){
             rea::pipeline::run<QJsonArray>("QSGAttrUpdated_" + m_name, m_updates_modification, "", false);
             m_updates_modification = QJsonArray();
         }
+        aInput->out();
     }, rea::Json("name", "updateQSGAttrs_" + m_name, "delegate", "QSGAttrUpdated_" + m_name));
 
     rea::pipeline::add<QJsonArray>([](rea::stream<QJsonArray>* aInput){
