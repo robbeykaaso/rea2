@@ -169,7 +169,7 @@ fsStorage0::fsStorage0(const QString& aRoot){
         aInput->var<QJsonArray>(dt, ret)->out();
     }, rea::Json("name", m_root + "listFiles2", "thread", 10));
 
-    rea::pipeline::add<stgVector<QString>, rea::pipePartial>([this](rea::stream<stgVector<QString>>* aInput){
+    rea::pipeline::add<QString, rea::pipePartial>([this](rea::stream<QString>* aInput){
         auto dt = aInput->data();
         std::vector<QString> ret;
         listAllFiles(dt, ret);

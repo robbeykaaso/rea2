@@ -285,6 +285,7 @@ QJsonArray qsgBoard::getPlugins() {
 
 void qsgBoard::installPlugins(const QJsonArray& aPlugins){
     m_plugins_config = aPlugins;
+    assert(!m_plugins.size());
     m_add_qsg_plugin = rea::pipeline::add<QJsonObject>([this](rea::stream<QJsonObject>* aInput){
         auto plg = aInput->varData<std::shared_ptr<qsgBoardPlugin>>("result");
         m_plugins.insert(plg->getName(this), plg);
