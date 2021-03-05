@@ -61,10 +61,10 @@ QVariant qmlStream::call(QJSValue aFunc, const QJsonObject& aParam){
 }
 
 QVariant qmlStream::var(const QString& aName, QJSValue aData){
-    if (aData.isObject())
-        m_cache->insert(aName, std::make_shared<stream<QJsonObject>>(QJsonObject::fromVariantMap(aData.toVariant().toMap())));
-    else if (aData.isArray())
+    if (aData.isArray())
         m_cache->insert(aName, std::make_shared<stream<QJsonArray>>(QJsonArray::fromVariantList(aData.toVariant().toList())));
+    else if (aData.isObject())
+        m_cache->insert(aName, std::make_shared<stream<QJsonObject>>(QJsonObject::fromVariantMap(aData.toVariant().toMap())));
     else if (aData.isNumber())
         m_cache->insert(aName, std::make_shared<stream<double>>(aData.toNumber()));
     else if (aData.isBool())
