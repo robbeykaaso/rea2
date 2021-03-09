@@ -9,9 +9,9 @@ namespace rea {
 class DSTDLL ICommand{
 public:
     ICommand(){}
-    ICommand(std::function<void(void)> aRedo, std::function<void(void)> aUndo) : undo(aUndo), redo(aRedo){}
-    std::function<void(void)> undo;
-    std::function<void(void)> redo;
+    ICommand(std::function<bool(void)> aRedo, std::function<bool(void)> aUndo) : undo(aUndo), redo(aRedo){}
+    std::function<bool(void)> undo;
+    std::function<bool(void)> redo;
 };
 
 }

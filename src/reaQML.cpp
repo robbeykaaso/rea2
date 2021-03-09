@@ -196,18 +196,20 @@ std::shared_ptr<QHash<QString, std::shared_ptr<stream0>>> createScopeCache(const
     return ch;
 }
 
-void pipelineQML::run(const QString& aName, const QJSValue& aInput, const QString& aTag, bool aTransaction, const QJsonObject& aScopeCache){
+bool pipelineQML::run(const QString& aName, const QJSValue& aInput, const QString& aTag, bool aTransaction, const QJsonObject& aScopeCache){
+    bool ret = false;
     auto ch = createScopeCache(aScopeCache);
     if (aInput.isString())
-        pipeline::run<QString>(aName, aInput.toString(), aTag, aTransaction, ch);
+        ret = pipeline::run<QString>(aName, aInput.toString(), aTag, aTransaction, ch);
     else if (aInput.isBool())
-        pipeline::run<bool>(aName, aInput.toBool(), aTag, aTransaction, ch);
+        ret = pipeline::run<bool>(aName, aInput.toBool(), aTag, aTransaction, ch);
     else if (aInput.isNumber())
-        pipeline::run<double>(aName, aInput.toNumber(), aTag, aTransaction, ch);
+        ret = pipeline::run<double>(aName, aInput.toNumber(), aTag, aTransaction, ch);
     else if (aInput.isArray())
-        pipeline::run<QJsonArray>(aName, QJsonArray::fromVariantList(aInput.toVariant().toList()), aTag, aTransaction, ch);
+        ret = pipeline::run<QJsonArray>(aName, QJsonArray::fromVariantList(aInput.toVariant().toList()), aTag, aTransaction, ch);
     else
-        pipeline::run<QJsonObject>(aName, QJsonObject::fromVariantMap(aInput.toVariant().toMap()), aTag, aTransaction, ch);
+        ret = pipeline::run<QJsonObject>(aName, QJsonObject::fromVariantMap(aInput.toVariant().toMap()), aTag, aTransaction, ch);
+    return ret;
 }
 
 void pipelineQML::runC(const QString& aName, const QJSValue& aInput, const QString& aStreamID, const QString& aTag){

@@ -56,6 +56,8 @@ void transaction::executed(const QString& aPipe){
         m_candidates.remove(aPipe);
     else if (cnt > 0)
         m_candidates.insert(aPipe, cnt);
+    //else
+    //    m_logs.push_back("(" + aPipe + ")");
 }
 
 void transaction::addTrig(const QString& aStart, const QString& aNext){

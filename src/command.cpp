@@ -18,11 +18,13 @@ public:
         rea::pipeline::add<double, pipePartial>([this](stream<double>* aInput){
             if (aInput->data() > 0){
                 if (m_cur < int(m_commands.size() - 1)){
-                    m_commands[++m_cur].redo();
+                    if (m_commands[m_cur + 1].redo())
+                        m_cur++;
                 }
             }else{
                 if (m_cur >= 0)
-                    m_commands[m_cur--].undo();
+                    if (m_commands[m_cur].undo())
+                        m_cur--;
             }
             aInput->out();
         }, Json("name", "doCommand"));

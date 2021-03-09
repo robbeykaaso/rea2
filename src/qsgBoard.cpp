@@ -9,13 +9,13 @@ QString qsgBoardPlugin::newShapeID(){
     return "shp_" + generateUUID();
 }
 
-std::function<void(void)> qsgBoardPlugin::removeShape(const QString& aShape, bool aCommand){
+std::function<bool(void)> qsgBoardPlugin::removeShape(const QString& aShape, bool aCommand){
     auto nm = getParentName();
     auto mdl = getQSGModel();
     if (mdl){
         auto id = getQSGModel()->value("id");
         return [nm, aShape, aCommand, id](){
-            rea::pipeline::run("updateQSGAttr_" + nm,
+            return rea::pipeline::run("updateQSGAttr_" + nm,
                                rea::Json("key", rea::JArray("objects"),
                                          "type", "del",
                                          "tar", aShape,
@@ -26,11 +26,11 @@ std::function<void(void)> qsgBoardPlugin::removeShape(const QString& aShape, boo
         return nullptr;
 }
 
-std::function<void(void)> qsgBoardPlugin::addPoly(const QString& aShape, const QJsonArray& aPoints, bool aCommand, int aFace){
+std::function<bool(void)> qsgBoardPlugin::addPoly(const QString& aShape, const QJsonArray& aPoints, bool aCommand, int aFace){
     auto nm = getParentName();
     auto id = getQSGModel()->value("id");
     return [nm, aShape, aPoints, aCommand, id, aFace](){
-        rea::pipeline::run("updateQSGAttr_" + nm,
+        return rea::pipeline::run("updateQSGAttr_" + nm,
                            rea::Json("key", rea::JArray("objects"),
                                      "type", "add",
                                      "tar", aShape,
@@ -43,11 +43,11 @@ std::function<void(void)> qsgBoardPlugin::addPoly(const QString& aShape, const Q
     };
 }
 
-std::function<void(void)> qsgBoardPlugin::addEllipse(const QString& aShape, const QJsonArray& aCenter, const QJsonArray& aRadius, bool aCommand){
+std::function<bool(void)> qsgBoardPlugin::addEllipse(const QString& aShape, const QJsonArray& aCenter, const QJsonArray& aRadius, bool aCommand){
     auto nm = getParentName();
     auto id = getQSGModel()->value("id");
     return [nm, aShape, aCenter, aRadius, aCommand, id](){
-        rea::pipeline::run("updateQSGAttr_" + nm,
+        return rea::pipeline::run("updateQSGAttr_" + nm,
                            rea::Json("key", rea::JArray("objects"),
                                      "type", "add",
                                      "tar", aShape,

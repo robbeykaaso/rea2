@@ -93,9 +93,9 @@ protected:
     QString m_name;
 protected:
     QString newShapeID();
-    std::function<void(void)> removeShape(const QString& aShape, bool aCommand = true);
-    std::function<void(void)> addPoly(const QString& aShape, const QJsonArray& aPoints, bool aCommand = true, int aFace = 125);
-    std::function<void(void)> addEllipse(const QString& aShape, const QJsonArray& aCenter, const QJsonArray& aRadius, bool aCommand = true);
+    std::function<bool(void)> removeShape(const QString& aShape, bool aCommand = true);
+    std::function<bool(void)> addPoly(const QString& aShape, const QJsonArray& aPoints, bool aCommand = true, int aFace = 125);
+    std::function<bool(void)> addEllipse(const QString& aShape, const QJsonArray& aCenter, const QJsonArray& aRadius, bool aCommand = true);
     std::shared_ptr<shapeObject> createEllipseHandle(QSGNode* aTransformNode, int aRadius, int aFace = - 1,
                                                      const QJsonArray& aCenter = rea::JArray(0, 0), const QString& aColor = "red");
     void updateHandlePos(int aIndex, const QPoint& aPos);

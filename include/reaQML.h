@@ -261,7 +261,7 @@ public:
 
         return new pipelineQML();
     }
-    static Q_INVOKABLE void run(const QString& aName, const QJSValue& aInput, const QString& aTag = "", bool aTransaction = true, const QJsonObject& aScopeCache = QJsonObject());
+    static Q_INVOKABLE bool run(const QString& aName, const QJSValue& aInput, const QString& aTag = "", bool aTransaction = true, const QJsonObject& aScopeCache = QJsonObject());
     static Q_INVOKABLE void runC(const QString& aName, const QJSValue& aInput, const QString& aStreamID, const QString& aTag = "");
     static Q_INVOKABLE void syncCall(const QString& aName, const QJSValue& aInput);
     static Q_INVOKABLE QVariant call(const QString& aName, const QJSValue& aInput);
