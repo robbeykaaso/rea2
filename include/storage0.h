@@ -41,6 +41,7 @@ class DSTDLL fsStorage0 {
   virtual QImage readQImage(const QString& aPath);
   virtual QByteArray readByteArray(const QString& aPath);
   virtual void deletePath(const QString& aPath);
+  virtual void createDirectory(const QString& aPath);
   virtual std::vector<QString> getFileList(const QString& aPath);
   virtual QString stgRoot(const QString& aPath);
   void checkPath(const QString& aPath);

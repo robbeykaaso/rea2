@@ -63,12 +63,18 @@ class pipe;
 
 class DSTDLL stream0 : public std::enable_shared_from_this<stream0>{
 public:
-    stream0(const QString& aTag = "") {m_tag = aTag;}
+    stream0(const QString& aTag = "") {
+        m_tag = aTag;
+        //if (m_tag.indexOf("lala") == 0)
+        //    std::cout << m_tag.toStdString() << std::endl;
+    }
     stream0(const stream0&) = default;
     stream0(stream0&&) = default;
     stream0& operator=(const stream0&) = default;
     stream0& operator=(stream0&&) = default;
-    virtual ~stream0(){}
+    virtual ~stream0(){
+       // std::cout << m_tag.toStdString() << std::endl;
+    }
     void fail(){
         if (m_transaction)
             m_transaction->fail();
@@ -416,6 +422,7 @@ public:
             pip->execute(shared_from_this());
             if (!timeout)
                 loop.exec();
+            pipeline::find(aName)->removeNext(monitor->actName());
             pipeline::remove(monitor->actName());
         }
         return ret; //std::dynamic_pointer_cast<stream<T>>(shared_from_this());
@@ -626,8 +633,8 @@ template <typename T, typename F>
 class pipePartial : public pipe<T, F> {
 public:
     void removeNext(const QString& aName) override {
-        for (auto i : m_next2)
-            i.remove(aName);
+        for (auto i = m_next2.begin(); i != m_next2.end(); ++i)  //: for will not remove
+            i.value().remove(aName);
     }
 protected:
     pipePartial(const QString& aName, int aThreadNo = 0, bool aReplace = false) : pipe<T, F>(aName, aThreadNo, aReplace) {
