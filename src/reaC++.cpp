@@ -2,7 +2,6 @@
 #include <mutex>
 #include <sstream>
 #include <QFile>
-#include <QCoreApplication>
 #include <QJsonDocument>
 
 namespace rea {

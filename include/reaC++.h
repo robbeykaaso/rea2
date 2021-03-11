@@ -14,6 +14,7 @@
 #include <QRunnable>
 #include <QEvent>
 #include <QEventLoop>
+#include <QCoreApplication>
 
 namespace rea {
 
@@ -65,15 +66,16 @@ class DSTDLL stream0 : public std::enable_shared_from_this<stream0>{
 public:
     stream0(const QString& aTag = "") {
         m_tag = aTag;
-        //if (m_tag.indexOf("lala") == 0)
-        //    std::cout << m_tag.toStdString() << std::endl;
+        //if (m_tag == "lala")
+        //    std::cout << "create" << std::endl;
     }
     stream0(const stream0&) = default;
     stream0(stream0&&) = default;
     stream0& operator=(const stream0&) = default;
     stream0& operator=(stream0&&) = default;
     virtual ~stream0(){
-       // std::cout << m_tag.toStdString() << std::endl;
+        //if (m_tag == "lala")
+        //    std::cout << "destroy" << std::endl;
     }
     void fail(){
         if (m_transaction)
@@ -138,7 +140,7 @@ public:
     virtual pipe0* nextB(pipe0* aNext, const QString& aTag = "");
     virtual pipe0* nextB(const QString& aName, const QString& aTag = "");
 
-    void execute(std::shared_ptr<stream0> aStream);
+    virtual void execute(std::shared_ptr<stream0> aStream);
 
     virtual pipe0* createLocal(const QString& aName, const QJsonObject& aParam);
     bool isBusy() {return m_busy;}
@@ -548,6 +550,19 @@ private:
         }
         return ret;
     }
+};
+
+template <typename T, typename F>
+class pipeAsync : public pipe<T, F>{
+protected:
+    pipeAsync(const QString& aName = "", int aThreadNo = 0, bool aReplace = false) : pipe<T, F>(aName, aThreadNo, aReplace){
+
+    }
+    void execute(std::shared_ptr<stream0> aStream) override{
+        auto nxt_eve = std::make_unique<pipe0::streamEvent>(pipe0::m_name, aStream);
+        QCoreApplication::postEvent(this, nxt_eve.release());
+    }
+    friend pipeline;
 };
 
 template <typename T, typename F>
