@@ -77,7 +77,7 @@ target_include_directories(REA PUBLIC  ${PROJECT_SOURCE_DIR}/include)
 #target_link_libraries( hello_binary PRIVATE hello::library)
 
 if (NOT DEFINED MS)
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY2 ${CMAKE_CURRENT_LIST_DIR}/../build-app-Desktop_Qt_5_12_2_MSVC2017_64bit-${CMAKE_BUILD_TYPE}/plugin)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY2 ${CMAKE_CURRENT_LIST_DIR}/../build-app-Desktop_Qt_5_13_2_MSVC2017_64bit-${CMAKE_BUILD_TYPE}/plugin)
 else()
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY2 ${MS})
 endif()

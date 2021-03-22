@@ -86,10 +86,6 @@ void fsStorage0::deletePath(const QString& aPath){
         QDir(stgRoot(aPath)).removeRecursively();
 }
 
-void fsStorage0::createDirectory(const QString& aPath){
-    checkPath(stgRoot(aPath));
-}
-
 std::vector<QString> fsStorage0::getFileList(const QString& aPath){
     std::vector<QString> ret;
     auto pth = stgRoot(aPath);
@@ -149,11 +145,6 @@ fsStorage0::fsStorage0(const QString& aRoot){
         deletePath(aInput->data());
         aInput->out();
     }, rea::Json("name", m_root + "deletePath", "thread", 11));
-
-    rea::pipeline::add<QString, rea::pipePartial>([this](rea::stream<QString>* aInput){
-        createDirectory(aInput->data());
-        aInput->out();
-    }, rea::Json("name", m_root + "createDirectory", "thread", 11));
 
     rea::pipeline::add<QString, rea::pipePartial>(
         [this](rea::stream<QString>* aInput) {

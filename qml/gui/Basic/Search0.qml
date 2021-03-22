@@ -16,6 +16,12 @@ FocusScope {
         color: "white"//"#c1c1c1"
         radius: 4
 
+        MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.IBeamCursor
+        }
+
         Text {
             id: hint
             anchors { fill: parent; leftMargin: 14 }
@@ -42,6 +48,7 @@ FocusScope {
             verticalAlignment: Text.AlignVCenter
             font.pixelSize: 18
             color: "#707070"
+            selectByMouse: true
             onAccepted: {
                 wrapper.accepted()
             }
