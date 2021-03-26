@@ -23,12 +23,14 @@ Window{
     height: 300
     color: bodycolor
 
-    onVisibleChanged: function(aInput){
-        if (aInput) {
-            cont.show()
-        } else {
-            cont.close()
-        }
+    function show() {
+        root.visible = true
+        cont.visible = true
+    }
+
+    function close() {
+        root.visible = false
+        cont.close()
     }
 
     Window{
@@ -39,7 +41,8 @@ Window{
         y: root.y - 7
         color: bodycolor
         visible: true
-        flags: Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
+        flags: Qt.Window | Qt.FramelessWindowHint
+        transientParent: root
 
         MouseArea{
             property int coor_x
@@ -175,6 +178,7 @@ Window{
                             btns.itemAt(btns.count - 1).clicked.connect(function(){
                                 closed()
                                 close()
+                                cont.close()
                             })
                         }
                     }
