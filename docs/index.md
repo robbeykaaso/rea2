@@ -1,5 +1,3 @@
-# [What is Rea?](https://www.processon.com/view/link/605c497f5653bb2225e9da14)  
-
 # Abstract
 * a mini framework for quickly building your application  
 * some common qml and c++ components based on the rea for application  
