@@ -28,8 +28,11 @@ Window{
         cont.visible = true
     }
 
-    function close() {
-        root.visible = false
+    function close(c) {
+        if (!c) {
+            close(true)
+            root.visible = false
+        }
         cont.close()
     }
 
@@ -178,7 +181,6 @@ Window{
                             btns.itemAt(btns.count - 1).clicked.connect(function(){
                                 closed()
                                 close()
-                                cont.close()
                             })
                         }
                     }
