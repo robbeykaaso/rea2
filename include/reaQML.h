@@ -246,7 +246,7 @@ private:
     friend pipelineQML;
 };
 
-class pipelineQML : public QObject
+class DSTDLL pipelineQML : public QObject
 {
     Q_OBJECT
     Q_DISABLE_COPY(pipelineQML)

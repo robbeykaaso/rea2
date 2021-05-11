@@ -349,7 +349,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext& context, const QS
 
 static regPip<QQmlApplicationEngine*> reg_recative2_qml([](stream<QQmlApplicationEngine*>* aInput){
 
-    qInstallMessageHandler(myMessageOutput);
+//    qInstallMessageHandler(myMessageOutput);
 
     //ref from: https://stackoverflow.com/questions/25403363/how-to-implement-a-singleton-provider-for-qmlregistersingletontype
     pipeline::instance()->engine = aInput->data();

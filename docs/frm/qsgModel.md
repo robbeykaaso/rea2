@@ -92,7 +92,7 @@ _sample_:
     tar: "shp_3",  //object name
     val: {  //object attribute
         type: "poly",
-        points: [500, 300, 700, 300, 700, 500, 500, 300],
+        points: [[500, 300, 700, 300, 700, 500, 500, 300]],
         color: "pink",
         caption: "new_obj"
     }

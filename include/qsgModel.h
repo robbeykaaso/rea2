@@ -193,6 +193,7 @@ private:
 private:
     rea::pipe0* objectCreator(const QString& aName);
     rea::pipe0* m_add_object;
+    double m_max_ratio, m_min_ratio;
     QHash<QString, rea::pipe0*> m_creators;
     QHash<QString, QImage> m_image_cache;
     QQuickItem* m_window = nullptr;

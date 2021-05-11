@@ -931,7 +931,7 @@ void qsgModel::zoom(int aStep, const QPointF& aCenter, double aRatio){
             ratio = 0.8;
     }
 
-    if ((aStep < 0 && m_trans.m11() > 0.01 ) || (aStep > 0 && m_trans.m11() < 100)){
+    if ((aStep < 0 && m_trans.m11() > m_min_ratio ) || (aStep > 0 && m_trans.m11() < m_max_ratio)){
         m_trans.translate(ct.x(), ct.y());
         m_trans.scale(ratio, ratio);
         m_trans.translate(- ct.x(), - ct.y());
@@ -1106,6 +1106,9 @@ void qsgModel::addObject(const QJsonObject& aConfig){
 
 qsgModel::qsgModel(const QJsonObject& aConfig) : QJsonObject(aConfig){
     auto shps = value("objects").toObject();
+
+    m_max_ratio = value("max_ratio").toDouble(100);
+    m_min_ratio = value("min_ratio").toDouble(0.01);
 
     m_add_object = rea::pipeline::add<std::shared_ptr<qsgObject>>([this](rea::stream<std::shared_ptr<qsgObject>>* aInput){
         auto dt = aInput->data();
