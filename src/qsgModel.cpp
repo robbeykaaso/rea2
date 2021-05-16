@@ -17,11 +17,22 @@ void qsgObject::checkTextVisible(){
     auto txt_cfg = getTextConfig();
     if (m_parent->getTextVisible(txt_cfg)){
         if (!m_text){
-            m_text = new QSGSimpleTextureNode();// window()->createImageNode();
-            m_text->setOwnsTexture(true);
-            updateTextValue(txt_cfg);
-            updateTextLocation(txt_cfg);
-            getRootQSGNode()->parent()->parent()->appendChildNode(m_text);
+            do{
+                auto rt = getRootQSGNode();
+                if (!rt)
+                    break;
+                auto prt = rt->parent();
+                if (!prt)
+                    break;
+                auto prt2 = prt->parent();
+                if (!prt2)
+                    break;
+                m_text = new QSGSimpleTextureNode();// window()->createImageNode();
+                m_text->setOwnsTexture(true);
+                updateTextValue(txt_cfg);
+                updateTextLocation(txt_cfg);
+                prt2->appendChildNode(m_text);
+            }while(0);
         }
     }else
         if (m_text){
@@ -884,7 +895,8 @@ IUpdateQSGAttr qsgModel::updateQSGAttr(const QJsonObject& aModification){
                         addObject(rea::Json(attr, "id", obj));
                         auto nd = m_objects.value(obj);
                         return [this, nd](QSGNode*){
-                            nd->getQSGNodes(m_window, m_trans_node, m_trans_node);
+                            if (m_window) //m_window is null until the model is showed at first
+                                nd->getQSGNodes(m_window, m_trans_node, m_trans_node);
                         };
                     }
                 }else if (aModification.value("type") == "del"){
