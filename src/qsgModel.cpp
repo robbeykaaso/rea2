@@ -17,22 +17,11 @@ void qsgObject::checkTextVisible(){
     auto txt_cfg = getTextConfig();
     if (m_parent->getTextVisible(txt_cfg)){
         if (!m_text){
-            do{
-                auto rt = getRootQSGNode();
-                if (!rt)
-                    break;
-                auto prt = rt->parent();
-                if (!prt)
-                    break;
-                auto prt2 = prt->parent();
-                if (!prt2)
-                    break;
-                m_text = new QSGSimpleTextureNode();// window()->createImageNode();
-                m_text->setOwnsTexture(true);
-                updateTextValue(txt_cfg);
-                updateTextLocation(txt_cfg);
-                prt2->appendChildNode(m_text);
-            }while(0);
+            m_text = new QSGSimpleTextureNode();// window()->createImageNode();
+            m_text->setOwnsTexture(true);
+            updateTextValue(txt_cfg);
+            updateTextLocation(txt_cfg);
+            getRootQSGNode()->parent()->parent()->appendChildNode(m_text);
         }
     }else
         if (m_text){
