@@ -54,6 +54,8 @@ _sample_:
     }
 }
 ```  
+* Notice  
+    - <font color="red">the objects will be rendered by Alphabetic order as a z-order</font><br />  
 </br>
 
 # Modification format
