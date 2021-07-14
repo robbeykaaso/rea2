@@ -142,6 +142,7 @@ imageObject::imageObject(const QJsonObject& aConfig) : qsgObject(aConfig){
 void imageObject::setParent(qsgModel* aParent){
     qsgObject::setParent(aParent);
     auto pth = getPath();
+    std::cout << "imageObject setParent: " << pth.toStdString() << std::endl;
     m_parent->m_image_cache.insert(pth, imagePool::readCache(pth));
 }
 
@@ -200,6 +201,7 @@ QRectF imageObject::getBoundBox(){
 IUpdateQSGAttr imageObject::updateQSGAttr(const QString& aModification){
     if (aModification == "path_" || aModification == "range_"){
         auto pth = getPath();
+        std::cout << "imageObject updateQSGAttr: " << pth.toStdString() << std::endl;
         m_parent->m_image_cache.insert(pth, imagePool::readCache(pth));
         return [this](QSGNode*){
             if (m_node){

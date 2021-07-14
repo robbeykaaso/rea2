@@ -12,6 +12,7 @@ imagePool* imagePool::instance(){
 void imagePool::cacheImage(const QString& aPath, const QImage& aImage){
     //imagePool::instance()->m_images.insert(aPath, aImage);
     std::lock_guard<std::mutex> lg(imagePool::instance()->m_mutex);
+    std::cout << "imageObject cache: " << aPath.toStdString() << std::endl;
     tryFind(&imagePool::instance()->m_images, aPath)->push_back(aImage);
 }
 

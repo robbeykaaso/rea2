@@ -1,5 +1,6 @@
 #include "qsgBoard.h"
 #include "reaC++.h"
+#include "imagePool.h"
 #include <QSGTransformNode>
 #include <QTransform>
 
@@ -214,6 +215,25 @@ void qsgBoard::addUpdate(const IUpdateQSGAttr& aUpdate){
     m_updates.push_back(aUpdate);
 }
 
+void tryFlushImageCache(const QJsonObject& aModification){
+    std::cout << "rea try flush image cache" << std::endl;
+    if (aModification.contains("obj") && aModification.value("key") == QJsonArray({"path"})){
+        std::cout << "rea flush updateQSGAttr" << std::endl;
+        rea::imagePool::readCache(aModification.value("val").toString());
+    }else{
+        auto kys = aModification.value("key").toArray();
+        if (kys.size() > 0){
+            if (kys[0] == "objects" && (aModification.value("type") == "add")){
+                auto val = aModification.value("val").toObject();
+                if (val.value("type") == "image"){
+                    std::cout << "rea flush updateQSGModel" << std::endl;
+                    rea::imagePool::readCache(val.value("path").toString());
+                }
+            }
+        }
+    }
+}
+
 void qsgBoard::setName(const QString& aName){
     m_name = aName;
 
@@ -243,6 +263,7 @@ void qsgBoard::setName(const QString& aName){
             addUpdate(m_models.back()->updateQSGAttr(aInput->data()));
             update();
         }else{
+            tryFlushImageCache(aInput->data());
             rea::pipeline::run<QJsonArray>("QSGAttrUpdated_" + m_name, m_updates_modification, "", false);
             m_updates_modification = QJsonArray();
         }
@@ -258,6 +279,8 @@ void qsgBoard::setName(const QString& aName){
                 addUpdate(m_models.back()->updateQSGAttr(i.toObject()));
             update();
         }else{
+            for (auto i : dt)
+                tryFlushImageCache(i.toObject());
             rea::pipeline::run<QJsonArray>("QSGAttrUpdated_" + m_name, m_updates_modification, "", false);
             m_updates_modification = QJsonArray();
         }
