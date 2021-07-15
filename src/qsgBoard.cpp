@@ -216,9 +216,9 @@ void qsgBoard::addUpdate(const IUpdateQSGAttr& aUpdate){
 }
 
 void tryFlushImageCache(const QJsonObject& aModification){
-    std::cout << "rea try flush image cache" << std::endl;
+    qDebug() << "rea try flush image cache";
     if (aModification.contains("obj") && aModification.value("key") == QJsonArray({"path"})){
-        std::cout << "rea flush updateQSGAttr" << std::endl;
+        qDebug() << "rea flush updateQSGAttr";
         rea::imagePool::readCache(aModification.value("val").toString());
     }else{
         auto kys = aModification.value("key").toArray();
@@ -226,7 +226,7 @@ void tryFlushImageCache(const QJsonObject& aModification){
             if (kys[0] == "objects" && (aModification.value("type") == "add")){
                 auto val = aModification.value("val").toObject();
                 if (val.value("type") == "image"){
-                    std::cout << "rea flush updateQSGModel" << std::endl;
+                    qDebug() << "rea flush updateQSGModel";
                     rea::imagePool::readCache(val.value("path").toString());
                 }
             }

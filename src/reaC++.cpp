@@ -116,8 +116,12 @@ pipe0::pipe0(const QString& aName, int aThreadNo, bool aReplace){
     }
     auto old = pipeline::find(m_name, false);
     if (old){
-        if (aReplace)
+        if (aReplace){
             m_next = old->m_next;
+            m_before = old->m_before;
+            m_after = old->m_after;
+            m_around = old->m_around;
+        }
         pipeline::remove(m_name);
     }
     pipeline::instance()->m_pipes.insert(m_name, this);
