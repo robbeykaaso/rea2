@@ -86,40 +86,15 @@ void fsStorage0::deletePath(const QString& aPath){
         QDir(stgRoot(aPath)).removeRecursively();
 }
 
-std::vector<QString> fsStorage0::getFileList(const QString& aPath){
-    std::vector<QString> ret;
-    auto pth = stgRoot(aPath);
-    QDir dir(pth);
-    auto lst = dir.entryList();
-    for (auto i : lst)
-        if (i != "." && i != ".."){
-            if (i.indexOf(".") >= 0)
-                ret.push_back(aPath + "/" + i);
-            else{
-                auto clst = getFileList(aPath + "/" + i);
-                ret.insert(ret.end(), clst.begin(), clst.end());
-            }
-        }
-    return ret;
-}
-
 fsStorage0::fsStorage0(const QString& aRoot){
     m_root = aRoot;
 
-    REGREADSTORAGE(Json);
-    REGREADSTORAGE(ByteArray);
-    REGREADSTORAGE(QImage);
-    REGWRITESTORAGE(Json);
-    REGWRITESTORAGE(ByteArray);
-    REGWRITESTORAGE(QImage);
-
-    rea::pipeline::add<stgVector<stgByteArray>, rea::pipePartial>([this](rea::stream<stgVector<stgByteArray>>* aInput){
-        auto dt = aInput->data();
-        auto lst0 = getFileList(dt);
-        for (auto i : lst0)
-            dt.getData().push_back(stgByteArray(readByteArray(i), i));
-        aInput->setData(dt)->out();
-    }, rea::Json("name", m_root + "readDir", "thread", 10));
+    REGREADSTORAGE(Json)
+    REGREADSTORAGE(ByteArray)
+    REGREADSTORAGE(QImage)
+    REGWRITESTORAGE(Json)
+    REGWRITESTORAGE(ByteArray)
+    REGWRITESTORAGE(QImage)
 
     rea::pipeline::add<stgVector<QString>, rea::pipePartial>([this](rea::stream<stgVector<QString>>* aInput){
         auto dt = aInput->data();

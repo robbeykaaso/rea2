@@ -35,7 +35,7 @@ public:
 private:
     void executed(const QString& aPipe);
     void addTrig(const QString& aStart, const QString& aNext);
-    std::mutex m_mutex;
+    std::mutex m_mutex_log, m_mutex_candidate;
     std::vector<QString> m_logs;
     QHash<QString, int> m_candidates;
     QString m_name;

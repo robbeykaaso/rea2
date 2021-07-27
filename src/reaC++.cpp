@@ -50,6 +50,7 @@ transactionManager::~transactionManager(){
 }
 
 void transaction::executed(const QString& aPipe){
+    std::lock_guard<std::mutex> gd(m_mutex_candidate);
     auto cnt = m_candidates.value(aPipe) - 1;
     if (!cnt)
         m_candidates.remove(aPipe);
@@ -60,11 +61,16 @@ void transaction::executed(const QString& aPipe){
 }
 
 void transaction::addTrig(const QString& aStart, const QString& aNext){
-    std::lock_guard<std::mutex> gd(m_mutex);
-    m_logs.push_back(aStart + " > " + aNext);
-    if (!m_candidates.contains(aNext))
-        m_candidates.insert(aNext, 0);
-    m_candidates.insert(aNext, m_candidates.value(aNext) + 1);
+    {
+        std::lock_guard<std::mutex> gd(m_mutex_log);
+        m_logs.push_back(aStart + " > " + aNext);
+    }
+    {
+        std::lock_guard<std::mutex> gd(m_mutex_candidate);
+        if (!m_candidates.contains(aNext))
+            m_candidates.insert(aNext, 0);
+        m_candidates.insert(aNext, m_candidates.value(aNext) + 1);
+    }
 }
 
 transaction::transaction(const QString& aName, const QString& aTag){
@@ -78,17 +84,22 @@ transaction::~transaction(){
 }
 
 void transaction::log(const QString& aLog){
-    std::lock_guard<std::mutex> gd(m_mutex);
+    std::lock_guard<std::mutex> gd(m_mutex_log);
     m_logs.push_back(aLog);
 }
 
 const QString transaction::print(){
-    std::lock_guard<std::mutex> gd(m_mutex);
     QString ret = "******************** " + m_name + "\n";
-    for (auto i : m_logs)
-        ret += " " + i + "\n";
-    for (auto i : m_candidates.keys())
-        ret += " alive: " + i + "*" + QString::number(m_candidates.size()) + "\n";
+    {
+        std::lock_guard<std::mutex> gd(m_mutex_log);
+        for (auto i : m_logs)
+            ret += " " + i + "\n";
+    }
+    {
+        std::lock_guard<std::mutex> gd(m_mutex_candidate);
+        for (auto i : m_candidates.keys())
+            ret += " alive: " + i + "*" + QString::number(m_candidates.size()) + "\n";
+    }
     return ret;
 }
 
