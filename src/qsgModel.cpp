@@ -143,7 +143,7 @@ imageObject::imageObject(const QJsonObject& aConfig) : qsgObject(aConfig){
 void imageObject::setParent(qsgModel* aParent){
     qsgObject::setParent(aParent);
     auto pth = getPath();
-    qDebug() << "imageObject setParent: " << pth;
+    //qDebug() << "imageObject setParent: " << pth;
     m_parent->m_image_cache.insert(pth, imagePool::readCache(pth));
 }
 

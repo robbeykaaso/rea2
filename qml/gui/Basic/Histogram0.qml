@@ -35,7 +35,7 @@ ChartView {
         axisY: axisY
         color: "#1f9b98"
         upperSeries: LineSeries{
-            id: data
+            id: dta
             /*XYPoint {x: 0; y: 5}
             XYPoint {x: 0.1; y: 5}
             XYPoint {x: 0.1; y: 8}
@@ -47,17 +47,17 @@ ChartView {
     }
 
     function drawHistomgram(aHistogram){
-        data.clear()
+        dta.clear()
         axisX.max = aHistogram.length
         var mx = 0
         for (var j in aHistogram){
             if (aHistogram[j] > mx)
                 mx = aHistogram[j]
             var idx = parseInt(j)
-            data.append(idx, 0)
-            data.append(idx, aHistogram[j])
-            data.append(idx + 1, aHistogram[j])
-            data.append(idx + 1, 0)
+            dta.append(idx, 0)
+            dta.append(idx, aHistogram[j])
+            dta.append(idx + 1, aHistogram[j])
+            dta.append(idx + 1, 0)
         }
         axisY.max = mx + 1
     }

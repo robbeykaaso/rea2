@@ -19,7 +19,7 @@ Column {
 
     function updateChildrenWidth() {
         for (var i = 0; i < rep.children.length; ++i) {
-            rep.children[i].width = parent.width / title.length + (i == title.length - 1 ? 0 : 1)
+            rep.children[i].width = parent.width / title.length + (i === title.length - 1 ? 0 : 1)
 
             var lists = tableLists.filter(v => v.index === i)
 

@@ -75,7 +75,7 @@ Row {
             y: -11
 
             delegate: Item {
-                id: item
+                id: itm
                 width: root.width - 2
                 height: root.height - 1
                 Rectangle {

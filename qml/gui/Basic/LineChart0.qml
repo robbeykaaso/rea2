@@ -26,7 +26,7 @@ ChartView {
         min: 0
     }
     LineSeries {
-        id: data
+        id: dta
         axisX: valX
         axisY: valY
         XYPoint {x:0;y:2}
@@ -41,12 +41,12 @@ ChartView {
     function updateGUI(){
         if (content === undefined)
             return;
-        data.clear()
+        dta.clear()
         var mx = 0;
         for (var i in content){
             if (content[i] > mx)
                 mx = content[i]
-            data.append(i, content[i]);
+            dta.append(i, content[i]);
         }
         valX.max = content.length - 1
         valY.max = mx
