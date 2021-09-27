@@ -215,19 +215,27 @@ void qsgBoard::addUpdate(const IUpdateQSGAttr& aUpdate){
     m_updates.push_back(aUpdate);
 }
 
-void tryFlushImageCache(const QJsonObject& aModification){
-    qDebug() << "rea try flush image cache";
+void tryFlushImageCache(const QJsonObject& aModification, QHash<QString, QImage>* aCache = nullptr){
+    //qDebug() << "rea try flush image cache";
     if (aModification.contains("obj") && aModification.value("key") == QJsonArray({"path"})){
-        qDebug() << "rea flush updateQSGAttr";
-        rea::imagePool::readCache(aModification.value("val").toString());
+        auto pth = aModification.value("val").toString();
+        auto img = rea::imagePool::readCache(pth);
+        if (aCache){
+            qDebug() << "update Image Path:" << pth;
+            aCache->insert(pth, img);
+        }
     }else{
         auto kys = aModification.value("key").toArray();
         if (kys.size() > 0){
             if (kys[0] == "objects" && (aModification.value("type") == "add")){
                 auto val = aModification.value("val").toObject();
-                if (val.value("type") == "image"){
-                    qDebug() << "rea flush updateQSGModel";
-                    rea::imagePool::readCache(val.value("path").toString());
+                if (val.contains("path")){
+                    auto pth = val.value("path").toString();
+                    auto img = rea::imagePool::readCache(pth);
+                    if (aCache){
+                        qDebug() << "add Image" << pth;
+                        aCache->insert(pth, img);
+                    }
                 }
             }
         }
@@ -252,7 +260,19 @@ void qsgBoard::setName(const QString& aName){
     });
 
     rea::pipeline::add<QJsonObject>([this](rea::stream<QJsonObject>* aInput){
-        m_models.push_back(std::make_shared<qsgModel>(aInput->data()));
+        auto dt = aInput->data();
+        auto mdl = std::make_shared<qsgModel>(dt);
+        auto che = mdl->getImageCache();
+        auto objs = dt.value("objects").toObject();
+        for (auto i : objs){
+            auto obj = i.toObject();
+            if (obj.contains("path")){
+                auto pth = obj.value("path").toString();
+                qDebug() << "updateQSGModel:" << pth;
+                che->insert(pth, rea::imagePool::readCache(pth));
+            }
+        }
+        m_models.push_back(mdl);
         update();
         aInput->out();
     }, rea::Json("name", "updateQSGModel_" + m_name));
@@ -260,6 +280,7 @@ void qsgBoard::setName(const QString& aName){
     rea::pipeline::add<QJsonObject, pipeDelegate>([this](rea::stream<QJsonObject>* aInput){
         m_updates_modification.push_back(aInput->data());
         if (m_models.size() > 0){
+            tryFlushImageCache(aInput->data(), m_models.back()->getImageCache());
             addUpdate(m_models.back()->updateQSGAttr(aInput->data()));
             update();
         }else{
@@ -275,8 +296,11 @@ void qsgBoard::setName(const QString& aName){
         for (auto i : dt)
             m_updates_modification.push_back(i);
         if (m_models.size() > 0){
-            for (auto i : dt)
-                addUpdate(m_models.back()->updateQSGAttr(i.toObject()));
+            for (auto i : dt){
+                auto mdy = i.toObject();
+                tryFlushImageCache(mdy, m_models.back()->getImageCache());
+                addUpdate(m_models.back()->updateQSGAttr(mdy));
+            }
             update();
         }else{
             for (auto i : dt)

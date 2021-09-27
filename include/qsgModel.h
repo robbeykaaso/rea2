@@ -167,6 +167,7 @@ public:
     QMap<QString, std::shared_ptr<qsgObject>> getQSGObjects() {return m_objects;}
     void show(QSGTransformNode* aTransform, QQuickItem* aWindow);
     IUpdateQSGAttr updateQSGAttr(const QJsonObject& aModification);
+    QHash<QString, QImage>* getImageCache();
 private:
     QString overwriteAttr(QJsonObject& aObject, const QJsonArray& aKeys, const QJsonValue&& aValue, bool aForce);
     void zoom(int aStep, const QPointF& aCenter, double aRatio = 0);

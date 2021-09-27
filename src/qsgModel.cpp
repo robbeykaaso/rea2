@@ -144,7 +144,7 @@ void imageObject::setParent(qsgModel* aParent){
     qsgObject::setParent(aParent);
     auto pth = getPath();
     //qDebug() << "imageObject setParent: " << pth;
-    m_parent->m_image_cache.insert(pth, imagePool::readCache(pth));
+    //m_parent->m_image_cache.insert(pth, imagePool::readCache(pth));
 }
 
 std::vector<QSGNode*> imageObject::getQSGNodes(QQuickItem* aWindow, QSGNode* aParent, QSGTransformNode* aTransform){
@@ -202,8 +202,8 @@ QRectF imageObject::getBoundBox(){
 IUpdateQSGAttr imageObject::updateQSGAttr(const QString& aModification){
     if (aModification == "path_" || aModification == "range_"){
         auto pth = getPath();
-        qDebug() << "imageObject updateQSGAttr: " << pth;
-        m_parent->m_image_cache.insert(pth, imagePool::readCache(pth));
+        //qDebug() << "imageObject updateQSGAttr: " << pth;
+        //m_parent->m_image_cache.insert(pth, imagePool::readCache(pth));
         return [this](QSGNode*){
             if (m_node){
                 updateImagePath();
@@ -835,6 +835,10 @@ void qsgModel::show(QSGTransformNode* aTransform, QQuickItem* aWindow){
             i->getQSGNodes(aWindow, aTransform, aTransform);
         WCS2SCS();
     }
+}
+
+QHash<QString, QImage>* qsgModel::getImageCache(){
+    return &m_image_cache;
 }
 
 /*{type: "add", obj: "shp_3", val: {
