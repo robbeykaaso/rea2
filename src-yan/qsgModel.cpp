@@ -838,10 +838,6 @@ void qsgModel::show(QSGTransformNode* aTransform, QQuickItem* aWindow){
     }
 }
 
-QHash<QString, QImage>* qsgModel::getImageCache(){
-    return &m_image_cache;
-}
-
 /*{type: "add", obj: "shp_3", val: {
      type: "poly",
      points: [300, 300, 500, 300, 400, 400, 300, 300],
@@ -1128,6 +1124,10 @@ qsgModel::qsgModel(const QJsonObject& aConfig) : QJsonObject(aConfig){
     for (auto i : shps.keys())
         addObject(rea::Json(shps.value(i).toObject(), "id", i));
     getTransform(true);
+
+    rea::pipeline::add<QHash<QString, QImage>*>([this](rea::stream<QHash<QString, QImage>*>* aInput){
+        m_image_cache = *aInput->data();
+    }, rea::Json("name", aConfig.value("model_id")));
 }
 
 qsgModel::~qsgModel(){
