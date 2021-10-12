@@ -173,7 +173,7 @@ QImage imageObject::getImage(){
 
 QImage imageObject::updateImagePath(bool aForce){
     QImage img = getImage();
-    if (img.width() == 0 || img.height() == 0){
+    if (img.width() == 0 || img.height() == 0 || img.isNull()){
         if (!aForce)
             return img;
         img = QImage(10, 10, QImage::Format_ARGB32);
